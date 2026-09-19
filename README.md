@@ -1,2 +1,0 @@
-# Dakhbar
-developer intelligence engine
