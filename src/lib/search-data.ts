@@ -1,6 +1,6 @@
 import { db } from './db';
 
-export type SearchResult = {
+type SearchResult = {
   id: string;
   title: string;
   significance_score: number;
@@ -8,9 +8,17 @@ export type SearchResult = {
   score: number;
 };
 
+const storyInclude = {
+  entities: { include: { entity: true } },
+  documents: {
+    orderBy: [{ is_primary: 'desc' as const }, { created_at: 'asc' as const }],
+    include: { raw_document: { select: { url: true, content: true } } },
+  },
+};
+
 export async function searchStories(query: string) {
   const q = query.trim().slice(0, 200);
-  if (!q) return { intent: null, entityMatches: [], stories: [] as SearchResult[] };
+  if (!q) return { intent: null, entityMatches: [], stories: [] };
   const entityMatches = await db.$queryRaw<{ id: string; name: string; type: string; score: number }[]>`
     SELECT e.id, e.name, e.type::text,
       GREATEST(
@@ -29,15 +37,15 @@ export async function searchStories(query: string) {
       where: { entities: { some: { entity_id: entityMatches[0].id } } },
       orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
       take: 30,
-      select: { id: true, title: true, significance_score: true, updated_at: true },
+      include: storyInclude,
     });
     return {
       intent: 'navigational' as const,
       entityMatches,
-      stories: stories.map(story => ({ ...story, score: entityMatches[0].score })),
+      stories,
     };
   }
-  const stories = await db.$queryRaw<SearchResult[]>`
+  const ranked = await db.$queryRaw<SearchResult[]>`
     WITH story_text AS (
       SELECT s.id, s.title, s.significance_score, s.updated_at,
         setweight(to_tsvector('english', s.title), 'A') ||
@@ -58,5 +66,17 @@ export async function searchStories(query: string) {
     ORDER BY score DESC, significance_score DESC
     LIMIT 50
   `;
-  return { intent: 'informational' as const, entityMatches, stories };
+  const hydrated = await db.story.findMany({
+    where: { id: { in: ranked.map(story => story.id) } },
+    include: storyInclude,
+  });
+  const byId = new Map(hydrated.map(story => [story.id, story]));
+  return {
+    intent: 'informational' as const,
+    entityMatches,
+    stories: ranked.flatMap(story => {
+      const detail = byId.get(story.id);
+      return detail ? [detail] : [];
+    }),
+  };
 }
