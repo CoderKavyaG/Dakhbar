@@ -3,10 +3,9 @@ import { Wordmark } from '@/components/wordmark';
 
 export default function MethodologyPage() {
   return <main className="paper-shell methodology-page">
-    <header className="compact-header"><Wordmark /><Link href="/">Today’s Edition</Link></header>
+    <header className="compact-header"><Wordmark /><nav><Link href="/">Today</Link><Link href="/search">Search</Link></nav></header>
     <article className="methodology-copy">
-      <p className="kicker">Methodology</p>
-      <h1>Ranked by evidence, not opinion.</h1>
+      <h1>How stories earn a place.</h1>
       <p>Dअख़बार ingests source documents through official APIs and keeps a link to the original evidence.</p>
       <h2>What reaches the Front Page</h2>
       <p>A story must name at least one known developer technology, company, product, or project. Stories without a matched entity remain searchable in the archive but are not promoted or labeled as developer news.</p>

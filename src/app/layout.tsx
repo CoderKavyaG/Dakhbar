@@ -1,6 +1,39 @@
 import type { Metadata } from 'next';
+import { IBM_Plex_Mono, IBM_Plex_Sans, Martel, Newsreader } from 'next/font/google';
 import './globals.css';
-export const metadata: Metadata = { title: 'Dअख़बार', description: 'Developer intelligence — foundation' };
+
+const display = Newsreader({
+  subsets: ['latin'],
+  variable: '--font-newsreader',
+  display: 'swap',
+});
+
+const body = IBM_Plex_Sans({
+  subsets: ['latin'],
+  variable: '--font-plex-sans',
+  display: 'swap',
+});
+
+const data = IBM_Plex_Mono({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-plex-mono',
+  display: 'swap',
+});
+
+const devanagari = Martel({
+  subsets: ['devanagari'],
+  weight: ['600', '700'],
+  variable: '--font-martel',
+  display: 'swap',
+});
+
+export const metadata: Metadata = {
+  title: 'Dअख़बार',
+  description: 'Evidence-led developer intelligence',
+};
+
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body>{children}</body></html>;
+  const fonts = [display.variable, body.variable, data.variable, devanagari.variable].join(' ');
+  return <html lang="en" className={fonts}><body>{children}</body></html>;
 }
