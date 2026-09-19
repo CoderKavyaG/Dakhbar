@@ -16,5 +16,6 @@ export function decideCluster(candidates: Candidate[]): ClusterDecision {
 
 export function calculateSignificance(input: { documentCount: number; distinctSourceCount: number; ageHours: number }) {
   const recencyDecay = Math.exp(-Math.max(0, input.ageHours) / 36);
-  return Number(((input.distinctSourceCount * 2 + input.documentCount) * recencyDecay).toFixed(6));
+  const corroborationWeight = Math.pow(Math.max(1, input.distinctSourceCount), 1.5) * 4;
+  return Number(((corroborationWeight + input.documentCount) * recencyDecay).toFixed(6));
 }

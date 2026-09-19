@@ -2,6 +2,7 @@ import { db } from '../db';
 import { calculateSignificance, decideCluster, type Candidate } from './decision';
 import { createEmbedding, cosineSimilarity, parseVector, toVectorLiteral } from './embedding';
 import { extractEntityIds } from './entities';
+import { countIndependentSources } from '../story-evidence';
 
 type StoredEmbedding = { embedding: string | null };
 
@@ -67,13 +68,13 @@ async function mergeIntoStory(storyId: string, document: { id: string; published
 export async function refreshSignificance(storyIds?: string[], now = new Date()) {
   const stories = await db.story.findMany({
     where: storyIds?.length ? { id: { in: storyIds } } : undefined,
-    select: { id: true, created_at: true, documents: { select: { raw_document: { select: { source_id: true, published_at: true } } } } },
+    select: { id: true, created_at: true, documents: { select: { raw_document: { select: { url: true, content: true, published_at: true } } } } },
   });
   for (const story of stories) {
     const latest = story.documents.reduce((date, member) => member.raw_document.published_at > date ? member.raw_document.published_at : date, story.created_at);
     const score = calculateSignificance({
       documentCount: story.documents.length,
-      distinctSourceCount: new Set(story.documents.map(member => member.raw_document.source_id)).size,
+      distinctSourceCount: countIndependentSources(story.documents.map(member => member.raw_document)),
       ageHours: (now.getTime() - latest.getTime()) / 3600000,
     });
     await db.$executeRaw`UPDATE "Story" SET significance_score = ${score} WHERE id = ${story.id}`;
@@ -90,7 +91,6 @@ export async function processUnclustered(limit = 1000) {
     select: { id: true, title: true, content: true, published_at: true },
   });
   const summary = { processed: 0, merged: 0, possiblyRelated: 0, newStories: 0 };
-  const touched = new Set<string>();
   for (const document of documents) {
     const vector = await loadOrCreateEmbedding(document);
     const entityIds = extractEntityIds(document.title, document.content, entities);
@@ -98,16 +98,14 @@ export async function processUnclustered(limit = 1000) {
     const decision = decideCluster(candidates);
     if (decision.kind === 'merge') {
       await mergeIntoStory(decision.storyId, document, entityIds, decision.similarity);
-      touched.add(decision.storyId);
       summary.merged++;
     } else {
-      const story = await createStory(document, entityIds, decision.kind === 'possibly-related' ? decision.storyId : undefined, decision.kind === 'possibly-related' ? decision.similarity : 1);
-      touched.add(story.id);
+      await createStory(document, entityIds, decision.kind === 'possibly-related' ? decision.storyId : undefined, decision.kind === 'possibly-related' ? decision.similarity : 1);
       if (decision.kind === 'possibly-related') summary.possiblyRelated++;
       else summary.newStories++;
     }
     summary.processed++;
   }
-  await refreshSignificance([...touched]);
+  await refreshSignificance();
   return summary;
 }

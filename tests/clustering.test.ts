@@ -17,6 +17,9 @@ test('below threshold creates an unrelated story and best valid candidate wins',
 });
 test('significance rewards sources and documents while decaying with age', () => {
   const recent = calculateSignificance({ documentCount: 3, distinctSourceCount: 2, ageHours: 1 });
+  const singleSource = calculateSignificance({ documentCount: 3, distinctSourceCount: 1, ageHours: 1 });
+  const threeSources = calculateSignificance({ documentCount: 3, distinctSourceCount: 3, ageHours: 1 });
   assert.ok(recent > calculateSignificance({ documentCount: 1, distinctSourceCount: 1, ageHours: 1 }));
+  assert.ok(threeSources > singleSource * 3);
   assert.ok(recent > calculateSignificance({ documentCount: 3, distinctSourceCount: 2, ageHours: 48 }));
 });
