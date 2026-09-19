@@ -12,7 +12,7 @@ const storyInclude = {
   entities: { include: { entity: true } },
   documents: {
     orderBy: [{ is_primary: 'desc' as const }, { created_at: 'asc' as const }],
-    include: { raw_document: { select: { url: true, content: true } } },
+    include: { raw_document: { select: { url: true, content: true, og_description: true, og_image_url: true } } },
   },
 };
 

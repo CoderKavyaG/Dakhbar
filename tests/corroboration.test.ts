@@ -1,37 +1,46 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildCorroborationLead, confidencePercent, distinctCorroborationSources } from '../src/lib/corroboration';
+import { buildCorroborationLead, distinctCorroborationSources, sourceTimelinePoints } from '../src/lib/corroboration';
 
-const at = (iso: string) => new Date(iso);
+const at = (value: string) => new Date(value);
 
 test('single-source lead is complete and literal', () => {
   assert.equal(buildCorroborationLead([
-    { domain: 'wsj.com', publishedAt: at('2026-09-19T03:47:00Z'), confidence: 100 },
+    { domain: 'wsj.com', publishedAt: at('2026-09-19T03:47:00Z') },
   ], 'UTC'), 'Reported by wsj.com at 3:47 AM.');
 });
 
 test('two-source lead names the first confirmation and elapsed time', () => {
   assert.equal(buildCorroborationLead([
-    { domain: 'reuters.com', publishedAt: at('2026-09-19T07:10:00Z'), confidence: 94 },
-    { domain: 'wsj.com', publishedAt: at('2026-09-19T03:47:00Z'), confidence: 100 },
+    { domain: 'reuters.com', publishedAt: at('2026-09-19T07:10:00Z') },
+    { domain: 'wsj.com', publishedAt: at('2026-09-19T03:47:00Z') },
   ], 'UTC'), 'First reported by wsj.com at 3:47 AM; confirmed by reuters.com 3h 23m later.');
 });
 
 test('three-plus-source lead pluralizes additional reporting without inventing detail', () => {
   assert.equal(buildCorroborationLead([
-    { domain: 'a.dev', publishedAt: at('2026-09-19T01:00:00Z'), confidence: 100 },
-    { domain: 'b.dev', publishedAt: at('2026-09-19T01:45:00Z'), confidence: 93 },
-    { domain: 'c.dev', publishedAt: at('2026-09-19T02:00:00Z'), confidence: 89 },
-    { domain: 'd.dev', publishedAt: at('2026-09-19T03:00:00Z'), confidence: 87 },
-  ], 'UTC'), 'First reported by a.dev at 1:00 AM; confirmed by b.dev 45m later, with 2 additional sources reporting afterward.');
+    { domain: 'a.dev', publishedAt: at('2026-09-19T01:00:00Z') },
+    { domain: 'b.dev', publishedAt: at('2026-09-19T02:00:00Z') },
+    { domain: 'c.dev', publishedAt: at('2026-09-19T03:00:00Z') },
+    { domain: 'd.dev', publishedAt: at('2026-09-19T04:00:00Z') },
+  ], 'UTC'), 'First reported by a.dev at 1:00 AM; confirmed by b.dev 1h later, with 2 additional sources reporting afterward.');
 });
 
-test('source grouping is domain-based and confidence is a bounded percentage', () => {
-  const grouped = distinctCorroborationSources([
-    { url: 'https://www.example.com/one', sourceName: 'hn', publishedAt: at('2026-09-19T02:00:00Z'), similarity: 0.912 },
-    { url: 'https://example.com/two', sourceName: 'hn', publishedAt: at('2026-09-19T01:00:00Z'), similarity: 1 },
+test('timeline dots use true proportional elapsed time', () => {
+  const points = sourceTimelinePoints([
+    { domain: 'first.dev', publishedAt: at('2026-09-19T00:00:00Z') },
+    { domain: 'middle.dev', publishedAt: at('2026-09-19T01:00:00Z') },
+    { domain: 'last.dev', publishedAt: at('2026-09-19T04:00:00Z') },
   ]);
-  assert.deepEqual(grouped, [{ domain: 'example.com', publishedAt: at('2026-09-19T01:00:00Z'), confidence: 100 }]);
-  assert.equal(confidencePercent(1.2), 100);
-  assert.equal(confidencePercent(-1), 0);
+  assert.deepEqual(points.map(point => point.position), [0, 25, 100]);
+  assert.deepEqual(points.map(point => point.elapsedLabel), ['first report', '1h later', '4h later']);
+});
+
+test('source grouping is domain-based and keeps the earliest report', () => {
+  const grouped = distinctCorroborationSources([
+    { url: 'https://www.example.com/one', sourceName: 'hn', publishedAt: at('2026-09-19T02:00:00Z') },
+    { url: 'https://example.com/two', sourceName: 'hn', publishedAt: at('2026-09-19T01:00:00Z') },
+  ]);
+  assert.equal(grouped.length, 1);
+  assert.equal(grouped[0].publishedAt.toISOString(), '2026-09-19T01:00:00.000Z');
 });

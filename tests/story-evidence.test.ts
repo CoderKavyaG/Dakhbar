@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { cleanText, countIndependentSources, storyDek, truncateAtWord } from '../src/lib/story-evidence';
+import { cleanText, countIndependentSources, storyDek, truncateAtWord, storyDestination } from '../src/lib/story-evidence';
 
 test('self-post deks strip markup and truncate cleanly at a word boundary', () => {
   const source = '<p>Ask HN: ' + 'reliable developer context '.repeat(8) + '&amp; evidence.</p>';
@@ -23,4 +23,16 @@ test('corroboration counts independent linked domains rather than ingestion feed
     { url: 'https://www.example.com/b', content: null },
     { url: 'https://another.dev/report', content: null },
   ]), 2);
+});
+
+test('Open Graph description takes precedence over the domain fallback', () => {
+  assert.deepEqual(storyDek({ url: 'https://example.com/story', content: null, og_description: 'Source-provided context.' }), { kind: 'excerpt', text: 'Source-provided context.' });
+});
+
+test('single-source stories link out while independently corroborated stories link internally', () => {
+  assert.deepEqual(storyDestination('one', [{ url: 'https://one.dev/report', content: null }]), { href: 'https://one.dev/report', external: true });
+  assert.deepEqual(storyDestination('two', [
+    { url: 'https://one.dev/report', content: null },
+    { url: 'https://two.dev/report', content: null },
+  ]), { href: '/stories/two', external: false });
 });

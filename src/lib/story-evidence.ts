@@ -1,6 +1,8 @@
 export type EvidenceDocument = {
   url: string;
   content: string | null;
+  og_description?: string | null;
+  og_image_url?: string | null;
 };
 
 const ENTITY_MAP: Record<string, string> = {
@@ -42,6 +44,8 @@ export function publisherDomain(url: string) {
 }
 
 export function storyDek(document: EvidenceDocument) {
+  const openGraph = document.og_description ? truncateAtWord(document.og_description) : '';
+  if (openGraph) return { kind: 'excerpt' as const, text: openGraph };
   const content = document.content ? truncateAtWord(document.content) : '';
   if (content) return { kind: 'excerpt' as const, text: content };
   const domain = publisherDomain(document.url);
@@ -50,4 +54,12 @@ export function storyDek(document: EvidenceDocument) {
 
 export function countIndependentSources(documents: EvidenceDocument[]) {
   return new Set(documents.map(document => publisherDomain(document.url)).filter(Boolean)).size;
+}
+
+export function storyDestination(storyId: string, documents: EvidenceDocument[]) {
+  const sourceCount = countIndependentSources(documents);
+  const original = documents[0]?.url;
+  return sourceCount < 2 && original
+    ? { href: original, external: true as const }
+    : { href: '/stories/' + storyId, external: false as const };
 }

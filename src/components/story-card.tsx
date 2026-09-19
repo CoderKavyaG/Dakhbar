@@ -1,12 +1,13 @@
 import Link from 'next/link';
-import { countIndependentSources, storyDek } from '@/lib/story-evidence';
+import { StoryImage } from '@/components/story-image';
+import { countIndependentSources, storyDek, storyDestination } from '@/lib/story-evidence';
 
 type StoryCardData = {
   id: string;
   title: string;
   updated_at: Date;
   entities: { entity_id: string; entity: { name: string } }[];
-  documents: { raw_document: { url: string; content: string | null } }[];
+  documents: { raw_document: { url: string; content: string | null; og_description: string | null; og_image_url: string | null } }[];
 };
 
 function relativeAge(date: Date) {
@@ -17,18 +18,29 @@ function relativeAge(date: Date) {
 }
 
 export function StoryCard({ story, featured = false }: { story: StoryCardData; featured?: boolean }) {
-  const dek = storyDek(story.documents[0].raw_document);
-  const sources = countIndependentSources(story.documents.map(item => item.raw_document));
+  const primary = story.documents[0].raw_document;
+  const documents = story.documents.map(item => item.raw_document);
+  const evidence = documents.find(document => document.og_description) ?? primary;
+  const image = documents.find(document => document.og_image_url)?.og_image_url;
+  const dek = storyDek(evidence);
+  const sources = countIndependentSources(documents);
+  const destination = storyDestination(story.id, documents);
+  const titleLink = destination.external
+    ? <a href={destination.href} target="_blank" rel="noopener noreferrer">{story.title}<span className="sr-only"> (opens original source)</span></a>
+    : <Link href={destination.href}>{story.title}</Link>;
   return <article className={featured ? 'story-card story-card-featured' : 'story-card'}>
-    <div className="story-card-meta">
-      {story.entities[0] && <Link href={'/search?q=' + encodeURIComponent(story.entities[0].entity.name)}>{story.entities[0].entity.name}</Link>}
-      <time className="data-type" dateTime={story.updated_at.toISOString()}>{relativeAge(story.updated_at)}</time>
-    </div>
-    <h3><Link href={'/stories/' + story.id}>{story.title}</Link></h3>
-    <p className={dek.kind === 'domain' ? 'domain-dek' : 'story-dek'}>{dek.kind === 'domain' ? 'via ' : ''}{dek.text}</p>
-    <div className="story-card-footer">
-      <div className="story-tags">{story.entities.slice(1, 3).map(item => <Link key={item.entity_id} href={'/search?q=' + encodeURIComponent(item.entity.name)}>{item.entity.name}</Link>)}</div>
-      {sources >= 2 && <span className="source-count data-type">{sources} sources</span>}
+    <StoryImage src={image} alt="" className="story-card-image" />
+    <div className="story-card-body">
+      <div className="story-card-meta">
+        {story.entities[0] && <Link href={'/search?q=' + encodeURIComponent(story.entities[0].entity.name)}>{story.entities[0].entity.name}</Link>}
+        <time className="data-type" dateTime={story.updated_at.toISOString()}>{relativeAge(story.updated_at)}</time>
+      </div>
+      <h3>{titleLink}</h3>
+      <p className={dek.kind === 'domain' ? 'domain-dek' : 'story-dek'}>{dek.kind === 'domain' ? 'via ' : ''}{dek.text}</p>
+      <div className="story-card-footer">
+        <div className="story-tags">{story.entities.slice(1, 3).map(item => <Link key={item.entity_id} href={'/search?q=' + encodeURIComponent(item.entity.name)}>{item.entity.name}</Link>)}</div>
+        {sources >= 2 && <span className="source-count data-type">{sources} sources</span>}
+      </div>
     </div>
   </article>;
 }

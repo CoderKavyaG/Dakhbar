@@ -45,6 +45,8 @@ model RawDocument {
   url             String
   author          String?
   content         String?
+  og_image_url    String?
+  og_description  String?
   published_at    DateTime        @db.Timestamptz(3)
   ingested_at     DateTime        @default(now()) @db.Timestamptz(3)
   raw_json        Json

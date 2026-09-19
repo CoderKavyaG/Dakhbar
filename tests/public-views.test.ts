@@ -30,3 +30,35 @@ test('theme exposes editorial and developer-data tokens with a dark variant', as
   assert.doesNotMatch(css, /Cambria|Nirmala UI/);
   for (const font of ['Newsreader', 'IBM_Plex_Sans', 'IBM_Plex_Mono', 'Martel']) assert.match(layout, new RegExp(font));
 });
+
+test('public evidence uses elapsed-time timelines and never exposes match percentages', async () => {
+  const [timeline, detail, css] = await Promise.all([
+    readFile('src/components/source-timeline.tsx', 'utf8'),
+    readFile('src/app/stories/[id]/page.tsx', 'utf8'),
+    readFile('src/app/globals.css', 'utf8'),
+  ]);
+  assert.match(timeline, /sourceTimelinePoints/);
+  assert.doesNotMatch(timeline + detail, /confidence|% match|similarity_score/);
+  assert.doesNotMatch(css, /corroboration-bar|confidence-badge/);
+});
+
+test('signature interactions explicitly respect reduced motion', async () => {
+  const [edition, methodology, css] = await Promise.all([
+    readFile('src/components/today-edition.tsx', 'utf8'),
+    readFile('src/components/methodology-timeline.tsx', 'utf8'),
+    readFile('src/app/globals.css', 'utf8'),
+  ]);
+  assert.match(edition, /prefers-reduced-motion: reduce/);
+  assert.match(methodology, /prefers-reduced-motion: reduce/);
+  assert.match(css, /@media \(prefers-reduced-motion: reduce\)/);
+  assert.match(edition, /preserve-3d|edition-stack/);
+});
+
+test('Front Page and Search share the exact StoryCard component', async () => {
+  const [frontPage, searchPage] = await Promise.all([
+    readFile('src/app/page.tsx', 'utf8'),
+    readFile('src/app/search/page.tsx', 'utf8'),
+  ]);
+  assert.match(frontPage, /<StoryCard/);
+  assert.match(searchPage, /<StoryCard/);
+});

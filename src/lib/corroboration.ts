@@ -4,48 +4,30 @@ export type CorroborationInput = {
   url: string;
   sourceName: string;
   publishedAt: Date;
-  similarity: number;
 };
 
 export type CorroborationSource = {
   domain: string;
   publishedAt: Date;
-  confidence: number;
 };
 
-export function confidencePercent(similarity: number) {
-  return Math.round(Math.min(1, Math.max(0, similarity)) * 100);
-}
+export type TimelinePoint = CorroborationSource & {
+  position: number;
+  elapsedLabel: string;
+};
 
 export function distinctCorroborationSources(documents: CorroborationInput[]) {
   const sources = new Map<string, CorroborationSource>();
   for (const document of documents) {
     const domain = publisherDomain(document.url) || document.sourceName;
     const existing = sources.get(domain);
-    const candidate = {
-      domain,
-      publishedAt: document.publishedAt,
-      confidence: confidencePercent(document.similarity),
-    };
-    if (!existing) {
-      sources.set(domain, candidate);
-      continue;
-    }
-    sources.set(domain, {
-      domain,
-      publishedAt: candidate.publishedAt < existing.publishedAt ? candidate.publishedAt : existing.publishedAt,
-      confidence: Math.max(candidate.confidence, existing.confidence),
-    });
+    if (!existing || document.publishedAt < existing.publishedAt) sources.set(domain, { domain, publishedAt: document.publishedAt });
   }
   return [...sources.values()].sort((left, right) => left.publishedAt.getTime() - right.publishedAt.getTime());
 }
 
 function clockTime(date: Date, timeZone: string) {
-  return new Intl.DateTimeFormat('en-US', {
-    hour: 'numeric',
-    minute: '2-digit',
-    timeZone,
-  }).format(date);
+  return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone }).format(date);
 }
 
 function elapsed(from: Date, to: Date) {
@@ -54,6 +36,18 @@ function elapsed(from: Date, to: Date) {
   const hours = Math.floor(minutes / 60);
   const remainder = minutes % 60;
   return hours + 'h' + (remainder ? ' ' + remainder + 'm' : '');
+}
+
+export function sourceTimelinePoints(sources: CorroborationSource[]): TimelinePoint[] {
+  const ordered = [...sources].sort((left, right) => left.publishedAt.getTime() - right.publishedAt.getTime());
+  if (!ordered.length) return [];
+  const first = ordered[0].publishedAt.getTime();
+  const span = ordered[ordered.length - 1].publishedAt.getTime() - first;
+  return ordered.map((source, index) => ({
+    ...source,
+    position: span > 0 ? ((source.publishedAt.getTime() - first) / span) * 100 : 0,
+    elapsedLabel: index === 0 ? 'first report' : elapsed(ordered[0].publishedAt, source.publishedAt) + ' later',
+  }));
 }
 
 export function buildCorroborationLead(sources: CorroborationSource[], timeZone = 'Asia/Kolkata') {

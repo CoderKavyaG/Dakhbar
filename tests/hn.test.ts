@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { ingestHn, normalizeHnItem, type DocumentInput, type IngestionStore } from '../src/lib/ingestion/hn';
+import { fetchOpenGraphMetadata, ingestHn, normalizeHnItem, type DocumentInput, type IngestionStore } from '../src/lib/ingestion/hn';
 
 const story = { id: 42, type: 'story', title: 'A story', by: 'alice', time: 1700000000, url: 'https://example.com', text: '<p>Context</p>' };
 test('normalizes official HN fields and retains raw evidence', () => {
@@ -48,4 +48,31 @@ test('rejects failed or malformed top-story responses', async () => {
   const store: IngestionStore = { ensureSource: async () => 's', existingIds: async () => [], insert: async () => true };
   await assert.rejects(ingestHn(store, async () => new Response('', { status: 503 })));
   await assert.rejects(ingestHn(store, async () => Response.json({ error: true })));
+});
+test('extracts Open Graph image and description without failing when metadata is absent', async () => {
+  const html = '<html><head><meta content="A precise summary &amp; context" property="og:description"><meta property="og:image" content="/cover.jpg"></head></html>';
+  const metadata = await fetchOpenGraphMetadata('https://example.com/article', async () => new Response(html, {
+    headers: { 'content-type': 'text/html' },
+  }));
+  assert.deepEqual(metadata, {
+    og_image_url: 'https://example.com/cover.jpg',
+    og_description: 'A precise summary & context',
+  });
+  assert.deepEqual(await fetchOpenGraphMetadata('http://127.0.0.1/private', async () => { throw new Error('must not fetch'); }), {
+    og_image_url: null,
+    og_description: null,
+  });
+  assert.deepEqual(await fetchOpenGraphMetadata('https://example.com/no-meta', async () => new Response('plain', {
+    headers: { 'content-type': 'text/plain' },
+  })), { og_image_url: null, og_description: null });
+});
+
+test('Open Graph redirects cannot cross into literal private-network targets', async () => {
+  let calls = 0;
+  const metadata = await fetchOpenGraphMetadata('https://example.com/redirect', async () => {
+    calls++;
+    return new Response(null, { status: 302, headers: { location: 'http://127.0.0.1/secret' } });
+  });
+  assert.equal(calls, 1);
+  assert.deepEqual(metadata, { og_image_url: null, og_description: null });
 });
