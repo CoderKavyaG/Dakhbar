@@ -1,14 +1,14 @@
 services:
   postgres:
-    image: postgres:18-alpine
+    image: pgvector/pgvector:0.8.6-pg18-trixie
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: dakhbar
     ports:
-      - "127.0.0.1:5432:5432"
+      - "127.0.0.1:5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql
+      - postgres_v2_data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d dakhbar"]
       interval: 5s
@@ -25,5 +25,5 @@ services:
       interval: 5s
       retries: 10
 volumes:
-  postgres_data:
+  postgres_v2_data:
   redis_data:
