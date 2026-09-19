@@ -17,6 +17,7 @@
     "postinstall": "prisma generate",
     "seed:entities": "node --env-file=.env --import tsx scripts/seed-entities.ts",
     "cluster": "node --env-file=.env --import tsx scripts/cluster.ts",
+    "recluster": "node --env-file=.env --import tsx scripts/recluster.ts",
     "verify:phase2": "node --env-file=.env --import tsx scripts/verify-phase2.ts"
   },
   "dependencies": {

@@ -1,5 +1,5 @@
 import { db } from '../db';
-import { calculateSignificance, decideCluster, type Candidate } from './decision';
+import { bestTitleSimilarity, calculateSignificance, decideCluster, type Candidate } from './decision';
 import { createEmbedding, cosineSimilarity, parseVector, toVectorLiteral } from './embedding';
 import { extractEntityIds } from './entities';
 import { countIndependentSources } from '../story-evidence';
@@ -17,13 +17,18 @@ async function loadOrCreateEmbedding(document: { id: string; title: string; cont
   return vector;
 }
 
-async function candidateScores(vector: number[], entityIds: string[], publishedAt: Date): Promise<Candidate[]> {
+async function candidateScores(vector: number[], title: string, entityIds: string[], publishedAt: Date): Promise<Candidate[]> {
   if (!entityIds.length) return [];
   const lower = new Date(publishedAt.getTime() - 72 * 60 * 60 * 1000);
   const upper = new Date(publishedAt.getTime() + 72 * 60 * 60 * 1000);
   const stories = await db.story.findMany({
     where: { updated_at: { gte: lower, lte: upper }, entities: { some: { entity_id: { in: entityIds } } } },
-    select: { id: true, entities: { where: { entity_id: { in: entityIds } }, select: { entity_id: true } } },
+    select: {
+      id: true,
+      title: true,
+      entities: { where: { entity_id: { in: entityIds } }, select: { entity_id: true } },
+      documents: { select: { raw_document: { select: { title: true } } } },
+    },
   });
   return Promise.all(stories.map(async story => {
     const centroidRows = await db.$queryRaw<{ centroid: string | null }[]>`
@@ -33,7 +38,12 @@ async function candidateScores(vector: number[], entityIds: string[], publishedA
       WHERE sd.story_id = ${story.id} AND rd.embedding IS NOT NULL
     `;
     const centroid = centroidRows[0]?.centroid;
-    return { storyId: story.id, similarity: centroid ? cosineSimilarity(vector, parseVector(centroid)) : 0, sharedEntityCount: story.entities.length };
+    return {
+      storyId: story.id,
+      similarity: centroid ? cosineSimilarity(vector, parseVector(centroid)) : 0,
+      sharedEntityCount: story.entities.length,
+      titleSimilarity: bestTitleSimilarity(title, [story.title, ...story.documents.map(member => member.raw_document.title)]),
+    };
   }));
 }
 
@@ -94,7 +104,7 @@ export async function processUnclustered(limit = 1000) {
   for (const document of documents) {
     const vector = await loadOrCreateEmbedding(document);
     const entityIds = extractEntityIds(document.title, document.content, entities);
-    const candidates = await candidateScores(vector, entityIds, document.published_at);
+    const candidates = await candidateScores(vector, document.title, entityIds, document.published_at);
     const decision = decideCluster(candidates);
     if (decision.kind === 'merge') {
       await mergeIntoStory(decision.storyId, document, entityIds, decision.similarity);
