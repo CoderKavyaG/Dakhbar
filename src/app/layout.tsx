@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 import { IBM_Plex_Mono, IBM_Plex_Sans, Martel, Newsreader } from 'next/font/google';
 import './globals.css';
 import { SiteHeader } from '@/components/site-header';
@@ -37,5 +38,5 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const fonts = [display.variable, body.variable, data.variable, devanagari.variable].join(' ');
-  return <html lang="en" className={fonts}><body><SiteHeader/>{children}<SiteFooter/></body></html>;
+  return <ClerkProvider><html lang="en" className={fonts}><body><SiteHeader/>{children}<SiteFooter/></body></html></ClerkProvider>;
 }

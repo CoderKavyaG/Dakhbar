@@ -7,6 +7,9 @@ const publicRoutes = [
   'src/app/search/page.tsx',
   'src/app/stories/[id]/page.tsx',
   'src/app/methodology/page.tsx',
+  'src/app/topics/[slug]/page.tsx',
+  'src/app/for-you/page.tsx',
+  'src/app/brief/page.tsx',
 ];
 
 test('public routes never render internal ranking decimals or generic eyebrow patterns', async () => {
@@ -61,4 +64,13 @@ test('Front Page and Search share the exact StoryCard component', async () => {
   ]);
   assert.match(frontPage, /<StoryCard/);
   assert.match(searchPage, /<StoryCard/);
+});
+
+test('Front Page selection remains independent of reader Following state', async () => {
+  const [frontPage, readerFeed] = await Promise.all([
+    readFile('src/lib/front-page.ts', 'utf8'),
+    readFile('src/lib/reader-data.ts', 'utf8'),
+  ]);
+  assert.doesNotMatch(frontPage, /Following|following|userId|UserVisit/);
+  assert.match(readerFeed, /getForYouStories/);
 });
