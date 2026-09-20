@@ -43,10 +43,10 @@ export function publisherDomain(url: string) {
   }
 }
 
-export function storyDek(document: EvidenceDocument) {
-  const openGraph = document.og_description ? truncateAtWord(document.og_description) : '';
+export function storyDek(document: EvidenceDocument, limit = 240) {
+  const openGraph = document.og_description ? truncateAtWord(document.og_description, limit) : '';
   if (openGraph) return { kind: 'excerpt' as const, text: openGraph };
-  const content = document.content ? truncateAtWord(document.content) : '';
+  const content = document.content ? truncateAtWord(document.content, limit) : '';
   if (content) return { kind: 'excerpt' as const, text: content };
   const domain = publisherDomain(document.url);
   return { kind: 'domain' as const, text: domain || 'source link' };

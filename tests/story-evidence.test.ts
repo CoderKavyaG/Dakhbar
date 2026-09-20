@@ -4,7 +4,7 @@ import { cleanText, countIndependentSources, storyDek, truncateAtWord, storyDest
 
 test('self-post deks strip markup and truncate cleanly at a word boundary', () => {
   const source = '<p>Ask HN: ' + 'reliable developer context '.repeat(8) + '&amp; evidence.</p>';
-  const dek = storyDek({ url: 'https://news.ycombinator.com/item?id=1', content: source });
+  const dek = storyDek({ url: 'https://news.ycombinator.com/item?id=1', content: source }, 120);
   assert.equal(dek.kind, 'excerpt');
   assert.ok(dek.text.length <= 121);
   assert.ok(dek.text.endsWith('…'));

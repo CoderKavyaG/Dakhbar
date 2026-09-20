@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import { Badge } from './ui/badge';
 import { StoryImage } from '@/components/story-image';
-import { countIndependentSources, storyDek, storyDestination } from '@/lib/story-evidence';
+import { publisherDomain, countIndependentSources, storyDek, storyDestination } from '@/lib/story-evidence';
 
 type StoryCardData = {
   id: string;
@@ -37,9 +38,10 @@ export function StoryCard({ story, featured = false }: { story: StoryCardData; f
       </div>
       <h3>{titleLink}</h3>
       <p className={dek.kind === 'domain' ? 'domain-dek' : 'story-dek'}>{dek.kind === 'domain' ? 'via ' : ''}{dek.text}</p>
+      {dek.kind!=='domain'&&<p className="card-source">From {publisherDomain(evidence.url)}</p>}
       <div className="story-card-footer">
         <div className="story-tags">{story.entities.slice(1, 3).map(item => <Link key={item.entity_id} href={'/search?q=' + encodeURIComponent(item.entity.name)}>{item.entity.name}</Link>)}</div>
-        {sources >= 2 && <span className="source-count data-type">{sources} sources</span>}
+        {sources >= 2 && <Badge>{sources} sources</Badge>}
       </div>
     </div>
   </article>;
