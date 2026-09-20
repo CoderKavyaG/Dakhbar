@@ -1,9 +1,12 @@
 import type { Metadata } from 'next';
 import { ClerkProvider } from '@clerk/nextjs';
+import { auth } from '@clerk/nextjs/server';
 import { IBM_Plex_Mono, IBM_Plex_Sans, Martel, Newsreader } from 'next/font/google';
 import './globals.css';
+import { FollowingProvider } from '@/components/following-provider';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
+import { getFollowingEntityIds } from '@/lib/reader-data';
 
 const display = Newsreader({
   subsets: ['latin'],
@@ -36,7 +39,9 @@ export const metadata: Metadata = {
   description: 'Evidence-led developer intelligence',
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const fonts = [display.variable, body.variable, data.variable, devanagari.variable].join(' ');
-  return <ClerkProvider><html lang="en" className={fonts}><body><SiteHeader/>{children}<SiteFooter/></body></html></ClerkProvider>;
+  const { userId } = await auth();
+  const followedEntityIds = userId ? await getFollowingEntityIds(userId) : [];
+  return <ClerkProvider><html lang="en" className={fonts}><body><FollowingProvider initialEntityIds={followedEntityIds}><SiteHeader/>{children}<SiteFooter/></FollowingProvider></body></html></ClerkProvider>;
 }

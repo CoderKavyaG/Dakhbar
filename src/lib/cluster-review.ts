@@ -1,5 +1,7 @@
 import { db } from './db';
 
+import { buildPendingRelationships } from './pending-relationships';
+
 export async function getClusterReviewData() {
   const [stories, totals] = await Promise.all([
     db.story.findMany({
@@ -7,7 +9,7 @@ export async function getClusterReviewData() {
       take: 100,
       include: {
         entities: { include: { entity: true } },
-        possibly_related_to: { select: { id: true, title: true } },
+        possibly_related_to: { include: { entities: { include: { entity: true } } } },
         documents: {
           orderBy: [{ is_primary: 'desc' }, { created_at: 'asc' }],
           include: { raw_document: { include: { source: true } } },
@@ -21,5 +23,9 @@ export async function getClusterReviewData() {
     ]),
   ]);
   stories.sort((left, right) => Number(right.status === 'review_needed') - Number(left.status === 'review_needed'));
-  return { stories, totals: { stories: totals[0], reviewNeeded: totals[1], memberships: totals[2] } };
+  return {
+    stories,
+    pendingRelationships: buildPendingRelationships(stories),
+    totals: { stories: totals[0], reviewNeeded: totals[1], memberships: totals[2] },
+  };
 }

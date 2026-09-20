@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { EntityFollowControl } from './entity-follow-control';
 import { Badge } from './ui/badge';
 import { StoryImage } from '@/components/story-image';
 import { publisherDomain, countIndependentSources, storyDek, storyDestination } from '@/lib/story-evidence';
@@ -34,14 +35,14 @@ export function StoryCard({ story, featured = false }: { story: StoryCardData; f
     <StoryImage src={image} alt="" className="story-card-image" />
     <div className="story-card-body">
       <div className="story-card-meta">
-        {story.entities[0] && <Link href={topicPath(story.entities[0].entity)}>{story.entities[0].entity.name}</Link>}
+        {story.entities[0] && <EntityFollowControl entity={{id:story.entities[0].entity_id,name:story.entities[0].entity.name}} returnTo={topicPath(story.entities[0].entity)}/>}
         <time className="data-type" dateTime={story.updated_at.toISOString()}>{relativeAge(story.updated_at)}</time>
       </div>
       <h3>{titleLink}</h3>
       <p className={dek.kind === 'domain' ? 'domain-dek' : 'story-dek'}>{dek.kind === 'domain' ? 'via ' : ''}{dek.text}</p>
       {dek.kind!=='domain'&&<p className="card-source">From {publisherDomain(evidence.url)}</p>}
       <div className="story-card-footer">
-        <div className="story-tags">{story.entities.slice(1, 3).map(item => <Link key={item.entity_id} href={topicPath(item.entity)}>{item.entity.name}</Link>)}</div>
+        <div className="story-tags">{story.entities.slice(1).map(item => <EntityFollowControl key={item.entity_id} entity={{id:item.entity_id,name:item.entity.name}} returnTo={topicPath(item.entity)}/>)}</div>
         {sources >= 2 && <Badge>{sources} sources</Badge>}
       </div>
     </div>

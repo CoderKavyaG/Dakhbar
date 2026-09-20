@@ -577,3 +577,80 @@ html { font-size: 16px; }
 .topic-result .topic-summary .follow-form,.topic-result .topic-summary button { width: 100%; }
 .topic-result .topic-summary button { justify-content: center; }
 .topic-result .topic-summary p { color: var(--ink-soft); }
+
+/* Phase 3.1 authenticated reader controls */
+.cl-modalBackdrop {
+  background: color-mix(in srgb, var(--ink) 58%, transparent) !important;
+  backdrop-filter: blur(7px);
+}
+.brief-nav-link { display: inline-flex; align-items: center; gap: 6px; }
+.brief-badge {
+  min-width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--data);
+  color: var(--data-ink);
+  font: 600 10px var(--font-data);
+}
+.account-nav .ui-button { min-height: 36px; padding: 7px 13px; }
+.entity-follow-control {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  vertical-align: middle;
+}
+.entity-follow-control > a { line-height: 1.4; }
+.entity-follow-button.ui-button-icon {
+  width: 24px;
+  height: 24px;
+  min-height: 24px;
+  padding: 4px;
+  border: 1px solid color-mix(in srgb, var(--data) 45%, var(--line));
+  border-radius: 999px;
+  color: var(--data);
+  background: transparent;
+  flex: 0 0 auto;
+}
+.entity-follow-button.ui-button-icon:hover,
+.entity-follow-button.ui-button-icon[aria-pressed="true"] { background: var(--data-surface); color: var(--data-deep); }
+.story-card-meta > .entity-follow-control { margin-right: auto; }
+.story-tags .entity-follow-control { padding: 2px 4px 2px 7px; border: 1px solid var(--line); border-radius: 999px; }
+.story-tags .entity-follow-control > a { color: var(--ink-soft); font-size: .75rem; }
+.lead-meta .entity-follow-control > a,
+.story-context .entity-follow-control > a { color: var(--data); font-weight: 600; }
+.popular-topic-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--paper);
+}
+.popular-topic-row small { color: var(--ink-soft); white-space: nowrap; }
+.bulk-review { margin: 32px 0 48px; padding: 28px; border: 2px solid var(--data); border-radius: 10px; background: color-mix(in srgb, var(--data-surface) 32%, var(--paper-raised)); }
+.bulk-review-heading { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 20px; }
+.bulk-review-heading h2 { margin: 4px 0 0; font: 600 clamp(28px, 4vw, 44px)/1 var(--font-display); }
+.bulk-review-heading > strong { color: var(--data); font-size: 12px; }
+.bulk-review-list { display: grid; gap: 12px; }
+.relationship-card { padding: 20px; border-radius: 8px; background: var(--paper-raised); }
+.relationship-pair { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 18px; }
+.relationship-pair section { min-width: 0; }
+.relationship-pair .data-type { color: var(--ink-soft); font-size: 10px; text-transform: uppercase; letter-spacing: .08em; }
+.relationship-pair h3 { margin: 7px 0 0; font: 550 22px/1.2 var(--font-display); }
+.relationship-marker { color: var(--data); font: 500 20px var(--font-data); }
+.relationship-evidence { display: flex; justify-content: space-between; gap: 16px; margin: 18px 0 14px; padding-top: 12px; border-top: 1px solid var(--line); color: var(--ink-soft); font-size: 12px; }
+.relationship-card .review-actions { display: flex; gap: 8px; }
+.relationship-card .review-actions button { min-height: 36px; padding: 7px 12px; font-size: 12px; }
+@media(max-width: 700px) {
+  .relationship-pair { grid-template-columns: 1fr; gap: 10px; }
+  .relationship-marker { transform: rotate(90deg); justify-self: start; }
+  .relationship-evidence { align-items: flex-start; flex-direction: column; }
+  .bulk-review { padding: 18px; }
+}

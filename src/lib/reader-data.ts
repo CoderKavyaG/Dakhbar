@@ -28,12 +28,22 @@ export async function getForYouStories(userId: string) {
   return { entityIds, stories };
 }
 
-export async function getBrief(userId: string, now = new Date()) {
+export async function getBriefWindow(userId: string, now = new Date()) {
   const [entityIds, visit] = await Promise.all([
     getFollowingEntityIds(userId),
     db.userVisit.findUnique({ where: { user_id: userId } }),
   ]);
   const since = briefSince(visit?.last_seen_at ?? null, now);
+  return { entityIds, since };
+}
+
+export async function getBriefNotificationCount(userId: string, now = new Date()) {
+  const { entityIds, since } = await getBriefWindow(userId, now);
+  return entityIds.length ? db.story.count({ where: briefStoryWhere(entityIds, since) }) : 0;
+}
+
+export async function getBrief(userId: string, now = new Date()) {
+  const { entityIds, since } = await getBriefWindow(userId, now);
   const stories = entityIds.length ? await db.story.findMany({
     where: briefStoryWhere(entityIds, since),
     orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
