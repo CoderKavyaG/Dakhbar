@@ -6,6 +6,7 @@ import { Check, Plus } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { toggleFollowingAction } from '@/app/actions/follow';
 import { useFollowing } from './following-provider';
+import { UpgradeDialog } from './upgrade-dialog';
 import { Button } from './ui/button';
 
 const PENDING_FOLLOW_KEY = 'dakhbar:pending-follow';
@@ -28,6 +29,7 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
   const following = followsAll(entityIds);
   const intentKey = JSON.stringify({ entityIds: [...entityIds].sort(), returnTo });
   const [awaitingSignIn, setAwaitingSignIn] = useState(false);
+  const [upgrade, setUpgrade] = useState({ open: false, limit: 5 });
   const [, startTransition] = useTransition();
   const signedInRef = useRef(Boolean(isSignedIn));
   useEffect(() => { signedInRef.current = Boolean(isSignedIn); }, [isSignedIn]);
@@ -39,6 +41,10 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
       formData.set('return_to', returnTo);
       formData.set('intent', intent);
       const result = await toggleFollowingAction(formData);
+      if (result.upgradeRequired) {
+        setUpgrade({ open: true, limit: result.limit });
+        return;
+      }
       if (result.following) follow(result.entityIds);
       else unfollow(result.entityIds);
       router.refresh();
@@ -67,9 +73,7 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
         window.setTimeout(() => {
           if (signedInRef.current) return;
           setAwaitingSignIn(false);
-          if (window.sessionStorage.getItem(PENDING_FOLLOW_KEY) === intentKey) {
-            window.sessionStorage.removeItem(PENDING_FOLLOW_KEY);
-          }
+          if (window.sessionStorage.getItem(PENDING_FOLLOW_KEY) === intentKey) window.sessionStorage.removeItem(PENDING_FOLLOW_KEY);
         }, 1000);
       }
     });
@@ -79,8 +83,11 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
 
   const activate = () => isSignedIn ? submit('toggle') : openSignIn();
   const accessibleLabel = (following ? 'Unfollow ' : 'Follow ') + (entityName ?? (entityIds.length === 1 ? 'topic' : 'story topics'));
-  return <Button type="button" size={compact ? 'icon' : 'default'} variant={following ? 'outline' : variant} className={compact ? 'entity-follow-button' : undefined} aria-label={accessibleLabel} aria-pressed={following} onClick={activate}>
-    {following ? <Check size={compact ? 13 : 16}/> : <Plus size={compact ? 13 : 16}/>}
-    {compact ? <span className="sr-only">{accessibleLabel}</span> : (following ? followingLabel : followLabel)}
-  </Button>;
+  return <>
+    <Button type="button" size={compact ? 'icon' : 'default'} variant={following ? 'outline' : variant} className={compact ? 'entity-follow-button' : undefined} aria-label={accessibleLabel} aria-pressed={following} onClick={activate}>
+      {following ? <Check size={compact ? 13 : 16}/> : <Plus size={compact ? 13 : 16}/>}
+      {compact ? <span className="sr-only">{accessibleLabel}</span> : (following ? followingLabel : followLabel)}
+    </Button>
+    <UpgradeDialog open={upgrade.open} onOpenChange={open => setUpgrade(current => ({ ...current, open }))} limit={upgrade.limit}/>
+  </>;
 }

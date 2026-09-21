@@ -18,7 +18,10 @@
     "seed:entities": "node --env-file=.env --import tsx scripts/seed-entities.ts",
     "cluster": "node --env-file=.env --import tsx scripts/cluster.ts",
     "recluster": "node --env-file=.env --import tsx scripts/recluster.ts",
-    "verify:phase2": "node --env-file=.env --import tsx scripts/verify-phase2.ts"
+    "verify:phase2": "node --env-file=.env --import tsx scripts/verify-phase2.ts",
+    "billing:setup": "node --env-file=.env --import tsx scripts/setup-stripe.ts",
+    "email:test": "node --env-file=.env --import tsx scripts/send-brief-emails.ts",
+    "email:preview": "node --env-file=.env --import tsx scripts/send-brief-preview.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.4",
@@ -30,7 +33,9 @@
     "next": "15.5.25",
     "radix-ui": "^1.6.7",
     "react": "19.1",
-    "react-dom": "19.1"
+    "react-dom": "19.1",
+    "resend": "^6.28.1",
+    "stripe": "^22.6.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

@@ -8,35 +8,18 @@ import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { getFollowingEntityIds } from '@/lib/reader-data';
 
-const display = Newsreader({
-  subsets: ['latin'],
-  variable: '--font-newsreader',
-  display: 'swap',
-});
-
-const body = IBM_Plex_Sans({
-  subsets: ['latin'],
-  variable: '--font-plex-sans',
-  display: 'swap',
-});
-
-const data = IBM_Plex_Mono({
-  subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-plex-mono',
-  display: 'swap',
-});
-
-const devanagari = Martel({
-  subsets: ['devanagari'],
-  weight: ['600', '700'],
-  variable: '--font-martel',
-  display: 'swap',
-});
+const display = Newsreader({ subsets: ['latin'], variable: '--font-newsreader', display: 'swap' });
+const body = IBM_Plex_Sans({ subsets: ['latin'], variable: '--font-plex-sans', display: 'swap' });
+const data = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex-mono', display: 'swap' });
+const devanagari = Martel({ subsets: ['devanagari'], weight: ['600', '700'], variable: '--font-martel', display: 'swap' });
 
 export const metadata: Metadata = {
-  title: 'Dअख़बार',
+  title: { default: 'Dअख़बार', template: '%s · Dअख़बार' },
   description: 'Evidence-led developer intelligence',
+  icons: {
+    icon: '/brand/dakhbar-reporter.png',
+    apple: '/brand/dakhbar-reporter.png',
+  },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

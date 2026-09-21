@@ -1,8 +1,9 @@
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
-import { Newspaper, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 import { getBriefNotificationCount } from '@/lib/reader-data';
+import { BrandMark } from './brand-mark';
 import { BriefNavLink } from './brief-nav-link';
 import { JoinUsButton } from './join-us-button';
 import { Wordmark } from './wordmark';
@@ -13,13 +14,14 @@ export async function SiteHeader() {
   const briefCount = userId ? await getBriefNotificationCount(userId) : 0;
   return <header className="site-header">
     <div className="site-nav">
-      <div className="nav-brand"><Newspaper size={24} aria-hidden="true"/><Wordmark/></div>
+      <div className="nav-brand"><Link href="/" aria-label="D Akhbar front page"><BrandMark size={44} priority/></Link><Wordmark/></div>
       <nav aria-label="Primary">
         <Link href="/">Today</Link>
         <Link href="/search">Archive</Link>
         {userId && <Link href="/for-you">Following</Link>}
         {userId && <BriefNavLink count={briefCount}/>}
         <Link href="/methodology">Methodology</Link>
+        <Link href="/pricing">Pricing</Link>
       </nav>
       <form action="/search" role="search" className="nav-search">
         <Search size={18} aria-hidden="true"/>

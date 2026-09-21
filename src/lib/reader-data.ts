@@ -1,6 +1,7 @@
 import type { Prisma } from '@prisma/client';
 import { db } from './db';
 import { briefSince, briefStoryWhere } from './brief';
+import { selectBriefStories } from './brief-selection';
 import { topicSlug } from './topic-slug';
 
 export const readerStoryInclude = {
@@ -42,14 +43,25 @@ export async function getBriefNotificationCount(userId: string, now = new Date()
   return entityIds.length ? db.story.count({ where: briefStoryWhere(entityIds, since) }) : 0;
 }
 
+export const prismaBriefSelectionStore = {
+  getFollowingEntityIds,
+  findStories(entityIds: string[], since: Date) {
+    return db.story.findMany({
+      where: briefStoryWhere(entityIds, since),
+      orderBy: [{ significance_score: 'desc' as const }, { updated_at: 'desc' as const }],
+      take: 30,
+      include: readerStoryInclude,
+    });
+  },
+};
+
+export function getBriefSelection(userId: string, since: Date) {
+  return selectBriefStories(prismaBriefSelectionStore, userId, since);
+}
+
 export async function getBrief(userId: string, now = new Date()) {
-  const { entityIds, since } = await getBriefWindow(userId, now);
-  const stories = entityIds.length ? await db.story.findMany({
-    where: briefStoryWhere(entityIds, since),
-    orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
-    take: 30,
-    include: readerStoryInclude,
-  }) : [];
+  const { since } = await getBriefWindow(userId, now);
+  const { entityIds, stories } = await getBriefSelection(userId, since);
   await db.userVisit.upsert({
     where: { user_id: userId },
     update: { last_seen_at: now },
@@ -83,9 +95,7 @@ export async function getPopularEntities(limit = 8) {
 }
 
 export const prismaFollowStore = {
-  async getFollowingEntityIds(userId: string) {
-    return getFollowingEntityIds(userId);
-  },
+  async getFollowingEntityIds(userId: string) { return getFollowingEntityIds(userId); },
   async followEntities(userId: string, entityIds: string[]) {
     if (!entityIds.length) return;
     await db.following.createMany({ data: entityIds.map(entity_id => ({ user_id: userId, entity_id })), skipDuplicates: true });

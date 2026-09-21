@@ -33,6 +33,13 @@ enum StoryStatus {
   confirmed
 }
 
+enum SubscriptionStatus {
+  free
+  active
+  canceled
+  past_due
+}
+
 model Source {
   id         String        @id @default(cuid())
   name       String        @unique
@@ -115,11 +122,19 @@ model StoryEntity {
 }
 
 model User {
-  id         String      @id
-  created_at DateTime    @default(now()) @db.Timestamptz(3)
-  updated_at DateTime    @updatedAt @db.Timestamptz(3)
-  following  Following[]
-  visit      UserVisit?
+  id                    String             @id
+  stripe_customer_id    String?            @unique
+  subscription_status   SubscriptionStatus @default(free)
+  email_brief_enabled   Boolean            @default(true)
+  created_at            DateTime           @default(now()) @db.Timestamptz(3)
+  updated_at            DateTime           @updatedAt @db.Timestamptz(3)
+  following             Following[]
+  visit                 UserVisit?
+}
+
+model WebhookEvent {
+  stripe_event_id String   @id
+  processed_at    DateTime @default(now()) @db.Timestamptz(3)
 }
 
 model Following {
