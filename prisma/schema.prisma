@@ -130,11 +130,32 @@ model User {
   updated_at            DateTime           @updatedAt @db.Timestamptz(3)
   following             Following[]
   visit                 UserVisit?
+  llm_calls             LlmCall[]
 }
 
 model WebhookEvent {
   stripe_event_id String   @id
   processed_at    DateTime @default(now()) @db.Timestamptz(3)
+}
+
+model LlmCall {
+  id                 String   @id @default(cuid())
+  user_id            String?
+  user               User?    @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  story_id           String?
+  input_hash         String?
+  provider           String
+  model              String
+  input_tokens       Int      @default(0)
+  output_tokens      Int      @default(0)
+  fallback_triggered Boolean  @default(false)
+  accepted           Boolean  @default(false)
+  output_text        String?  @db.Text
+  error_code         String?
+  created_at         DateTime @default(now()) @db.Timestamptz(3)
+
+  @@index([created_at, provider, model])
+  @@index([story_id, input_hash, model, accepted])
 }
 
 model Following {

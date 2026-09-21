@@ -20,12 +20,12 @@ function relativeAge(date: Date) {
   return Math.floor(hours / 24) + 'd ago';
 }
 
-export function StoryCard({ story, featured = false }: { story: StoryCardData; featured?: boolean }) {
+export function StoryCard({ story, featured = false, dekOverride }: { story: StoryCardData; featured?: boolean; dekOverride?: string }) {
   const primary = story.documents[0].raw_document;
   const documents = story.documents.map(item => item.raw_document);
   const evidence = documents.find(document => document.og_description) ?? primary;
   const image = documents.find(document => document.og_image_url)?.og_image_url;
-  const dek = storyDek(evidence);
+  const dek = dekOverride ? { kind: 'excerpt' as const, text: dekOverride } : storyDek(evidence);
   const sources = countIndependentSources(documents);
   const destination = storyDestination(story.id, documents);
   const titleLink = destination.external
@@ -39,7 +39,7 @@ export function StoryCard({ story, featured = false }: { story: StoryCardData; f
         <time className="data-type" dateTime={story.updated_at.toISOString()}>{relativeAge(story.updated_at)}</time>
       </div>
       <h3>{titleLink}</h3>
-      <p className={dek.kind === 'domain' ? 'domain-dek' : 'story-dek'}>{dek.kind === 'domain' ? 'via ' : ''}{dek.text}</p>
+      <p className={dekOverride ? 'story-dek generated-dek' : dek.kind === 'domain' ? 'domain-dek' : 'story-dek'}>{dek.kind === 'domain' ? 'via ' : ''}{dek.text}</p>
       {dek.kind!=='domain'&&<p className="card-source">From {publisherDomain(evidence.url)}</p>}
       <div className="story-card-footer">
         <div className="story-tags">{story.entities.slice(1).map(item => <EntityFollowControl key={item.entity_id} entity={{id:item.entity_id,name:item.entity.name}} returnTo={topicPath(item.entity)}/>)}</div>

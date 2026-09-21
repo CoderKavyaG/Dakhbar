@@ -8,7 +8,7 @@ export const readerStoryInclude = {
   entities: { include: { entity: true } },
   documents: {
     orderBy: [{ is_primary: 'desc' as const }, { created_at: 'asc' as const }],
-    include: { raw_document: { select: { url: true, content: true, og_description: true, og_image_url: true } } },
+    include: { raw_document: { select: { title: true, url: true, content: true, og_description: true, og_image_url: true, published_at: true } } },
   },
 } satisfies Prisma.StoryInclude;
 
