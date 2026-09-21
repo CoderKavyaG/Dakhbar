@@ -3,6 +3,8 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { auth } from '@clerk/nextjs/server';
 import { IBM_Plex_Mono, IBM_Plex_Sans, Martel, Newsreader } from 'next/font/google';
 import './globals.css';
+import { db } from '@/lib/db';
+import { SavedStoriesProvider } from '@/components/saved-stories-provider';
 import { FollowingProvider } from '@/components/following-provider';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
@@ -26,5 +28,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const fonts = [display.variable, body.variable, data.variable, devanagari.variable].join(' ');
   const { userId } = await auth();
   const followedEntityIds = userId ? await getFollowingEntityIds(userId) : [];
-  return <ClerkProvider><html lang="en" className={fonts}><body><FollowingProvider initialEntityIds={followedEntityIds}><SiteHeader/>{children}<SiteFooter/></FollowingProvider></body></html></ClerkProvider>;
+  const saved = userId ? await db.savedStory.findMany({where:{user_id:userId}}) : [];
+  return <ClerkProvider><html lang="en" className={fonts}><body><FollowingProvider initialEntityIds={followedEntityIds}><SavedStoriesProvider key={userId ?? 'anonymous'} initial={Object.fromEntries(saved.map(row=>[row.story_id,row.include_in_brief]))}><SiteHeader/>{children}<SiteFooter/></SavedStoriesProvider></FollowingProvider></body></html></ClerkProvider>;
 }

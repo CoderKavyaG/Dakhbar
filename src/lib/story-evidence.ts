@@ -57,9 +57,9 @@ export function countIndependentSources(documents: EvidenceDocument[]) {
 }
 
 export function storyDestination(storyId: string, documents: EvidenceDocument[]) {
-  const sourceCount = countIndependentSources(documents);
+  const reportCount = new Set(documents.map(document => document.url)).size;
   const original = documents[0]?.url;
-  return sourceCount < 2 && original
+  return reportCount < 2 && original
     ? { href: original, external: true as const }
     : { href: '/stories/' + storyId, external: false as const };
 }

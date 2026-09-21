@@ -1,4 +1,6 @@
 import { db } from './db';
+import { getOperationalHealth } from './operational-health';
+import { configuredModels, getModelHealth } from './llm/catalog';
 
 const FREE_DAILY_LIMITS: Record<string, number> = {
   'groq:llama-3.1-8b-instant': 14400,
@@ -16,11 +18,7 @@ export async function getAdminData(now = new Date()) {
     db.rawDocument.findMany({ take: 20, orderBy: [{ ingested_at: 'desc' }, { id: 'desc' }], include: { source: true } }),
     db.llmCall.groupBy({ by: ['provider', 'model'], where: { created_at: { gte: dayStart } }, _count: { _all: true }, _sum: { input_tokens: true, output_tokens: true } }),
   ]);
-  const configured = [
-    { provider: 'groq', model: process.env.GROQ_STANDARD_MODEL ?? 'llama-3.1-8b-instant' },
-    { provider: 'groq', model: process.env.GROQ_LEAD_MODEL ?? 'openai/gpt-oss-120b' },
-    ...(process.env.OPENROUTER_FREE_MODEL ? [{ provider: 'openrouter', model: process.env.OPENROUTER_FREE_MODEL }] : []),
-  ];
+  const configured = configuredModels().map(model => ({provider:model.name,model:model.model}));
   const keys = new Set([...configured, ...usage].map(row => `${row.provider}:${row.model}`));
   const llmQuota = [...keys].map(key => {
     const [provider, ...modelParts] = key.split(':');
@@ -29,5 +27,6 @@ export async function getAdminData(now = new Date()) {
     const limit = FREE_DAILY_LIMITS[key] ?? (provider === 'openrouter' ? FREE_DAILY_LIMITS['openrouter:free'] : null);
     return { provider, model, calls: row?._count._all ?? 0, inputTokens: row?._sum.input_tokens ?? 0, outputTokens: row?._sum.output_tokens ?? 0, limit };
   });
-  return { total, lastHour, last24Hours, items, llmQuota, dayStart };
+  const [health, models] = await Promise.all([getOperationalHealth(), getModelHealth()]);
+  return { total, lastHour, last24Hours, items, llmQuota, dayStart, health, models };
 }

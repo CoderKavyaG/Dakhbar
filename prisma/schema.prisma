@@ -90,6 +90,7 @@ model Story {
   related_stories        Story[]         @relation("RelatedStories")
   created_at             DateTime        @default(now()) @db.Timestamptz(3)
   updated_at             DateTime        @updatedAt @db.Timestamptz(3)
+  saved_by               SavedStory[]
   documents              StoryDocument[]
   entities               StoryEntity[]
 
@@ -131,6 +132,7 @@ model User {
   following             Following[]
   visit                 UserVisit?
   llm_calls             LlmCall[]
+  saved_stories         SavedStory[]
 }
 
 model WebhookEvent {
@@ -174,4 +176,15 @@ model UserVisit {
   user_id      String   @id
   last_seen_at DateTime @db.Timestamptz(3)
   user         User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+}
+
+model SavedStory {
+ user_id String
+ story_id String
+ include_in_brief Boolean @default(false)
+ saved_at DateTime @default(now()) @db.Timestamptz(3)
+ user User @relation(fields:[user_id],references:[id],onDelete:Cascade)
+ story Story @relation(fields:[story_id],references:[id],onDelete:Cascade)
+ @@id([user_id,story_id])
+ @@index([user_id,include_in_brief])
 }

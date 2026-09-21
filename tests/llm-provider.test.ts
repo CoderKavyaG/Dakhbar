@@ -19,3 +19,10 @@ test('OpenAI-compatible provider falls back after primary 429', async () => {
   assert.deepEqual(calls, ['https://groq.test/v1/chat/completions', 'https://router.test/v1/chat/completions']);
   assert.equal(result.attempts[0].errorCode, '429');
 });
+
+test('a malformed provider response retains the attempted call for audit logging', async () => {
+ await assert.rejects(completeWithFallback({messages:[{role:'user',content:'facts'}],primary,fetchImpl:(async()=>new Response('not json')) as typeof fetch}), (error:unknown) => {
+  assert.equal((error as Error & {attempts:{errorCode:string}[]}).attempts[0].errorCode,'invalid_response');
+  return true;
+ });
+});

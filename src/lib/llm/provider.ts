@@ -7,31 +7,33 @@ type OpenAiResponse = { choices?: { message?: { content?: string } }[]; usage?: 
 
 function endpoint(baseUrl: string) { return baseUrl.replace(/\/$/, '') + '/chat/completions'; }
 
-async function request(config: ProviderConfig, messages: ChatMessage[], fetchImpl: typeof fetch, fallbackTriggered: boolean): Promise<LlmAttempt> {
+async function request(config: ProviderConfig, messages: ChatMessage[], fetchImpl: typeof fetch, fallbackTriggered: boolean, maxTokens?: number): Promise<LlmAttempt> {
   let response: Response;
   try {
     response = await fetchImpl(endpoint(config.baseUrl), {
       method: 'POST',
+      signal: AbortSignal.timeout(20000),
       headers: { 'content-type': 'application/json', authorization: `Bearer ${config.apiKey}` },
-      body: JSON.stringify({ model: config.model, messages, temperature: 0.2, max_completion_tokens: config.model.includes('gpt-oss') ? 600 : 280, ...(config.model.includes('gpt-oss') ? { reasoning_effort: 'low' } : {}) }),
+      body: JSON.stringify({ model: config.model, messages, temperature: 0.2, max_completion_tokens: maxTokens ?? (config.model.includes('gpt-oss') ? 600 : 280), ...(config.model.includes('gpt-oss') ? { reasoning_effort: 'low' } : {}) }),
     });
   } catch {
     return { provider: config.name, model: config.model, inputTokens: 0, outputTokens: 0, fallbackTriggered, errorCode: 'network_error' };
   }
   if (!response.ok) return { provider: config.name, model: config.model, inputTokens: 0, outputTokens: 0, fallbackTriggered, errorCode: String(response.status) };
-  const payload = await response.json() as OpenAiResponse;
+  let payload: OpenAiResponse;
+  try { payload = await response.json() as OpenAiResponse; } catch { return {provider: config.name, model: config.model, inputTokens: 0, outputTokens: 0, fallbackTriggered, errorCode: 'invalid_response'}; }
   const content = payload.choices?.[0]?.message?.content?.trim();
   if (!content) return { provider: config.name, model: config.model, inputTokens: payload.usage?.prompt_tokens ?? 0, outputTokens: payload.usage?.completion_tokens ?? 0, fallbackTriggered, errorCode: 'empty_response' };
   return { provider: config.name, model: config.model, inputTokens: payload.usage?.prompt_tokens ?? 0, outputTokens: payload.usage?.completion_tokens ?? 0, fallbackTriggered, content };
 }
 
-export async function completeWithFallback(input: { messages: ChatMessage[]; primary: ProviderConfig; fallback?: ProviderConfig; fetchImpl?: typeof fetch }): Promise<CompletionResult> {
+export async function completeWithFallback(input: { messages: ChatMessage[]; primary: ProviderConfig; fallback?: ProviderConfig; fetchImpl?: typeof fetch; maxTokens?: number }): Promise<CompletionResult> {
   const fetchImpl = input.fetchImpl ?? fetch;
-  const primary = await request(input.primary, input.messages, fetchImpl, false);
+  const primary = await request(input.primary, input.messages, fetchImpl, false, input.maxTokens);
   const attempts = [primary];
   if (primary.content) return { ...primary, content: primary.content, attempts };
   if (!input.fallback || !['403', '404', '429', 'network_error', '500', '502', '503', '504'].includes(primary.errorCode ?? '')) throw Object.assign(new Error(`LLM primary failed: ${primary.errorCode}`), { attempts });
-  const fallback = await request(input.fallback, input.messages, fetchImpl, true);
+  const fallback = await request(input.fallback, input.messages, fetchImpl, true, input.maxTokens);
   attempts.push(fallback);
   if (!fallback.content) throw Object.assign(new Error(`LLM fallback failed: ${fallback.errorCode}`), { attempts });
   return { ...fallback, content: fallback.content, attempts };
@@ -44,7 +46,7 @@ export function providerConfig(tier: 'lead' | 'standard') {
     name: 'groq',
     baseUrl: process.env.GROQ_BASE_URL ?? 'https://api.groq.com/openai/v1',
     apiKey: primaryKey,
-    model: tier === 'lead' ? (process.env.GROQ_LEAD_MODEL ?? 'openai/gpt-oss-120b') : (process.env.GROQ_STANDARD_MODEL ?? 'llama-3.1-8b-instant'),
+    model: tier === 'lead' ? (process.env.GROQ_LEAD_MODEL ?? '') : (process.env.GROQ_STANDARD_MODEL ?? ''),
   };
   const fallbackKey = process.env.OPENROUTER_API_KEY ?? '';
   const fallbackModel = process.env.OPENROUTER_FREE_MODEL ?? '';

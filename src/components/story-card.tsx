@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { SaveStory } from './save-story';
+import { TopicIllustration } from './topic-illustration';
 import { EntityFollowControl } from './entity-follow-control';
 import { Badge } from './ui/badge';
 import { StoryImage } from '@/components/story-image';
@@ -32,7 +34,7 @@ export function StoryCard({ story, featured = false, dekOverride }: { story: Sto
     ? <a href={destination.href} target="_blank" rel="noopener noreferrer">{story.title}<span className="sr-only"> (opens original source)</span></a>
     : <Link href={destination.href}>{story.title}</Link>;
   return <article className={featured ? 'story-card story-card-featured' : 'story-card'}>
-    <StoryImage src={image} alt="" className="story-card-image" />
+    <StoryImage src={image} alt="" className="story-card-image" fallback={<TopicIllustration topic={story.entities[0]?.entity.name ?? "Developer dispatch"} seed={story.id}/>}/>
     <div className="story-card-body">
       <div className="story-card-meta">
         {story.entities[0] && <EntityFollowControl entity={{id:story.entities[0].entity_id,name:story.entities[0].entity.name}} returnTo={topicPath(story.entities[0].entity)}/>}
@@ -43,8 +45,9 @@ export function StoryCard({ story, featured = false, dekOverride }: { story: Sto
       {dek.kind!=='domain'&&<p className="card-source">From {publisherDomain(evidence.url)}</p>}
       <div className="story-card-footer">
         <div className="story-tags">{story.entities.slice(1).map(item => <EntityFollowControl key={item.entity_id} entity={{id:item.entity_id,name:item.entity.name}} returnTo={topicPath(item.entity)}/>)}</div>
-        {sources >= 2 && <Badge>{sources} sources</Badge>}
+        {new Set(documents.map(document=>document.url)).size >= 2 && <Badge>{sources >= 2 ? sources+' sources' : new Set(documents.map(document=>document.url)).size+' reports'}</Badge>}
       </div>
+      <SaveStory id={story.id}/>
     </div>
   </article>;
 }

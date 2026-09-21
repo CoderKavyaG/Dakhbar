@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { db } from './db';
+import { getModelHealth } from './llm/catalog';
 import { countIndependentSources, publisherDomain, storyDek } from './story-evidence';
 import { completeWithFallback, providerConfig, type LlmAttempt } from './llm/provider';
 
@@ -82,6 +83,9 @@ export async function generateBriefStoryCopy(story: BriefGenerationStory, userId
   const inputHash = createHash('sha256').update('brief-grounding-v3:' + JSON.stringify(facts)).digest('hex');
   const cached = await db.llmCall.findFirst({ where: { story_id: story.id, input_hash: inputHash, model: { in: [config.primary.model, ...(config.fallback ? [config.fallback.model] : [])] }, accepted: true, output_text: { not: null } }, orderBy: { created_at: 'desc' } });
   if (cached?.output_text) return { text: cached.output_text, generated: true as const, cached: true };
+  const health = await getModelHealth();
+  if (!health.some(row => row.provider === config.primary.name && row.model === config.primary.model && row.available)) return {text: fallbackCopy(story), generated: false as const, reason: 'model_unavailable'};
+  if (config.fallback && !health.some(row => row.provider === config.fallback?.name && row.model === config.fallback?.model && row.available)) config.fallback = undefined;
   try {
     const result = await completeWithFallback({ messages: messages(facts, lead), ...config });
     const decision = groundedOrFallback(result.content, facts, fallbackCopy(story));

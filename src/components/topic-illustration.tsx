@@ -1,0 +1,4 @@
+export function TopicIllustration({topic,seed}:{topic:string;seed:string}){
+ const variant=[...seed].reduce((n,c)=>n+c.charCodeAt(0),0)%3;
+ return <div className={'topic-illustration topic-illustration-'+variant} aria-label={'Editorial illustration for '+topic}><svg viewBox="0 0 480 200" aria-hidden="true"><g fill="none" stroke="currentColor" strokeWidth="2">{variant===0?<><circle cx="330" cy="100" r="70"/><circle cx="330" cy="100" r="43"/><path d="M70 100h330M330 20v160M130 50h60v100h-60z"/><circle cx="220" cy="100" r="7" fill="currentColor"/></>:variant===1?<><path d="m260 30 120 40v90l-120-40zm0 0-110 50v90l110-50M150 80l110 40 120-50M260 120v65"/><path d="M70 55h55M55 80h70M75 105h50"/></>:<><path d="M80 155 140 105l55 20 70-80 55 50 70-60"/><rect x="75" y="45" width="90" height="70" rx="8"/><path d="m100 67-12 13 12 13m38-26 12 13-12 13M250 150h140"/></>}</g></svg><span>{topic}</span><small>From the developer desk</small></div>;
+}

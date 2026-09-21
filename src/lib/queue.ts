@@ -20,7 +20,7 @@ export function redisConnection() {
   };
 }
 
-export function createQueue() { return new Queue(QUEUE_NAME, { connection: redisConnection() }); }
+export function createQueue(failFast = false) { return new Queue(QUEUE_NAME, { connection: { ...redisConnection(), ...(failFast ? { maxRetriesPerRequest: 1, connectTimeout: 2000, retryStrategy: () => null } : {}) } }); }
 
 export async function scheduleIngestion(queue: Queue) {
   return queue.upsertJobScheduler(SCHEDULE_ID, { every: INTERVAL_MS }, {
