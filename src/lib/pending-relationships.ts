@@ -23,5 +23,5 @@ export function buildPendingRelationships(stories: PendingReviewStory[]) {
       similarity: story.documents[0]?.similarity_score ?? 0,
       sharedEntities: story.entities.filter(item => candidateEntityIds.has(item.entity_id)).map(item => item.entity.name),
     }];
-  });
+  }).sort((left, right) => right.similarity - left.similarity || left.storyTitle.localeCompare(right.storyTitle));
 }

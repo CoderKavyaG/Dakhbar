@@ -36,3 +36,16 @@ test('bulk review rows pair both headlines with shared evidence and score', () =
     sharedEntities: ['OpenAI'],
   }]);
 });
+
+test('bulk review rows are sorted by similarity descending', () => {
+  const lowerScore: PendingReviewStory = {
+    ...stories[0],
+    id: 'lower-story',
+    title: 'Lower similarity candidate',
+    documents: [{ similarity_score: 0.72 }],
+  };
+  assert.deepEqual(
+    buildPendingRelationships([lowerScore, stories[0]]).map(item => item.similarity),
+    [0.781, 0.72],
+  );
+});
