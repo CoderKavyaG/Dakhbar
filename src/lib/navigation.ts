@@ -4,3 +4,8 @@ export function navigationItems(signedIn:boolean):NavItem[]{return [
  ...(signedIn?[{href:'/for-you',label:'Following',icon:'heart'},{href:'/brief',label:'Brief',icon:'book'},{href:'/saved',label:'Saved',icon:'bookmark'}] as NavItem[]:[]),
  {href:'/methodology',label:'Methodology',icon:'compass'},{href:'/pricing',label:'Desk',icon:'gem'},
 ];}
+export function mobileNavigationItems(signedIn: boolean) {
+ const items = navigationItems(signedIn);
+ const primary = items.filter(item => ['/', '/search', '/brief', '/saved'].includes(item.href));
+ return { primary, more: items.filter(item => !primary.includes(item)) };
+}
