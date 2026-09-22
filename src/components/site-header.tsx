@@ -5,7 +5,7 @@ import { auth } from '@clerk/nextjs/server';
 import { Search } from 'lucide-react';
 import { getBriefNotificationCount } from '@/lib/reader-data';
 import { BrandMark } from './brand-mark';
-import { BriefNavLink } from './brief-nav-link';
+import { PrimaryNav } from './primary-nav';
 import { JoinUsButton } from './join-us-button';
 import { Wordmark } from './wordmark';
 import { Button } from './ui/button';
@@ -17,15 +17,7 @@ export async function SiteHeader() {
   return <header className="site-header">
     <div className="site-nav">
       <div className="nav-brand"><Link href="/" aria-label="D Akhbar front page"><BrandMark size={44} priority/></Link><Wordmark/></div>
-      <nav aria-label="Primary">
-        <Link href="/">Today</Link>
-        <Link href="/search">Archive</Link>
-        {userId && <Link href="/for-you">Following</Link>}
-        {userId && <BriefNavLink count={briefCount}/>}
-        {userId && <Link href="/saved">Saved</Link>}
-        <Link href="/methodology">Methodology</Link>
-        <Link href="/pricing">Pricing</Link>
-      </nav>
+      <PrimaryNav signedIn={Boolean(userId)} briefCount={briefCount}/>
       <form action="/search" role="search" className="nav-search">
         <Search size={18} aria-hidden="true"/>
         <label className="sr-only" htmlFor="nav-query">Search the archive</label>

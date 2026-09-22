@@ -5,7 +5,7 @@ import { readFile, stat } from 'node:fs/promises';
 test('pricing sells only implemented Phase 4 capabilities', async () => {
   const pricing = await readFile('src/app/pricing/page.tsx', 'utf8');
   assert.match(pricing, /Unlimited Following/);
-  assert.match(pricing, /Morning Brief by email/);
+  assert.match(pricing, /Morning source-linked email digest/);
   assert.doesNotMatch(pricing, /Developer Pulse|Research Mode|personalized Edition/);
   assert.match(pricing, /Manage subscription/);
   assert.match(pricing, /sandbox only/);

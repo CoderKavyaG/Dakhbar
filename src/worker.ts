@@ -1,3 +1,4 @@
+import { ingestAdditionalSource, type AdditionalSource } from './lib/ingestion/run';
 import { Worker } from 'bullmq';
 import { db } from './lib/db';
 import { processUnclustered } from './lib/clustering/service';
@@ -6,7 +7,7 @@ import { ingestHn } from './lib/ingestion/hn';
 import { prismaStore } from './lib/ingestion/store';
 import { getModelHealth } from './lib/llm/catalog';
 import { INGESTION_SUCCESS_KEY, WORKER_HEARTBEAT_KEY } from './lib/operational-health';
-import { createQueue, QUEUE_NAME, redisConnection, scheduleDailyBriefEmail, scheduleIngestion } from './lib/queue';
+import { createQueue, QUEUE_NAME, redisConnection, scheduleDailyBriefEmail, scheduleIngestion, scheduleAdditionalSources } from './lib/queue';
 
 async function main() {
   const queue = createQueue();
@@ -24,6 +25,20 @@ async function main() {
       if (delivery.failed) throw new Error(`${delivery.failed} Brief emails failed; retrying with idempotency keys`);
       return delivery;
     }
+    if (['ingest-github','ingest-devto','ingest-rss'].includes(job.name)) {
+      const source=job.name.slice(7) as AdditionalSource;
+      const cooldownKey='dakhbar:ingestion:retry:'+source;
+      const retryAt=await redis.get(cooldownKey);
+      if(retryAt && Date.parse(retryAt)>Date.now()) return {deferred:true,retryAt};
+      const ingestion=await ingestAdditionalSource(source);
+      if(ingestion.retryAt) await redis.set(cooldownKey,ingestion.retryAt,{EX:Math.max(60,Math.ceil((Date.parse(ingestion.retryAt)-Date.now())/1000))});
+      console.log(JSON.stringify({event:source+'_ingestion',startedAt,...ingestion}));
+      if(!ingestion.failed&&!ingestion.deferred) await redis.set('dakhbar:health:'+source+':last-success',new Date().toISOString());
+      const clustering=await processUnclustered();
+      console.log(JSON.stringify({event:'story_clustering',source,startedAt,...clustering}));
+      return {ingestion,clustering};
+    }
+    if(job.name!=='ingest-top-stories') throw new Error('Unknown job: '+job.name);
     const ingestion = await ingestHn(prismaStore);
     console.log(JSON.stringify({ event: 'hn_ingestion', startedAt, ...ingestion }));
     if (ingestion.failed) throw new Error(ingestion.failed + ' HN items failed; retrying idempotently');
@@ -49,8 +64,8 @@ async function main() {
   process.once('SIGINT', () => void close());
   process.once('SIGTERM', () => void close());
   try {
-    await Promise.all([scheduleIngestion(queue), scheduleDailyBriefEmail(queue)]);
-    console.log('Worker ready: HN every 15 minutes; Brief email daily at 08:00 Asia/Kolkata.');
+    await Promise.all([scheduleIngestion(queue), scheduleDailyBriefEmail(queue), scheduleAdditionalSources(queue)]);
+    console.log('Worker ready: HN every 15 minutes; Dev.to every 30; GitHub and RSS hourly; Brief email daily at 08:00 Asia/Kolkata.');
   } catch (error) { await close(); throw error; }
 }
 

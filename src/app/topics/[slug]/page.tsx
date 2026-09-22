@@ -1,3 +1,4 @@
+import { ArticleGrid } from '@/components/article-grid';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { StoryCard } from '@/components/story-card';
@@ -20,7 +21,7 @@ export default async function TopicPage({ params }: { params: Promise<{ slug: st
     </section>
     <section className="topic-stories">
       <header className="section-heading"><div><span className="section-note">Latest coverage</span><h2>Stories about {topic.entity.name}</h2></div><Badge>{topic.storyCount} {topic.storyCount === 1 ? 'story' : 'stories'}</Badge></header>
-      <div className="search-story-grid">{topic.stories.map(story => <StoryCard key={story.id} story={story}/>)}</div>
+      <ArticleGrid className="article-grid-results">{topic.stories.map(story => <StoryCard key={story.id} story={story}/>)}</ArticleGrid>
     </section>
   </main>;
 }

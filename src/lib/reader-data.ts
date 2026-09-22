@@ -1,3 +1,5 @@
+import { createQueue } from './queue';
+import { reusableBrief, type BriefSnapshot } from './brief-snapshot';
 import type { Prisma } from '@prisma/client';
 import { db } from './db';
 import { briefSince, briefStoryWhere } from './brief';
@@ -62,12 +64,25 @@ export function getBriefSelection(userId: string, since: Date) {
 export async function getBrief(userId: string, now = new Date()) {
   const { since } = await getBriefWindow(userId, now);
   const { entityIds, stories } = await getBriefSelection(userId, since);
-  await db.userVisit.upsert({
-    where: { user_id: userId },
-    update: { last_seen_at: now },
-    create: { user_id: userId, last_seen_at: now },
-  });
-  return { entityIds, stories, since, visitedAt: now };
+  const queue = createQueue(true);
+  queue.on('error',()=>{});
+  try {
+    const redis = await queue.client;
+    const key = 'dakhbar:reader-brief:' + userId;
+    if (stories.length) {
+      await redis.set(key, JSON.stringify({entityIds,storyIds:stories.map(s=>s.id),since:since.toISOString(),createdAt:now.toISOString()}),{EX:86400});
+    } else {
+      const raw = await redis.get(key);
+      const snapshot:BriefSnapshot|null = raw ? JSON.parse(raw) : null;
+      if (reusableBrief(snapshot,entityIds,now) && snapshot) {
+        const prior = await db.story.findMany({where:{id:{in:snapshot.storyIds},entities:{some:{entity_id:{in:entityIds}}}},include:readerStoryInclude});
+        prior.sort((a,b)=>snapshot.storyIds.indexOf(a.id)-snapshot.storyIds.indexOf(b.id));
+        if (prior.length) return {entityIds,stories:prior,since:new Date(snapshot.since),visitedAt:now,revisited:true};
+      }
+    }
+  } catch { /* A cache outage never blocks the deterministic Brief. */ }
+  finally { await queue.close(); }
+  return { entityIds, stories, since, visitedAt: now, revisited:false };
 }
 
 export async function getTopicBySlug(slug: string) {

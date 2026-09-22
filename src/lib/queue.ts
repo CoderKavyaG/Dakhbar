@@ -35,3 +35,9 @@ export async function scheduleDailyBriefEmail(queue: Queue) {
     opts: { attempts: 3, backoff: { type: 'exponential', delay: 30000 }, removeOnComplete: { count: 30 }, removeOnFail: { count: 100 } },
   });
 }
+
+export async function scheduleAdditionalSources(queue: Queue) {
+  for (const [source,minutes] of [['github',60],['devto',30],['rss',60]] as const) {
+    await queue.upsertJobScheduler(`${source}-scheduled`,{every:minutes*60000},{name:`ingest-${source}`,opts:{attempts:3,backoff:{type:'exponential',delay:60000},removeOnComplete:{count:100},removeOnFail:{count:100}}});
+  }
+}

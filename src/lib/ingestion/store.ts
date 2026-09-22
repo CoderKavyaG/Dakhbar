@@ -23,3 +23,9 @@ export const prismaStore: IngestionStore = {
     return result.count === 1;
   },
 };
+
+export function sourceStore(config: {name:string;type:'github'|'rss';base_url:string}): IngestionStore {
+  return {...prismaStore, async ensureSource() {
+    return (await db.source.upsert({where:{name:config.name},update:{base_url:config.base_url},create:config})).id;
+  }};
+}
