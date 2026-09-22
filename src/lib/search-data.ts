@@ -1,12 +1,9 @@
+import { Prisma } from '@prisma/client';
 import { db } from './db';
+import { extractEntityIds } from './clustering/entities';
+import { createEmbedding, toVectorLiteral } from './clustering/embedding';
+import { fuseRankedStoryDocuments, planSearchQuery, type RankedEvidenceDocument, type SearchIntent } from './retrieval';
 
-type SearchResult = {
-  id: string;
-  title: string;
-  significance_score: number;
-  updated_at: Date;
-  score: number;
-};
 
 const storyInclude = {
   entities: { include: { entity: true } },
@@ -19,64 +16,75 @@ const storyInclude = {
 export async function searchStories(query: string) {
   const q = query.trim().slice(0, 200);
   if (!q) return { intent: null, entityMatches: [], stories: [] };
-  const entityMatches = await db.$queryRaw<{ id: string; name: string; type: string; score: number }[]>`
+  const dictionary = await db.entity.findMany({ select: { id: true, name: true, aliases: true, type: true } });
+  const plan = planSearchQuery(q, dictionary, new Date());
+  const exactIds = extractEntityIds(q, null, dictionary);
+  const fuzzyMatches = await db.$queryRaw<{ id: string; name: string; type: string; score: number }[]>`
     SELECT e.id, e.name, e.type::text,
-      GREATEST(
-        similarity(e.name, ${q}),
-        COALESCE((SELECT MAX(similarity(alias, ${q})) FROM unnest(e.aliases) AS alias), 0)
-      )::float8 AS score
+      GREATEST(similarity(e.name, ${q}), COALESCE((SELECT MAX(similarity(alias, ${q})) FROM unnest(e.aliases) AS alias), 0))::float8 AS score
     FROM "Entity" e
     WHERE similarity(e.name, ${q}) > 0.2
        OR EXISTS (SELECT 1 FROM unnest(e.aliases) AS alias WHERE similarity(alias, ${q}) > 0.2)
     ORDER BY score DESC, e.name ASC
     LIMIT 5
   `;
-  const isNavigational = Boolean(entityMatches[0] && entityMatches[0].score >= 0.35);
-  if (isNavigational) {
+  const exactMatches = dictionary.filter(entity => exactIds.includes(entity.id)).map(entity => ({ id: entity.id, name: entity.name, type: String(entity.type), score: 1 }));
+  const entityMatches = exactMatches.length ? exactMatches : fuzzyMatches;
+  const fuzzyNavigational = !exactMatches.length && fuzzyMatches[0]?.score >= 0.35;
+  const intent: SearchIntent = fuzzyNavigational && plan.intent === 'informational' ? 'navigational' : plan.intent;
+
+  if (intent === 'navigational') {
+    const entityIds = exactMatches.length ? exactMatches.map(entity => entity.id) : fuzzyMatches[0] ? [fuzzyMatches[0].id] : [];
     const stories = await db.story.findMany({
-      where: { entities: { some: { entity_id: entityMatches[0].id } } },
+      where: { entities: { some: { entity_id: { in: entityIds } } } },
       orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
       take: 30,
       include: storyInclude,
     });
-    return {
-      intent: 'navigational' as const,
-      entityMatches,
-      stories,
-    };
+    return { intent, entityMatches, stories };
   }
-  const ranked = await db.$queryRaw<SearchResult[]>`
-    WITH story_text AS (
-      SELECT s.id, s.title, s.significance_score, s.updated_at,
-        setweight(to_tsvector('english', s.title), 'A') ||
-        setweight(to_tsvector('english', COALESCE(string_agg(rd.title || ' ' || COALESCE(rd.content, ''), ' '), '')), 'B') AS document
-      FROM "Story" s
-      JOIN "StoryDocument" sd ON sd.story_id = s.id
-      JOIN "RawDocument" rd ON rd.id = sd.raw_document_id
-      GROUP BY s.id
-    ), ranked AS (
-      SELECT id, title, significance_score, updated_at,
-        ts_rank_cd(document, websearch_to_tsquery('english', ${q}))::float8 AS lexical_score
-      FROM story_text
-      WHERE document @@ websearch_to_tsquery('english', ${q})
-    )
-    SELECT id, title, significance_score, updated_at,
-      (lexical_score * 0.85 + EXP(-EXTRACT(EPOCH FROM (NOW() - updated_at)) / 259200.0) * 0.15)::float8 AS score
-    FROM ranked
-    ORDER BY score DESC, significance_score DESC
-    LIMIT 50
+
+  const lexicalQuery = plan.retrievalQuery;
+  const queryVector = toVectorLiteral(createEmbedding(lexicalQuery));
+  const entityFilter = plan.entityIds.length
+    ? Prisma.sql`AND EXISTS (SELECT 1 FROM "StoryEntity" se WHERE se.story_id = d.story_id AND se.entity_id IN (${Prisma.join(plan.entityIds)}))`
+    : Prisma.empty;
+  const dateFilter = plan.temporal
+    ? Prisma.sql`AND d.published_at >= ${plan.temporal.start} AND d.published_at <= ${plan.temporal.end}`
+    : Prisma.empty;
+  const documents = Prisma.sql`
+    SELECT rd.id AS document_id, sd.story_id, rd.published_at, rd.embedding,
+      (setweight(to_tsvector('english', COALESCE(rd.title, '')), 'A') ||
+       setweight(to_tsvector('english', COALESCE(rd.content, rd.og_description, '')), 'B')) AS search_vector
+    FROM "RawDocument" rd JOIN "StoryDocument" sd ON sd.raw_document_id = rd.id
   `;
-  const hydrated = await db.story.findMany({
-    where: { id: { in: ranked.map(story => story.id) } },
-    include: storyInclude,
-  });
+  const [lexical, vector] = await Promise.all([
+    db.$queryRaw<RankedEvidenceDocument[]>(Prisma.sql`
+      WITH d AS (${documents})
+      SELECT d.document_id, d.story_id,
+        row_number() OVER (ORDER BY ts_rank_cd(d.search_vector, websearch_to_tsquery('english', ${lexicalQuery})) DESC, d.published_at DESC)::int AS position
+      FROM d
+      WHERE d.search_vector @@ websearch_to_tsquery('english', ${lexicalQuery}) ${dateFilter} ${entityFilter}
+      ORDER BY ts_rank_cd(d.search_vector, websearch_to_tsquery('english', ${lexicalQuery})) DESC, d.published_at DESC
+      LIMIT 100
+    `),
+    db.$queryRaw<RankedEvidenceDocument[]>(Prisma.sql`
+      WITH d AS (${documents})
+      SELECT d.document_id, d.story_id,
+        row_number() OVER (ORDER BY d.embedding <=> ${queryVector}::vector)::int AS position
+      FROM d
+      WHERE d.embedding IS NOT NULL ${dateFilter} ${entityFilter}
+      ORDER BY d.embedding <=> ${queryVector}::vector
+      LIMIT 100
+    `),
+  ]);
+  const ranked = fuseRankedStoryDocuments(lexical, vector);
+  const hydrated = await db.story.findMany({ where: { id: { in: ranked.map(story => story.id) } }, include: storyInclude });
   const byId = new Map(hydrated.map(story => [story.id, story]));
   return {
-    intent: 'informational' as const,
+    intent,
     entityMatches,
-    stories: ranked.flatMap(story => {
-      const detail = byId.get(story.id);
-      return detail ? [detail] : [];
-    }),
+    temporal: plan.temporal?.label ?? null,
+    stories: ranked.flatMap(story => { const detail = byId.get(story.id); return detail ? [detail] : []; }),
   };
 }

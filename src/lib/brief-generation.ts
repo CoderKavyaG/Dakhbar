@@ -38,13 +38,19 @@ export function buildGroundedFacts(story: BriefGenerationStory): GroundedStoryFa
 }
 
 const NAME_STOPWORDS = new Set(['A', 'An', 'The', 'This', 'That', 'These', 'Those', 'First', 'Later', 'Meanwhile', 'Reported', 'Reporting', 'Sources', 'Source']);
-export function verifyGroundedCopy(text: string, facts: GroundedStoryFacts) {
-  if (/\b(significance|ranking|score)\b/i.test(text) || /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(text) || text.includes(String(facts.significance))) return false;
-  const input = JSON.stringify(facts).toLowerCase();
-  const numbers = text.match(/\b\d+(?:\.\d+)?\b/g) ?? [];
+export function verifyGroundedText(text: string, evidence: string) {
+  if (/\b(significance|ranking|score)\b/i.test(text) || /\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(text)) return false;
+  const input = evidence.toLowerCase();
+  const withoutCitations = text.replace(/\[\d+\]/g, ' ');
+  const numbers = withoutCitations.match(/\b\d+(?:\.\d+)?\b/g) ?? [];
   if (numbers.some(value => !input.includes(value.toLowerCase()))) return false;
-  const names = text.match(/\b[A-Z](?:[A-Za-z0-9+#-]|\.(?=[A-Za-z]))*(?:\s+[A-Z](?:[A-Za-z0-9+#-]|\.(?=[A-Za-z]))*)*/g) ?? [];
+  const names = withoutCitations.match(/\b[A-Z](?:[A-Za-z0-9+#-]|\.(?=[A-Za-z]))*(?:\s+[A-Z](?:[A-Za-z0-9+#-]|\.(?=[A-Za-z]))*)*/g) ?? [];
   return names.every(name => NAME_STOPWORDS.has(name) || input.includes(name.toLowerCase()));
+}
+
+export function verifyGroundedCopy(text: string, facts: GroundedStoryFacts) {
+  if (text.includes(String(facts.significance))) return false;
+  return verifyGroundedText(text, JSON.stringify(facts));
 }
 
 export function groundedOrFallback(candidate: string, facts: GroundedStoryFacts, fallback: string) {
