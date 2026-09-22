@@ -1,5 +1,5 @@
 import { db } from './db';
-import { getOperationalHealth } from './operational-health';
+import { getOperationalHealth, getPulseSnapshotHealth } from './operational-health';
 import { configuredModels, getModelHealth } from './llm/catalog';
 
 const FREE_DAILY_LIMITS: Record<string, number> = {
@@ -27,6 +27,6 @@ export async function getAdminData(now = new Date()) {
     const limit = FREE_DAILY_LIMITS[key] ?? (provider === 'openrouter' ? FREE_DAILY_LIMITS['openrouter:free'] : null);
     return { provider, model, calls: row?._count._all ?? 0, inputTokens: row?._sum.input_tokens ?? 0, outputTokens: row?._sum.output_tokens ?? 0, limit };
   });
-  const [health, models] = await Promise.all([getOperationalHealth(), getModelHealth()]);
-  return { total, lastHour, last24Hours, items, llmQuota, dayStart, health, models };
+  const [health, models, pulse] = await Promise.all([getOperationalHealth(), getModelHealth(), getPulseSnapshotHealth(now)]);
+  return { total, lastHour, last24Hours, items, llmQuota, dayStart, health, models, pulse };
 }

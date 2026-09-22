@@ -6,6 +6,8 @@ import { EntityFollowControl } from '@/components/entity-follow-control';
 import { FollowToggle } from '@/components/follow-toggle';
 import { StoryCard } from '@/components/story-card';
 import { TodayEdition } from '@/components/today-edition';
+import { DeveloperPulse } from '@/components/developer-pulse';
+import { getDeveloperPulse } from '@/lib/pulse';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { getFrontPageStories } from '@/lib/front-page';
@@ -13,11 +15,13 @@ import { countIndependentSources, storyDek, storyDestination } from '@/lib/story
 import { topicPath } from '@/lib/topic-slug';
 export const dynamic='force-dynamic';
 export default async function FrontPage(){
- const stories=await getFrontPageStories();const [lead,...rest]=stories;
+ const [stories,pulse]=await Promise.all([getFrontPageStories(),getDeveloperPulse()]);const [lead,...rest]=stories;
  const date=new Intl.DateTimeFormat('en-IN',{weekday:'long',day:'numeric',month:'long',year:'numeric',timeZone:'Asia/Kolkata'}).format(new Date());
  if(!lead)return <main className="paper-shell"><section className="empty-edition"><h1>The next edition is taking shape.</h1><p>Browse the archive while new stories arrive.</p><Link href="/search">Read the archive →</Link></section></main>;
  const documents=lead.documents.map(m=>m.raw_document);const destination=storyDestination(lead.id,documents);const evidence=documents.find(d=>d.og_description)??documents[0];const dek=storyDek(evidence,360);const count=countIndependentSources(documents);
  return <main className="paper-shell"><EditionWelcome/><FreshEdition/><div className="edition-intro"><p>{date}</p><Badge>{stories.length} selected stories</Badge></div><section className="lead-stage"><article className="lead-copy"><div className="lead-meta">{lead.entities.slice(0,3).map(e=><EntityFollowControl key={e.entity_id} entity={{id:e.entity_id,name:e.entity.name}} returnTo={topicPath(e.entity)}/>)}</div><h1><a href={destination.href}>{lead.title}</a></h1><p className="lead-dek">{dek.kind==='domain'?'Reporting from ':''}{dek.text}</p><div className="lead-actions"><FollowToggle entityIds={lead.entities.map(e=>e.entity_id)} returnTo="/" followLabel="Follow the story" followingLabel="Following this story"/><Button asChild variant="outline"><a href={destination.href}>{destination.external?'Read original':'Read coverage'} ↗</a></Button>{count>1&&<span>{count} reporting sources</span>}</div></article><TodayEdition stories={stories.slice(0,3).map(story=>{const docs=story.documents.map(item=>item.raw_document);return {id:story.id,title:story.title,...storyDestination(story.id,docs),image:docs.find(doc=>doc.og_image_url)?.og_image_url};})} date={date}/></section>
+ <div className="front-page-body"><div>
  <section className="top-stories"><header className="section-heading"><div><span className="section-note">The main edition</span><h2>Worth your attention</h2></div><span>Four stories to start with</span></header><ArticleGrid className="article-grid-top">{rest.slice(0,4).map((story,i)=><StoryCard story={story} featured={i===0} key={story.id}/>)}</ArticleGrid></section>
- <section className="story-section"><header className="section-heading"><div><span className="section-note">Across the developer world</span><h2>More from today</h2></div><Link href="/search">Explore the archive →</Link></header><ArticleGrid>{rest.slice(4).map(story=><StoryCard story={story} key={story.id}/>)}</ArticleGrid></section></main>;
+ <section className="story-section"><header className="section-heading"><div><span className="section-note">Across the developer world</span><h2>More from today</h2></div><Link href="/search">Explore the archive →</Link></header><ArticleGrid>{rest.slice(4).map(story=><StoryCard story={story} key={story.id}/>)}</ArticleGrid></section>
+ </div><DeveloperPulse snapshotAt={pulse.snapshotAt} items={pulse.items}/></div></main>;
 }

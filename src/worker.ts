@@ -6,8 +6,9 @@ import { sendDailyBriefEmails } from './lib/email/delivery';
 import { ingestHn } from './lib/ingestion/hn';
 import { prismaStore } from './lib/ingestion/store';
 import { getModelHealth } from './lib/llm/catalog';
-import { INGESTION_SUCCESS_KEY, WORKER_HEARTBEAT_KEY } from './lib/operational-health';
-import { createQueue, QUEUE_NAME, redisConnection, scheduleDailyBriefEmail, scheduleIngestion, scheduleAdditionalSources } from './lib/queue';
+import { INGESTION_SUCCESS_KEY, PULSE_SUCCESS_KEY, WORKER_HEARTBEAT_KEY } from './lib/operational-health';
+import { computeLatestEntityMetricSnapshots } from './lib/pulse';
+import { createQueue, QUEUE_NAME, redisConnection, scheduleDailyBriefEmail, scheduleIngestion, scheduleAdditionalSources, schedulePulseSnapshots } from './lib/queue';
 
 async function main() {
   const queue = createQueue();
@@ -19,6 +20,13 @@ async function main() {
   const modelTimer = setInterval(() => { void getModelHealth(true); }, 15 * 60000);
   const worker = new Worker(QUEUE_NAME, async job => {
     const startedAt = new Date().toISOString();
+    if (job.name === 'compute-pulse-snapshots') {
+      const pulse = await computeLatestEntityMetricSnapshots();
+      const completedAt = new Date().toISOString();
+      await redis.set(PULSE_SUCCESS_KEY, JSON.stringify({ completedAt, ...pulse }), { EX: 3 * 86400 });
+      console.log(JSON.stringify({ event: 'entity_metric_snapshots', startedAt, completedAt, ...pulse }));
+      return pulse;
+    }
     if (job.name === 'send-daily-briefs') {
       const delivery = await sendDailyBriefEmails();
       console.log(JSON.stringify({ event: 'daily_brief_email', startedAt, ...delivery }));
@@ -64,8 +72,8 @@ async function main() {
   process.once('SIGINT', () => void close());
   process.once('SIGTERM', () => void close());
   try {
-    await Promise.all([scheduleIngestion(queue), scheduleDailyBriefEmail(queue), scheduleAdditionalSources(queue)]);
-    console.log('Worker ready: HN every 15 minutes; Dev.to every 30; GitHub and RSS hourly; Brief email daily at 08:00 Asia/Kolkata.');
+    await Promise.all([scheduleIngestion(queue), scheduleDailyBriefEmail(queue), scheduleAdditionalSources(queue), schedulePulseSnapshots(queue)]);
+    console.log('Worker ready: HN every 15 minutes; Dev.to every 30; GitHub and RSS hourly; Pulse daily at 00:15 UTC; Brief email daily at 08:00 Asia/Kolkata.');
   } catch (error) { await close(); throw error; }
 }
 

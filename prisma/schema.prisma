@@ -78,8 +78,21 @@ model Entity {
   created_at DateTime      @default(now()) @db.Timestamptz(3)
   stories    StoryEntity[]
   followers  Following[]
+  metric_snapshots EntityMetricSnapshot[]
 }
 
+model EntityMetricSnapshot {
+  entity_id           String
+  snapshot_at         DateTime @db.Timestamptz(3)
+  mention_count       Int      @default(0)
+  unique_source_count Int      @default(0)
+  discussion_count    Int      @default(0)
+  mention_velocity    Float?
+  entity              Entity   @relation(fields: [entity_id], references: [id], onDelete: Cascade)
+
+  @@id([entity_id, snapshot_at])
+  @@index([snapshot_at, mention_velocity])
+}
 model Story {
   id                     String          @id @default(cuid())
   title                  String
