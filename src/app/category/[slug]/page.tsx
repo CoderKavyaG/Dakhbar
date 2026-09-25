@@ -89,7 +89,7 @@ export default async function CategoryPage({
                         <Link href={topicPath({ name: item.name })} className="mover-link">
                           <span className="mover-name">{item.name}</span>
                           <span className="mover-pill pos">
-                            +{item.latestVelocity?.toFixed(1)}%
+                            +{item.latestVelocity?.toFixed(1)}% <span className="mover-counts">({item.previousMentions} → {item.latestMentions} / day)</span>
                           </span>
                         </Link>
                       </li>
@@ -109,7 +109,7 @@ export default async function CategoryPage({
                         <Link href={topicPath({ name: item.name })} className="mover-link">
                           <span className="mover-name">{item.name}</span>
                           <span className="mover-pill neutral">
-                            {item.latestMentions} / day
+                            {item.latestMentions} {item.latestMentions === 1 ? 'mention' : 'mentions'} / day
                           </span>
                         </Link>
                       </li>

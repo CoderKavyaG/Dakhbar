@@ -183,3 +183,85 @@ export function computeTrendStats(
     svgArea: areaPoints,
   };
 }
+
+export type CategoryEntityMetric = {
+  id: string;
+  name: string;
+  type: string;
+  slug: string;
+  storyCount: number;
+  latestMentions: number;
+  previousMentions: number;
+  absoluteGain: number;
+  latestVelocity: number | null;
+  snapshots?: Array<{
+    snapshot_at: Date | string;
+    mention_count: number;
+    mention_velocity?: number | null;
+  }>;
+};
+
+export type CategoryMoversResult = {
+  topGainers: CategoryEntityMetric[];
+  topDecliners: CategoryEntityMetric[];
+  topByVolume: CategoryEntityMetric[];
+};
+
+/**
+ * Ranks category entities for movement intelligence, enforcing a minimum absolute
+ * volume threshold and ranking by absolute net mention delta first so that low-sample
+ * noisy jumps (e.g. 1 -> 4 mentions) cannot outrank high-volume real trends (e.g. 10 -> 25 mentions).
+ */
+export function rankCategoryMovers(
+  entities: CategoryEntityMetric[],
+  options: {
+    minMentionsThreshold?: number;
+    limit?: number;
+  } = {}
+): CategoryMoversResult {
+  const minThreshold = options.minMentionsThreshold ?? 3;
+  const limit = options.limit ?? 3;
+
+  // Filter for valid velocity, non-zero previous baseline, and meeting the minimum mention volume
+  const eligibleMovers = entities.filter(
+    e =>
+      e.latestVelocity !== null &&
+      e.latestMentions >= minThreshold &&
+      e.previousMentions > 0
+  );
+
+  // Gainers: prioritize absolute mention gain first to prevent small-sample noise from dominating,
+  // then percentage velocity as tie-breaker for equal net gains.
+  const topGainers = eligibleMovers
+    .filter(e => (e.latestVelocity ?? 0) > 0 && e.absoluteGain > 0)
+    .sort((a, b) => {
+      if (b.absoluteGain !== a.absoluteGain) {
+        return b.absoluteGain - a.absoluteGain;
+      }
+      return (b.latestVelocity ?? 0) - (a.latestVelocity ?? 0);
+    })
+    .slice(0, limit);
+
+  // Decliners: prioritize absolute drop first, then negative velocity
+  const topDecliners = eligibleMovers
+    .filter(e => (e.latestVelocity ?? 0) < 0 && e.absoluteGain < 0)
+    .sort((a, b) => {
+      if (a.absoluteGain !== b.absoluteGain) {
+        return a.absoluteGain - b.absoluteGain; // most negative drop first
+      }
+      return (a.latestVelocity ?? 0) - (b.latestVelocity ?? 0);
+    })
+    .slice(0, limit);
+
+  // Top by volume (highest latest daily mentions)
+  const topByVolume = [...entities]
+    .sort((a, b) => b.latestMentions - a.latestMentions)
+    .slice(0, 4);
+
+  return {
+    topGainers,
+    topDecliners,
+    topByVolume,
+  };
+}
+

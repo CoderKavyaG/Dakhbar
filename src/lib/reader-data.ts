@@ -207,18 +207,27 @@ export async function getCategoryPageData(slug: string) {
     },
   });
 
+  const { rankCategoryMovers } = await import('./trend');
+
   const catEntities = allEntities
     .filter(e => getCategoryForEntity(e.name, e.type).slug === category.slug)
-    .map(e => ({
-      id: e.id,
-      name: e.name,
-      type: e.type,
-      slug: topicSlug(e.name),
-      storyCount: e._count.stories,
-      latestMentions: e.metric_snapshots[0]?.mention_count ?? 0,
-      latestVelocity: e.metric_snapshots[0]?.mention_velocity ?? null,
-      snapshots: e.metric_snapshots,
-    }));
+    .map(e => {
+      const latest = e.metric_snapshots[0]?.mention_count ?? 0;
+      const previous = e.metric_snapshots[1]?.mention_count ?? 0;
+      const velocity = e.metric_snapshots[0]?.mention_velocity ?? null;
+      return {
+        id: e.id,
+        name: e.name,
+        type: e.type,
+        slug: topicSlug(e.name),
+        storyCount: e._count.stories,
+        latestMentions: latest,
+        previousMentions: previous,
+        absoluteGain: latest - previous,
+        latestVelocity: velocity,
+        snapshots: e.metric_snapshots,
+      };
+    });
 
   const entityIds = catEntities.map(e => e.id);
 
@@ -236,13 +245,7 @@ export async function getCategoryPageData(slug: string) {
 
   // Aggregate metrics for sector intelligence
   const totalDailyMentions = catEntities.reduce((acc, e) => acc + e.latestMentions, 0);
-  const movers = [...catEntities]
-    .filter(e => e.latestVelocity !== null)
-    .sort((a, b) => (b.latestVelocity ?? 0) - (a.latestVelocity ?? 0));
-
-  const topGainers = movers.filter(m => (m.latestVelocity ?? 0) > 0).slice(0, 3);
-  const topDecliners = [...movers].filter(m => (m.latestVelocity ?? 0) < 0).reverse().slice(0, 3);
-  const topByVolume = [...catEntities].sort((a, b) => b.latestMentions - a.latestMentions).slice(0, 4);
+  const { topGainers, topDecliners, topByVolume } = rankCategoryMovers(catEntities);
 
   return {
     category,

@@ -1622,11 +1622,20 @@ html { font-size: 16px; }
 }
 
 .mover-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   font-family: var(--font-data);
   font-size: 0.72rem;
   font-weight: 600;
-  padding: 0.15rem 0.5rem;
+  padding: 0.2rem 0.55rem;
   border-radius: 9999px;
+  white-space: nowrap;
+}
+
+.mover-counts {
+  font-weight: 500;
+  opacity: 0.85;
 }
 
 .mover-pill.pos {

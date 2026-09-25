@@ -65,6 +65,7 @@ const ENTITY_CATEGORY_MAP: Record<string, CategorySlug> = {
   'Supabase': 'infrastructure',
   'Terraform': 'infrastructure',
   'GraphQL': 'infrastructure',
+  'Stripe': 'infrastructure',
 
   // Languages & Tools
   'TypeScript': 'languages-tools',
@@ -86,7 +87,6 @@ const ENTITY_CATEGORY_MAP: Record<string, CategorySlug> = {
   'WebAssembly': 'languages-tools',
   'Prisma': 'languages-tools',
   'Tailwind CSS': 'languages-tools',
-  'Stripe': 'languages-tools',
   'Hacker News': 'languages-tools',
 };
 
@@ -97,11 +97,10 @@ const AI_KEYWORDS = [
   'groq', 'lpu', 'cohere', 'bedrock', 'qwen', 'agent', 'ollama', 'vllm',
 ];
 
-
 const INFRA_KEYWORDS = [
   'cloud', 'infra', 'server', 'deploy', 'aws', 'k8s', 'kubernetes', 'docker',
   'database', 'postgres', 'mysql', 'redis', 'mongo', 'sqlite', 'linux',
-  'terraform', 'supabase', 'cloudflare', 'vercel', 'host',
+  'terraform', 'supabase', 'cloudflare', 'vercel', 'host', 'payment', 'stripe', 'billing',
 ];
 
 /**

@@ -1,6 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { computeTrendStats, filterSnapshotsForRange, formatMonthDay, type MetricSnapshotData } from '../src/lib/trend';
+import {
+  computeTrendStats,
+  filterSnapshotsForRange,
+  formatMonthDay,
+  rankCategoryMovers,
+  type MetricSnapshotData,
+  type CategoryEntityMetric,
+} from '../src/lib/trend';
 
 test('formatMonthDay converts date to concise human readable string', () => {
   assert.equal(formatMonthDay(new Date('2026-09-14T00:00:00Z')), 'Sept 14');
@@ -106,3 +113,93 @@ test('computes valid SVG polyline and polygon coordinates within viewBox bounds'
   assert.equal(stats.points[2].y, 54); // 5 mentions is midpoint (16 + 38)
   assert.equal(stats.points[2].x, 376); // Right edge (400 - 24)
 });
+
+test('rankCategoryMovers enforces minimum volume threshold and prevents small-sample noise from outranking real trends', () => {
+  const entities: CategoryEntityMetric[] = [
+    {
+      id: 'high-volume',
+      name: 'HighVolume AI',
+      type: 'company',
+      slug: 'high-volume-ai',
+      storyCount: 50,
+      latestMentions: 25,
+      previousMentions: 10,
+      absoluteGain: 15,
+      latestVelocity: 150.0, // +150% (10 -> 25)
+    },
+    {
+      id: 'substantial-gain',
+      name: 'OpenAI',
+      type: 'company',
+      slug: 'openai',
+      storyCount: 60,
+      latestMentions: 7,
+      previousMentions: 3,
+      absoluteGain: 4,
+      latestVelocity: 133.3, // +133.3% (3 -> 7)
+    },
+    {
+      id: 'noisy-jump',
+      name: 'TinyLab',
+      type: 'company',
+      slug: 'tinylab',
+      storyCount: 4,
+      latestMentions: 4,
+      previousMentions: 1,
+      absoluteGain: 3,
+      latestVelocity: 300.0, // +300% (1 -> 4) - huge % but small volume
+    },
+    {
+      id: 'below-threshold',
+      name: 'MicroApp',
+      type: 'company',
+      slug: 'microapp',
+      storyCount: 2,
+      latestMentions: 2,
+      previousMentions: 1,
+      absoluteGain: 1,
+      latestVelocity: 100.0, // +100% (1 -> 2) - below min threshold
+    },
+    {
+      id: 'decliner',
+      name: 'SlowLab',
+      type: 'company',
+      slug: 'slowlab',
+      storyCount: 10,
+      latestMentions: 3,
+      previousMentions: 6,
+      absoluteGain: -3,
+      latestVelocity: -50.0,
+    },
+  ];
+
+  const result = rankCategoryMovers(entities, { minMentionsThreshold: 3, limit: 3 });
+
+  // 1. Below threshold (MicroApp: latestMentions = 2 < 3) is excluded
+  assert.equal(
+    result.topGainers.some(g => g.name === 'MicroApp'),
+    false,
+    'Entities below minimum mention threshold must be excluded from top movers'
+  );
+
+  // 2. High-volume real trend (+15 mentions, +150%) must rank #1
+  assert.equal(result.topGainers[0].name, 'HighVolume AI');
+  assert.equal(result.topGainers[0].absoluteGain, 15);
+
+  // 3. Substantial trend (OpenAI: +4 mentions, +133.3%) must rank ABOVE noisy jump (TinyLab: +3 mentions, +300%)
+  assert.equal(result.topGainers[1].name, 'OpenAI');
+  assert.equal(result.topGainers[1].absoluteGain, 4);
+
+  assert.equal(result.topGainers[2].name, 'TinyLab');
+  assert.equal(result.topGainers[2].absoluteGain, 3);
+
+  // 4. Decliners properly capture absolute drop
+  assert.equal(result.topDecliners.length, 1);
+  assert.equal(result.topDecliners[0].name, 'SlowLab');
+  assert.equal(result.topDecliners[0].absoluteGain, -3);
+
+  // 5. Volume leaders rank strictly by latestMentions
+  assert.equal(result.topByVolume[0].name, 'HighVolume AI');
+  assert.equal(result.topByVolume[1].name, 'OpenAI');
+});
+

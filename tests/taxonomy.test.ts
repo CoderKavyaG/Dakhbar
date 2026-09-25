@@ -68,6 +68,7 @@ test('Infrastructure category contains cloud platforms, databases, and devops te
     'Supabase',
     'Terraform',
     'GraphQL',
+    'Stripe',
   ];
 
   for (const name of infraEntities) {
@@ -100,7 +101,6 @@ test('Languages & tools category contains languages, runtimes, and web framework
     'WebAssembly',
     'Prisma',
     'Tailwind CSS',
-    'Stripe',
   ];
 
   for (const name of langToolEntities) {
