@@ -4,7 +4,7 @@ import { db } from '@/lib/db';
 import { completeWithFallback, providerConfig, type ChatMessage, type LlmAttempt } from '@/lib/llm/provider';
 import { getModelHealth } from '@/lib/llm/catalog';
 import { countIndependentSources, publisherDomain, storyDek } from '@/lib/story-evidence';
-import { answerStoryQuestion, type AskEvidence } from '@/lib/story-ask';
+import { answerStoryQuestion, citationsAreValid, type AskEvidence } from '@/lib/story-ask';
 
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -31,7 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       const fallback = config.fallback && health.some(row => row.provider === config.fallback?.name && row.model === config.fallback?.model && row.available) ? config.fallback : undefined;
       return completeWithFallback({ messages, primary: config.primary, fallback, maxTokens: 650 });
     },
-    log: async ({ inputHash, attempts, acceptedText, acceptedProvider, acceptedModel }) => { await db.llmCall.createMany({ data: attempts.map((attempt: LlmAttempt) => ({ user_id: userId, story_id: storyId, input_hash: inputHash, provider: attempt.provider, model: attempt.model, input_tokens: attempt.inputTokens, output_tokens: attempt.outputTokens, fallback_triggered: attempt.fallbackTriggered, accepted: Boolean(acceptedText && attempt.provider === acceptedProvider && attempt.model === acceptedModel), output_text: acceptedText && attempt.provider === acceptedProvider && attempt.model === acceptedModel ? acceptedText : null, error_code: attempt.errorCode })) }); },
+    log: async ({ inputHash, attempts, acceptedText, acceptedProvider, acceptedModel }) => { await db.llmCall.createMany({ data: attempts.map((attempt: LlmAttempt) => ({ user_id: userId, story_id: storyId, input_hash: inputHash, provider: attempt.provider, model: attempt.model, input_tokens: attempt.inputTokens, output_tokens: attempt.outputTokens, fallback_triggered: attempt.fallbackTriggered, accepted: Boolean(acceptedText && attempt.provider === acceptedProvider && attempt.model === acceptedModel), output_text: attempt.content ?? null, error_code: attempt.errorCode ?? (attempt.content && !acceptedText ? (citationsAreValid(attempt.content, evidence.length) ? 'ask_grounding_mismatch' : 'ask_citation_mismatch') : null) })) }); },
   });
   return NextResponse.json({ ...result, evidence }, { headers: { 'Cache-Control': 'no-store' } });
 }
