@@ -92,13 +92,27 @@ export async function getTopicBySlug(slug: string) {
   });
   const entity = entities.find(item => topicSlug(item.name) === slug.toLowerCase());
   if (!entity) return null;
-  const stories = await db.story.findMany({
-    where: { entities: { some: { entity_id: entity.id } } },
-    orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
-    take: 40,
-    include: readerStoryInclude,
-  });
-  return { entity, stories, storyCount: await db.story.count({ where: { entities: { some: { entity_id: entity.id } } } }) };
+  const [stories, storyCount, snapshots] = await Promise.all([
+    db.story.findMany({
+      where: { entities: { some: { entity_id: entity.id } } },
+      orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
+      take: 40,
+      include: readerStoryInclude,
+    }),
+    db.story.count({ where: { entities: { some: { entity_id: entity.id } } } }),
+    db.entityMetricSnapshot.findMany({
+      where: { entity_id: entity.id },
+      orderBy: { snapshot_at: 'asc' },
+      select: {
+        snapshot_at: true,
+        mention_count: true,
+        unique_source_count: true,
+        discussion_count: true,
+        mention_velocity: true,
+      },
+    }),
+  ]);
+  return { entity, stories, storyCount, snapshots };
 }
 
 export async function getPopularEntities(limit = 8) {
