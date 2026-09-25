@@ -26,6 +26,13 @@ export async function SiteHeader() {
       </form>
       <div className="account-nav">{reader?.subscription_status==='active'&&<Link href="/brief" className="desk-member-badge">Desk member</Link>}{userId ? <UserButton/> : <JoinUsButton/>}</div>
     </div>
-    <div className="nav-edition"><span>Independent signals. Developer perspective.</span><Link href="/search?q=OpenAI">AI & companies</Link><Link href="/search?q=PostgreSQL">Infrastructure</Link><Link href="/search?q=Rust">Languages & tools</Link></div>
+    <div className="nav-edition">
+      <span>Independent signals. Developer perspective.</span>
+      <Link href="/category/ai-companies">AI & companies</Link>
+      <Link href="/category/infrastructure">Infrastructure</Link>
+      <Link href="/category/languages-tools">Languages & tools</Link>
+      <Link href="/topics" className="topics-link">All topics →</Link>
+    </div>
   </header>;
 }
+

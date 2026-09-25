@@ -29,10 +29,11 @@ test('Open Graph description takes precedence over the domain fallback', () => {
   assert.deepEqual(storyDek({ url: 'https://example.com/story', content: null, og_description: 'Source-provided context.' }), { kind: 'excerpt', text: 'Source-provided context.' });
 });
 
-test('single-source stories link out while independently corroborated stories link internally', () => {
-  assert.deepEqual(storyDestination('one', [{ url: 'https://one.dev/report', content: null }]), { href: 'https://one.dev/report', external: true });
+test('all stories link to internal universal story pages', () => {
+  assert.deepEqual(storyDestination('one', [{ url: 'https://one.dev/report', content: null }]), { href: '/stories/one', external: false });
   assert.deepEqual(storyDestination('two', [
     { url: 'https://one.dev/report', content: null },
     { url: 'https://two.dev/report', content: null },
   ]), { href: '/stories/two', external: false });
 });
+

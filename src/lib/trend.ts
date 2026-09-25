@@ -3,9 +3,9 @@ export type TrendRange = '24h' | '7d' | '30d';
 export type MetricSnapshotData = {
   snapshot_at: Date | string;
   mention_count: number;
-  unique_source_count: number;
-  discussion_count: number;
-  mention_velocity: number | null;
+  unique_source_count?: number;
+  discussion_count?: number;
+  mention_velocity?: number | null;
 };
 
 export type TrendPoint = {
@@ -155,8 +155,8 @@ export function computeTrendStats(
       date: new Date(s.snapshot_at).toISOString().slice(0, 10),
       formattedDate: formatMonthDay(s.snapshot_at),
       mentions: s.mention_count,
-      velocity: s.mention_velocity,
-      sources: s.unique_source_count,
+      velocity: s.mention_velocity ?? null,
+      sources: s.unique_source_count ?? 1,
     };
   });
 
@@ -175,7 +175,7 @@ export function computeTrendStats(
     endDate: endDateStr,
     daysAvailable,
     currentMentions: latest.mention_count,
-    currentVelocity: latest.mention_velocity,
+    currentVelocity: latest.mention_velocity ?? null,
     peakMentions,
     totalMentions,
     points,

@@ -27,8 +27,9 @@ test('signed-out navigation hides personalized routes and Brief hides its badge 
     read('src/components/site-header.tsx'),
     read('src/components/primary-nav.tsx'),
   ]);
-  assert.deepEqual(navigationItems(false).map(i=>i.href),['/','/search','/methodology','/pricing']);
+  assert.deepEqual(navigationItems(false).map(i=>i.href),['/','/topics','/search','/methodology','/pricing']);
   assert.ok(navigationItems(true).some(i=>i.href==='/for-you'));
+
   assert.ok(navigationItems(true).some(i=>i.href==='/brief'));
   assert.doesNotMatch(header, /href="\/sign-in"/);
   assert.match(briefLink, /pathname !== href/);

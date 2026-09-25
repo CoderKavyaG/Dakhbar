@@ -133,3 +133,128 @@ export const prismaFollowStore = {
     await db.following.deleteMany({ where: { user_id: userId, entity_id: { in: entityIds } } });
   },
 };
+
+export async function getTopicsIndexData() {
+  const entities = await db.entity.findMany({
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      _count: { select: { stories: true } },
+      metric_snapshots: {
+        orderBy: { snapshot_at: 'desc' },
+        take: 1,
+        select: {
+          mention_count: true,
+          mention_velocity: true,
+        },
+      },
+    },
+  });
+
+  const { getAllCategories, getCategoryForEntity } = await import('./taxonomy');
+  const categories = getAllCategories().map(category => {
+    const categoryEntities = entities
+      .filter(e => getCategoryForEntity(e.name, e.type).slug === category.slug)
+      .map(e => ({
+        id: e.id,
+        name: e.name,
+        type: e.type,
+        slug: topicSlug(e.name),
+        storyCount: e._count.stories,
+        latestMentions: e.metric_snapshots[0]?.mention_count ?? 0,
+        latestVelocity: e.metric_snapshots[0]?.mention_velocity ?? null,
+      }));
+
+    return {
+      slug: category.slug,
+      title: category.title,
+      description: category.description,
+      entityCount: categoryEntities.length,
+      totalStories: categoryEntities.reduce((sum, e) => sum + e.storyCount, 0),
+      entities: categoryEntities,
+    };
+  });
+
+  return {
+    categories,
+    totalEntities: entities.length,
+  };
+}
+
+export async function getCategoryPageData(slug: string) {
+  const { getCategoryBySlug, getCategoryForEntity } = await import('./taxonomy');
+  const category = getCategoryBySlug(slug);
+  if (!category) return null;
+
+  const allEntities = await db.entity.findMany({
+    orderBy: { name: 'asc' },
+    select: {
+      id: true,
+      name: true,
+      type: true,
+      _count: { select: { stories: true } },
+      metric_snapshots: {
+        orderBy: { snapshot_at: 'desc' },
+        take: 7,
+        select: {
+          snapshot_at: true,
+          mention_count: true,
+          mention_velocity: true,
+        },
+      },
+    },
+  });
+
+  const catEntities = allEntities
+    .filter(e => getCategoryForEntity(e.name, e.type).slug === category.slug)
+    .map(e => ({
+      id: e.id,
+      name: e.name,
+      type: e.type,
+      slug: topicSlug(e.name),
+      storyCount: e._count.stories,
+      latestMentions: e.metric_snapshots[0]?.mention_count ?? 0,
+      latestVelocity: e.metric_snapshots[0]?.mention_velocity ?? null,
+      snapshots: e.metric_snapshots,
+    }));
+
+  const entityIds = catEntities.map(e => e.id);
+
+  const [stories, storyCount] = await Promise.all([
+    db.story.findMany({
+      where: { entities: { some: { entity_id: { in: entityIds } } } },
+      orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
+      take: 36,
+      include: readerStoryInclude,
+    }),
+    db.story.count({
+      where: { entities: { some: { entity_id: { in: entityIds } } } },
+    }),
+  ]);
+
+  // Aggregate metrics for sector intelligence
+  const totalDailyMentions = catEntities.reduce((acc, e) => acc + e.latestMentions, 0);
+  const movers = [...catEntities]
+    .filter(e => e.latestVelocity !== null)
+    .sort((a, b) => (b.latestVelocity ?? 0) - (a.latestVelocity ?? 0));
+
+  const topGainers = movers.filter(m => (m.latestVelocity ?? 0) > 0).slice(0, 3);
+  const topDecliners = [...movers].filter(m => (m.latestVelocity ?? 0) < 0).reverse().slice(0, 3);
+  const topByVolume = [...catEntities].sort((a, b) => b.latestMentions - a.latestMentions).slice(0, 4);
+
+  return {
+    category,
+    entities: catEntities,
+    storyCount,
+    stories,
+    intelligence: {
+      totalDailyMentions,
+      topGainers,
+      topDecliners,
+      topByVolume,
+    },
+  };
+}
+
