@@ -124,7 +124,7 @@ test('verifyResearchSection validates sentence-level citations and grounded fact
   assert.equal(verifyResearchSection(ungroundedFact, mockEvidence), false);
 });
 
-test('Shared cache TTL is 24 hours and daily limit is 5 reports', () => {
+test('Shared cache TTL is 24 hours, subscriber daily limit is 5 reports, and global token limit is 80k', () => {
   assert.equal(RESEARCH_CACHE_TTL_MS, 86400000);
   assert.equal(SUBSCRIBER_DAILY_RESEARCH_LIMIT, 5);
 });
@@ -137,7 +137,7 @@ test('Research API generation endpoint enforces subscription check, topic valida
   assert.match(route, /generateResearchReport/);
 });
 
-test('Admin data aggregates research feature calls separately from Brief and Ask', async () => {
+test('Admin data aggregates research feature calls and tracks both TPD and RPD binding ceilings', async () => {
   const { readFile } = await import('node:fs/promises');
   const adminData = await readFile('src/lib/admin-data.ts', 'utf8');
   assert.match(adminData, /story_id\?\.startsWith\('research:'\)/);
@@ -145,4 +145,16 @@ test('Admin data aggregates research feature calls separately from Brief and Ask
   assert.match(adminData, /featureStats\.ask\.calls\+\+/);
   assert.match(adminData, /featureStats\.brief\.calls\+\+/);
   assert.match(adminData, /Research Mode Dossier/);
+  assert.match(adminData, /FREE_DAILY_LIMITS/);
+  assert.match(adminData, /tpdLimit/);
+  assert.match(adminData, /rpdLimit/);
+  assert.match(adminData, /bindingConstraint/);
+});
+
+test('Research page gracefully handles both user rate limits and global system capacity ceilings', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const page = await readFile('src/app/research/page.tsx', 'utf8');
+  assert.match(page, /System Research Capacity Reached/);
+  assert.match(page, /Daily Research Limit Reached/);
+  assert.match(page, /tokens per day \(TPD\) ceilings/);
 });

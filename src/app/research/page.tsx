@@ -164,18 +164,20 @@ export default async function ResearchPage({
 
   const report: ResearchReport | null = result.report;
   if (!report) {
-    if (result.error?.includes('limit reached')) {
+    if (result.error?.includes('limit reached') || result.error?.includes('capacity is fully utilized')) {
+      const isGlobal = result.error?.includes('capacity is fully utilized');
       return (
         <main className="paper-shell research-page">
           <header className="research-header">
-            <span className="section-note">Daily Quota Notice</span>
-            <h1>Daily Research Limit Reached</h1>
+            <span className="section-note">Daily Capacity Notice</span>
+            <h1>{isGlobal ? 'System Research Capacity Reached' : 'Daily Research Limit Reached'}</h1>
             <p>{result.error}</p>
           </header>
           <div className="quota-notice-card">
             <p>
-              To protect shared LLM capacity, research reports are limited to 5 new generations per
-              subscriber per day. Your quota resets at 00:00 UTC.
+              {isGlobal
+                ? 'To protect free-tier LLM tokens per day (TPD) ceilings across all subscribers, new research dossier generation is paused until quota resets at 00:00 UTC. Existing cached topics remain fully readable.'
+                : 'To protect shared LLM capacity, research reports are limited to 5 new generations per subscriber per day. Your quota resets at 00:00 UTC.'}
             </p>
             <Button asChild variant="outline">
               <Link href={`/search?q=${encodeURIComponent(topic)}`}>

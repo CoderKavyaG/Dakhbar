@@ -41,7 +41,8 @@ export default async function AdminPage() {
             <strong>{feat.label}</strong>
             <span className="data-type">{feat.feature}</span>
             <p><b>{feat.calls}</b> call{feat.calls === 1 ? '' : 's'} today</p>
-            <small>{feat.inputTokens} input · {feat.outputTokens} output tokens</small>
+            <p className="admin-token-highlight"><b>{feat.totalTokens.toLocaleString()}</b> tokens</p>
+            <small>{feat.inputTokens.toLocaleString()} in · {feat.outputTokens.toLocaleString()} out</small>
           </article>
         ))}
       </div>
@@ -49,11 +50,25 @@ export default async function AdminPage() {
       <div style={{ marginTop: '1.25rem' }}>
         {data.llmQuota.map(row => (
           <article key={`${row.provider}:${row.model}`}>
-            <strong>{row.model}</strong>
-            <span>{row.provider}</span>
-            <p><b>{row.calls}</b> / {row.limit ?? 'unconfigured'} calls</p>
-            <small>{row.inputTokens} input · {row.outputTokens} output tokens</small>
-            <meter min="0" max={row.limit ?? Math.max(1,row.calls)} value={row.calls}>{row.calls}</meter>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <strong>{row.model}</strong>
+              <span className="data-type">{row.provider}</span>
+            </div>
+
+            <p style={{ margin: '6px 0 2px' }}>
+              <b>{row.totalTokens.toLocaleString()}</b> / {row.tpdLimit ? row.tpdLimit.toLocaleString() : '∞'} tokens
+              <small style={{ marginLeft: '6px', color: 'var(--data)', fontWeight: 600 }}>({row.tpdPct}% of TPD ceiling)</small>
+            </p>
+            <meter min="0" max={row.tpdLimit ?? Math.max(1, row.totalTokens)} value={row.totalTokens}>
+              {row.totalTokens}
+            </meter>
+
+            <small style={{ marginTop: '4px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>Requests: {row.calls} / {row.rpdLimit ?? '∞'} calls ({row.rpdPct}%)</span>
+              {row.bindingConstraint === 'tpd' && (
+                <span style={{ color: 'var(--data)', fontWeight: 600 }}>Binding limit: Tokens/day (TPD)</span>
+              )}
+            </small>
           </article>
         ))}
       </div>

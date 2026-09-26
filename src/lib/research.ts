@@ -15,7 +15,6 @@ import {
   type ChatMessage,
   type LlmAttempt,
 } from './llm/provider';
-import { verifyGroundedText } from './brief-generation';
 import { formatMonthDay } from './trend';
 import { citationsAreValid } from './story-ask';
 
@@ -75,6 +74,8 @@ export type ResearchAssembly = {
 
 export const RESEARCH_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 export const SUBSCRIBER_DAILY_RESEARCH_LIMIT = 5;
+export const GLOBAL_DAILY_RESEARCH_TOKEN_LIMIT = 80000; // 80k tokens/day (80% of Groq 120b 100k TPD ceiling)
+export const GLOBAL_DAILY_RESEARCH_CALL_LIMIT = 40; // Max 40 calls/day system-wide
 
 export function normalizeResearchTopic(topic: string): string {
   return topic
@@ -433,6 +434,8 @@ export type GenerateResearchResult = {
   error?: string;
   quotaUsed?: number;
   quotaLimit?: number;
+  globalTokensUsed?: number;
+  globalTokenLimit?: number;
 };
 
 /**
@@ -497,9 +500,35 @@ export async function generateResearchReport(
     }
   }
 
-  // 2. Enforce Per-Subscriber Daily Rate Limit (5 reports / UTC day)
+  // 2. Enforce Global System Token / Call Rate Limit against Groq TPD Ceiling
   const now = new Date();
   const dayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+  const globalUsage = await db.llmCall.aggregate({
+    where: {
+      story_id: { startsWith: 'research:' },
+      created_at: { gte: dayStart },
+    },
+    _sum: { input_tokens: true, output_tokens: true },
+    _count: { _all: true },
+  });
+
+  const totalTokensToday = (globalUsage._sum.input_tokens ?? 0) + (globalUsage._sum.output_tokens ?? 0);
+  const totalCallsToday = globalUsage._count._all;
+
+  if (totalTokensToday >= GLOBAL_DAILY_RESEARCH_TOKEN_LIMIT || totalCallsToday >= GLOBAL_DAILY_RESEARCH_CALL_LIMIT) {
+    return {
+      report: null,
+      cached: false,
+      error: 'Daily system research capacity is fully utilized today to protect shared LLM quotas. Please check back tomorrow or browse existing cached reports (quota resets at 00:00 UTC).',
+      quotaUsed: totalCallsToday,
+      quotaLimit: GLOBAL_DAILY_RESEARCH_CALL_LIMIT,
+      globalTokensUsed: totalTokensToday,
+      globalTokenLimit: GLOBAL_DAILY_RESEARCH_TOKEN_LIMIT,
+    };
+  }
+
+  // 3. Enforce Per-Subscriber Daily Rate Limit (5 reports / UTC day)
   const userDailyCount = await db.llmCall.count({
     where: {
       user_id: userId,
