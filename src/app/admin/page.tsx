@@ -26,7 +26,38 @@ export default async function AdminPage() {
 <p>History: {data.pulse.historyStart ? (data.pulse.historyStart.toISOString().slice(0,10) + ' through ' + data.pulse.historyThrough.toISOString().slice(0,10)) : 'No published documents to backfill yet'} · Entities covered by last run: {data.pulse.entitiesCovered}</p>
 {data.pulse.error && <p role="alert">{data.pulse.error}</p>}
 </section><section className="operations-panel"><h2>Live model catalog</h2><p>Checked at startup and every 15 minutes. Missing models are blocked before generation.</p>{data.models.map(model=><p key={model.provider+model.model} role={model.available?undefined:'alert'}><strong>{model.provider} / {model.model}</strong> — {model.available?'available':model.error} <small>Checked {model.checkedAt}</small></p>)}</section>
-    <section className="admin-quota"><header><div><span className="data-type">UTC daily usage</span><h2>LLM quota</h2></div><time className="data-type" dateTime={data.dayStart.toISOString()}>{data.dayStart.toISOString().slice(0,10)}</time></header><div>{data.llmQuota.map(row => <article key={`${row.provider}:${row.model}`}><strong>{row.model}</strong><span>{row.provider}</span><p><b>{row.calls}</b> / {row.limit ?? 'unconfigured'} calls</p><small>{row.inputTokens} input · {row.outputTokens} output tokens</small><meter min="0" max={row.limit ?? Math.max(1,row.calls)} value={row.calls}>{row.calls}</meter></article>)}</div></section>
+    <section className="admin-quota">
+      <header>
+        <div>
+          <span className="data-type">UTC daily usage</span>
+          <h2>LLM quota & feature usage</h2>
+        </div>
+        <time className="data-type" dateTime={data.dayStart.toISOString()}>{data.dayStart.toISOString().slice(0,10)}</time>
+      </header>
+
+      <div className="admin-features-grid">
+        {data.llmFeatures.map(feat => (
+          <article key={feat.feature} className="admin-feature-card">
+            <strong>{feat.label}</strong>
+            <span className="data-type">{feat.feature}</span>
+            <p><b>{feat.calls}</b> call{feat.calls === 1 ? '' : 's'} today</p>
+            <small>{feat.inputTokens} input · {feat.outputTokens} output tokens</small>
+          </article>
+        ))}
+      </div>
+
+      <div style={{ marginTop: '1.25rem' }}>
+        {data.llmQuota.map(row => (
+          <article key={`${row.provider}:${row.model}`}>
+            <strong>{row.model}</strong>
+            <span>{row.provider}</span>
+            <p><b>{row.calls}</b> / {row.limit ?? 'unconfigured'} calls</p>
+            <small>{row.inputTokens} input · {row.outputTokens} output tokens</small>
+            <meter min="0" max={row.limit ?? Math.max(1,row.calls)} value={row.calls}>{row.calls}</meter>
+          </article>
+        ))}
+      </div>
+    </section>
     <div className="admin-table-wrap"><table className="admin-table"><caption>Last 20 ingested documents <span className="data-type">UTC</span></caption><thead><tr><th>Title</th><th>Source</th><th>Ingested at</th></tr></thead><tbody>{data.items.map(item => <tr key={item.id}><td><a href={item.url} target="_blank" rel="noopener noreferrer">{item.title}</a></td><td>{item.source.name}</td><td><time dateTime={item.ingested_at.toISOString()}>{item.ingested_at.toISOString()}</time></td></tr>)}</tbody></table>{!data.items.length && <p>No documents ingested yet.</p>}</div>
   </main>;
 }
