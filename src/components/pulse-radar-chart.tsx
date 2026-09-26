@@ -123,7 +123,7 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
 
           {/* Quadrant Watermark Titles */}
           <text x={padding.left + 14} y={padding.top + 22} className="quadrant-watermark">
-            BREAKOUT STARS
+            RISING MOMENTUM
           </text>
           <text x={viewBoxWidth - padding.right - 14} y={padding.top + 22} textAnchor="end" className="quadrant-watermark">
             SURGING LEADERS
@@ -132,16 +132,16 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
             CORE FOUNDATIONS
           </text>
           <text x={padding.left + 14} y={viewBoxHeight - padding.bottom - 12} className="quadrant-watermark">
-            NICHE & STEADY
+            NICHE & FOCUSED
           </text>
 
           {/* Axis Labels */}
           {/* X Axis Labels */}
           <text x={padding.left + 8} y={centerY - 8} className="axis-label-text">
-            ← Emerging Volume
+            ← Targeted / Light Coverage
           </text>
           <text x={viewBoxWidth - padding.right - 8} y={centerY - 8} textAnchor="end" className="axis-label-text">
-            Established Volume →
+            High-Volume Coverage →
           </text>
 
           {/* Y Axis Labels */}

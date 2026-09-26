@@ -41,8 +41,8 @@ export default async function PulseRadarPage() {
           </div>
           <h1>Developer Pulse Radar</h1>
           <p className="pulse-subtitle">
-            Deterministic momentum and adoption mapping across the developer landscape. Quadrants classify
-            emerging breakouts, surging momentum, foundational workhorses, and steady technologies.
+            Deterministic momentum and corpus coverage mapping across the developer landscape. Quadrants classify
+            rising momentum, high-volume surges, core foundations, and niche or targeted coverage.
           </p>
         </div>
 
@@ -96,7 +96,7 @@ export default async function PulseRadarPage() {
           </div>
           <h2>Developer Pulse Radar is exclusive to Desk members</h2>
           <p>
-            Desk subscribers access real-time quadrant momentum telemetry mapping emerging breakouts,
+            Desk subscribers access real-time quadrant momentum telemetry mapping rising momentum,
             surging leaders, and core infrastructure across 49 tracked technologies.
           </p>
 

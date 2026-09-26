@@ -61,28 +61,29 @@ export type RadarDataset = {
 };
 
 export const MIN_RADAR_SNAPSHOT_DAYS = 7;
-export const RADAR_VOLUME_THRESHOLD = 2.0; // >= 2.0 average daily mentions = Established
+export const RADAR_VOLUME_THRESHOLD = 2.0; // >= 2.0 average daily mentions = High-Volume Coverage
+export const RADAR_MIN_ACCELERATION_MENTIONS = 3; // Minimum latest mentions or >= 2 net delta for acceleration to avoid 1-to-2 mention noise
 
 export const QUADRANT_LABELS: Record<RadarQuadrant, { title: string; subtitle: string; badge: string }> = {
   emerging_accelerating: {
-    title: 'Breakout Stars',
-    subtitle: 'Emerging volume · High velocity',
+    title: 'Rising Momentum',
+    subtitle: 'Targeted coverage · Accelerating velocity',
     badge: 'Accelerating',
   },
   established_accelerating: {
     title: 'Surging Leaders',
-    subtitle: 'Established volume · High velocity',
+    subtitle: 'High-volume coverage · Accelerating velocity',
     badge: 'Surging',
   },
   established_stable: {
     title: 'Core Foundations',
-    subtitle: 'Established volume · Steady / Cooling',
+    subtitle: 'High-volume coverage · Steady baseline',
     badge: 'Foundation',
   },
   emerging_stable: {
-    title: 'Niche & Steady',
-    subtitle: 'Emerging volume · Steady / Cooling',
-    badge: 'Niche',
+    title: 'Niche & Focused',
+    subtitle: 'Targeted coverage · Steady baseline',
+    badge: 'Focused',
   },
 };
 
@@ -155,30 +156,39 @@ export function buildRadarDataset(
     const totalMentions = sorted.reduce((acc, s) => acc + s.mention_count, 0);
 
     const latest = sorted[sorted.length - 1];
+    const previous = sorted.length > 1 ? sorted[sorted.length - 2] : null;
     const velocityPercent = latest.mention_velocity ?? 0;
+    const latestMentions = latest.mention_count;
+    const previousMentions = previous ? previous.mention_count : 0;
+    const absoluteGain = latestMentions - previousMentions;
 
-    const isEstablished = averageDailyMentions >= volumeThreshold;
-    const isAccelerating = velocityPercent > 0;
+    const isHighVolume = averageDailyMentions >= volumeThreshold;
+
+    // Anti-noise gate: velocity > 0 is only treated as genuine acceleration if
+    // supported by sufficient absolute volume or a meaningful net mention delta
+    const hasGenuineAcceleration =
+      velocityPercent > 0 &&
+      (latestMentions >= RADAR_MIN_ACCELERATION_MENTIONS || absoluteGain >= 2 || averageDailyMentions >= 0.8);
 
     let quadrant: RadarQuadrant;
-    if (isEstablished && isAccelerating) {
+    if (isHighVolume && hasGenuineAcceleration) {
       quadrant = 'established_accelerating';
-    } else if (!isEstablished && isAccelerating) {
+    } else if (!isHighVolume && hasGenuineAcceleration) {
       quadrant = 'emerging_accelerating';
-    } else if (isEstablished && !isAccelerating) {
+    } else if (isHighVolume && !hasGenuineAcceleration) {
       quadrant = 'established_stable';
     } else {
       quadrant = 'emerging_stable';
     }
 
     // Normalize Volume Axis (X):
-    // Emerging half [0, volumeThreshold] maps to chartX [5..48] -> SVG [padding.left + 5% .. centerX - 2%]
-    // Established half [volumeThreshold, maxVolume] maps to chartX [52..95] -> SVG [centerX + 2% .. padding.left + plotWidth - 5%]
+    // Targeted / Light half [0, volumeThreshold] maps to chartX [5..48] -> SVG [padding.left + 5% .. centerX - 2%]
+    // High-Volume half [volumeThreshold, maxVolume] maps to chartX [52..95] -> SVG [centerX + 2% .. padding.left + plotWidth - 5%]
     const maxVolumeCap = 10.0;
     let chartX: number;
     let svgX: number;
 
-    if (!isEstablished) {
+    if (!isHighVolume) {
       const ratio = Math.min(1, Math.max(0, averageDailyMentions / volumeThreshold));
       chartX = 5 + ratio * 43; // 5 to 48
       svgX = padding.left + (chartX / 100) * plotWidth;
@@ -190,21 +200,27 @@ export function buildRadarDataset(
 
     // Normalize Velocity Axis (Y):
     // Accelerating (> 0% up to +300%+) maps to chartY [52..95] (Top half of Cartesian) -> in SVG: [padding.top + 5% .. centerY - 2%]
-    // Stable / Declining (<= 0% down to -100%) maps to chartY [5..48] (Bottom half of Cartesian) -> in SVG: [centerY + 2% .. padding.top + plotHeight - 5%]
+    // Stable / Declining / Anti-noise filtered maps to chartY [5..48] (Bottom half of Cartesian) -> in SVG: [centerY + 2% .. padding.top + plotHeight - 5%]
     const maxVelocityCap = 300;
     let chartY: number;
     let svgY: number;
 
-    if (isAccelerating) {
+    if (hasGenuineAcceleration) {
       const ratio = Math.min(1, Math.max(0, velocityPercent / maxVelocityCap));
       chartY = 52 + ratio * 43; // 52 to 95
       // SVG Y goes downward, so top is padding.top + (1 - ratio) * halfHeight
       svgY = centerY - (ratio * (plotHeight / 2 - 12) + 12);
     } else {
-      // Declining or flat
-      const ratio = Math.min(1, Math.max(0, Math.abs(velocityPercent) / 100));
-      chartY = 48 - ratio * 43; // 48 down to 5
-      svgY = centerY + (ratio * (plotHeight / 2 - 12) + 12);
+      // If positive but filtered out by anti-noise gate, position near baseline centerline (chartY ~ 46)
+      if (velocityPercent > 0) {
+        chartY = 46;
+        svgY = centerY + 14;
+      } else {
+        // Declining or flat
+        const ratio = Math.min(1, Math.max(0, Math.abs(velocityPercent) / 100));
+        chartY = 48 - ratio * 43; // 48 down to 5
+        svgY = centerY + (ratio * (plotHeight / 2 - 12) + 12);
+      }
     }
 
     const cat = getCategoryForEntity(entity.name);
