@@ -115,46 +115,57 @@ export function TopicTrendChart({
           <div className="trend-chart-container">
             <svg
               className="trend-sparkline-svg"
-              viewBox="0 0 400 120"
-              preserveAspectRatio="none"
+              viewBox="0 0 800 140"
               aria-label={`Mention trend sparkline for ${entityName}`}
             >
               <defs>
                 <linearGradient id="trend-area-grad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--data, #11675f)" stopOpacity="0.28" />
-                  <stop offset="100%" stopColor="var(--data, #11675f)" stopOpacity="0.02" />
+                  <stop offset="0%" stopColor="var(--data, #11675f)" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="var(--data, #11675f)" stopOpacity="0.01" />
                 </linearGradient>
               </defs>
 
               {/* Background Guide Lines */}
-              <line x1="24" y1="16" x2="376" y2="16" stroke="var(--line, #c9c5bc)" strokeDasharray="3 3" opacity="0.6" />
-              <line x1="24" y1="54" x2="376" y2="54" stroke="var(--line, #c9c5bc)" strokeDasharray="3 3" opacity="0.4" />
-              <line x1="24" y1="92" x2="376" y2="92" stroke="var(--line, #c9c5bc)" opacity="0.8" />
+              <line x1="20" y1="20" x2="780" y2="20" stroke="var(--line, #c9c5bc)" strokeDasharray="3 3" opacity="0.4" />
+              <line x1="20" y1="70" x2="780" y2="70" stroke="var(--line, #c9c5bc)" strokeDasharray="3 3" opacity="0.3" />
+              <line x1="20" y1="120" x2="780" y2="120" stroke="var(--line, #c9c5bc)" opacity="0.6" />
 
               {/* Shaded Area */}
-              <polygon points={stats.svgArea} fill="url(#trend-area-grad)" />
+              <polygon points={computeTrendStats(snapshots, range, 800, 140).svgArea} fill="url(#trend-area-grad)" />
 
               {/* Main Line */}
               <polyline
-                points={stats.svgPath}
+                points={computeTrendStats(snapshots, range, 800, 140).svgPath}
                 className="trend-line-path"
                 fill="none"
-                stroke="var(--data-deep, #102b29)"
+                stroke="var(--data, #11675f)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
 
               {/* Data Point Circles */}
-              {stats.points.map((pt, idx) => {
+              {computeTrendStats(snapshots, range, 800, 140).points.map((pt, idx) => {
                 const isHovered = hoveredIndex === idx;
                 const isLatest = idx === stats.points.length - 1;
                 return (
                   <g key={pt.date}>
+                    {isHovered && (
+                      <line
+                        x1={pt.x}
+                        y1="10"
+                        x2={pt.x}
+                        y2="120"
+                        stroke="var(--data)"
+                        strokeWidth="1"
+                        strokeDasharray="2 2"
+                        opacity="0.8"
+                      />
+                    )}
                     <circle
                       cx={pt.x}
                       cy={pt.y}
-                      r={isHovered ? 5.5 : isLatest ? 4 : 3}
+                      r={isHovered ? 6 : isLatest ? 4.5 : 3.5}
                       className={`trend-point-circle ${isHovered ? 'hovered' : ''} ${isLatest ? 'latest' : ''}`}
                       onMouseEnter={() => setHoveredIndex(idx)}
                       onMouseLeave={() => setHoveredIndex(null)}
@@ -162,22 +173,21 @@ export function TopicTrendChart({
                   </g>
                 );
               })}
-
-              {/* Axis Labels */}
-              <text x="24" y="110" className="trend-axis-text start">
-                {stats.startDate}
-              </text>
-              <text x="376" y="110" className="trend-axis-text end" textAnchor="end">
-                {stats.endDate}
-              </text>
             </svg>
+
+            {/* Semantic HTML Date Axis */}
+            <div className="trend-axis-row">
+              <span className="trend-axis-date start">{stats.startDate}</span>
+              <span className="trend-axis-meta">{stats.points.length} daily snapshots</span>
+              <span className="trend-axis-date end">{stats.endDate}</span>
+            </div>
 
             {/* Hover Tooltip Overlay */}
             {activePoint && (
               <div
                 className="trend-tooltip"
                 style={{
-                  left: `${(activePoint.x / 400) * 100}%`,
+                  left: `${(activePoint.x / 800) * 100}%`,
                 }}
               >
                 <strong>{activePoint.mentions} mentions</strong>

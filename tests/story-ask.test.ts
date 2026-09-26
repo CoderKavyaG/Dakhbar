@@ -103,7 +103,7 @@ test('Ask endpoint enforces the active subscription, independent sources, and sh
   const route = await readFile('src/app/api/stories/[id]/ask/route.ts', 'utf8');
   assert.match(route, /await auth\(\)/);
   assert.match(route, /subscription_status !== 'active'/);
-  assert.match(route, /countIndependentSources\(reports\) < 2/);
+  assert.match(route, /countIndependentSources\(reports\) < 1/);
   assert.match(route, /where: \{ story_id: id, input_hash: inputHash/);
   assert.match(route, /db\.llmCall\.createMany/);
   assert.match(route, /input_tokens: attempt\.inputTokens/);

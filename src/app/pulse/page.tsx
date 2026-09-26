@@ -123,6 +123,55 @@ export default async function PulseRadarPage() {
           <small className="upgrade-footnote">Cancel anytime. Free 14-day trial included.</small>
         </div>
       )}
+
+      {/* Sector Intelligence & Sector Pages Navigation */}
+      <section className="pulse-sectors-showcase">
+        <header className="section-heading">
+          <div>
+            <span className="section-note">Explore by Sector</span>
+            <h2>Sector Intelligence & Coverage</h2>
+          </div>
+          <p>Real-time telemetry and cross-source reporting across 3 major developer disciplines</p>
+        </header>
+
+        <div className="pulse-sectors-grid">
+          <article className="pulse-sector-card">
+            <div className="sector-card-header">
+              <span className="sector-badge ai">AI & Labs</span>
+              <h3><Link href="/category/ai-companies">AI & companies →</Link></h3>
+            </div>
+            <p>Frontier foundation models, frontier labs, ML runtimes, and agent protocols.</p>
+            <div className="sector-card-footer">
+              <span className="entity-tags-preview">OpenAI · Anthropic · DeepSeek · PyTorch</span>
+              <Link href="/category/ai-companies" className="sector-action-link">Open Sector Pulse ↗</Link>
+            </div>
+          </article>
+
+          <article className="pulse-sector-card">
+            <div className="sector-card-header">
+              <span className="sector-badge infra">Cloud & Systems</span>
+              <h3><Link href="/category/infrastructure">Infrastructure →</Link></h3>
+            </div>
+            <p>Distributed databases, container runtimes, cloud platforms, and Linux systems.</p>
+            <div className="sector-card-footer">
+              <span className="entity-tags-preview">Kubernetes · Docker · PostgreSQL · AWS</span>
+              <Link href="/category/infrastructure" className="sector-action-link">Open Sector Pulse ↗</Link>
+            </div>
+          </article>
+
+          <article className="pulse-sector-card">
+            <div className="sector-card-header">
+              <span className="sector-badge tools">Languages & UI</span>
+              <h3><Link href="/category/languages-tools">Languages & tools →</Link></h3>
+            </div>
+            <p>Programming languages, compilers, JavaScript engines, and modern web frameworks.</p>
+            <div className="sector-card-footer">
+              <span className="entity-tags-preview">Rust · TypeScript · Python · React · Bun</span>
+              <Link href="/category/languages-tools" className="sector-action-link">Open Sector Pulse ↗</Link>
+            </div>
+          </article>
+        </div>
+      </section>
     </main>
   );
 }

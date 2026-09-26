@@ -18,7 +18,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const story = await db.story.findUnique({ where: { id: storyId }, include: { entities: { include: { entity: { select: { name: true } } } }, documents: { orderBy: { raw_document: { published_at: 'asc' } }, include: { raw_document: { select: { title: true, url: true, content: true, og_description: true, published_at: true } } } } } });
   if (!story) return NextResponse.json({ error: 'story_not_found' }, { status: 404 });
   const reports = story.documents.map(document => document.raw_document).filter((document, index, all) => all.findIndex(other => other.url === document.url) === index).slice(0, 8);
-  if (countIndependentSources(reports) < 2) return NextResponse.json({ error: 'multi_source_story_required' }, { status: 404 });
+  if (countIndependentSources(reports) < 1) return NextResponse.json({ error: 'source_required', message: 'No indexed sources available for this story.' }, { status: 404 });
   const evidence: AskEvidence[] = reports.map((document, index) => ({ citation: index + 1, title: document.title, domain: publisherDomain(document.url), reportedAt: document.published_at.toISOString(), excerpt: storyDek(document, 700).text, url: document.url }));
   const config = providerConfig('standard');
   let health: Awaited<ReturnType<typeof getModelHealth>> = [];

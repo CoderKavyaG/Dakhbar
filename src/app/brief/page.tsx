@@ -33,9 +33,52 @@ export default async function BriefPage() {
     <BriefAtmosphere names={brief.stories.flatMap(story=>story.entities.map(item=>item.entity.name))}/>
     <header className="reader-hero paper-hero"><div><p className="section-note">Catch me up</p><h1>Your Brief.</h1><p>{brief.revisited ? "You are caught up. Your last Brief is kept here to finish reading." : summary}</p>{generated.size > 0 && <span className="synthesis-note">Grounded synthesis — every claim constrained to indexed reporting</span>}</div><div className="brief-window"><span>Since</span><time dateTime={brief.since.toISOString()}>{brief.since.toLocaleString('en-IN',{timeZone:'Asia/Kolkata',day:'numeric',month:'short',hour:'numeric',minute:'2-digit'})}</time></div></header>
     <details className="brief-guide"><summary>How your Brief works</summary><p>Follow topics, then return when new reporting arrives. Desk members get a fact-constrained editorial rewrite from the Brief assistant. If generation is unavailable or fails validation, the original deterministic excerpt is shown. Free readers receive the same selected stories with those excerpts.</p><p>Saved stories pinned below stay available even after the Front Page changes. <Link href="/saved">Open your reading desk →</Link></p></details>
-    <section><header className="section-heading"><h2>{brief.revisited ? 'Your last edition' : brief.stories.length ? 'What changed' : 'You are caught up'}</h2><Badge>{brief.revisited ? `${brief.stories.length} saved in this edition` : briefSummary(brief.stories.length)}</Badge></header>
-      {brief.stories.length ? <ArticleGrid className="article-grid-results">{brief.stories.map((story, index) => <StoryCard key={story.id} story={story} featured={generated.has(story.id) && index === 0} dekOverride={generated.get(story.id)}/>)}</ArticleGrid> : <div className="brief-caught-up"><h3>No new signals yet.</h3><p>Your topics have no new reporting in this window. Your saved stories remain below, and Following keeps the full topic archive.</p><Link href="/for-you">Browse everything you follow →</Link></div>}
+    <section>
+      <header className="section-heading">
+        <div>
+          <span className="section-note">Topic telemetry</span>
+          <h2>{brief.revisited ? 'Your latest edition' : brief.stories.length ? 'Updates from followed topics' : 'You are caught up'}</h2>
+        </div>
+        <Badge>{brief.revisited ? `${brief.stories.length} saved in this edition` : briefSummary(brief.stories.length)}</Badge>
+      </header>
+      {brief.stories.length ? (
+        <ArticleGrid className="article-grid-results">
+          {brief.stories.map((story, index) => (
+            <StoryCard
+              key={story.id}
+              story={story}
+              featured={generated.has(story.id) && index === 0}
+              dekOverride={generated.get(story.id)}
+            />
+          ))}
+        </ArticleGrid>
+      ) : (
+        <div className="brief-caught-up">
+          <h3>No new signals yet.</h3>
+          <p>Your topics have no new reporting in this window. Your pinned stories remain below, and Following keeps the full topic archive.</p>
+          <Link href="/for-you">Browse everything you follow →</Link>
+        </div>
+      )}
     </section>
-    {pinned.length>0&&<section className="pinned-brief"><header className="section-heading"><h2>Pinned to your Brief</h2><Link href="/saved">Your saved stories →</Link></header><p>Kept by you. These are separate from developments since your last visit.</p><ArticleGrid className="article-grid-results">{pinned.map(row=><StoryCard key={row.story_id} story={row.story}/>)}</ArticleGrid></section>}
+
+    {pinned.length > 0 && (
+      <section className="pinned-brief" style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--line)' }}>
+        <header className="section-heading">
+          <div>
+            <span className="section-note">Personal curation</span>
+            <h2>Pinned to your Brief ({pinned.length})</h2>
+          </div>
+          <Link href="/saved">Your saved archive →</Link>
+        </header>
+        <p style={{ color: 'var(--ink-soft)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>
+          Stories you explicitly selected to keep in your reading desk, preserved across daily editions.
+        </p>
+        <ArticleGrid className="article-grid-results">
+          {pinned.map(row => (
+            <StoryCard key={row.story_id} story={row.story} />
+          ))}
+        </ArticleGrid>
+      </section>
+    )}
   </main>;
 }

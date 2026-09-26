@@ -27,12 +27,17 @@ export async function SiteHeader() {
       <div className="account-nav">{reader?.subscription_status==='active'&&<Link href="/brief" className="desk-member-badge">Desk member</Link>}{userId ? <UserButton/> : <JoinUsButton/>}</div>
     </div>
     <div className="nav-edition">
-      <span>Independent signals. Developer perspective.</span>
-      <Link href="/category/ai-companies">AI & companies</Link>
-      <Link href="/category/infrastructure">Infrastructure</Link>
-      <Link href="/category/languages-tools">Languages & tools</Link>
-      <Link href="/pulse" className="pulse-nav-link">Pulse Radar</Link>
-      <Link href="/topics" className="topics-link">All topics →</Link>
+      <div className="edition-tagline">
+        <span className="tagline-dot" aria-hidden="true" />
+        <span>Independent signals. Developer perspective.</span>
+      </div>
+      <nav className="edition-sectors" aria-label="Sectors and telemetry">
+        <Link href="/category/ai-companies" className="sector-nav-link">AI & companies</Link>
+        <Link href="/category/infrastructure" className="sector-nav-link">Infrastructure</Link>
+        <Link href="/category/languages-tools" className="sector-nav-link">Languages & tools</Link>
+        <Link href="/pulse" className="sector-nav-link pulse-nav-link"><span className="pulse-dot" aria-hidden="true" />Pulse Radar</Link>
+        <Link href="/topics" className="topics-link">All topics →</Link>
+      </nav>
     </div>
   </header>;
 }

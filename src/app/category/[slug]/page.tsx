@@ -44,9 +44,11 @@ export default async function CategoryPage({
         <div className="category-intel-card">
           <header className="category-intel-header">
             <div className="category-intel-title">
-              <span className="section-note">Developer Pulse · Sector Overview</span>
-              <h2 id="sector-intel-heading">Sector Activity & Movement</h2>
+              <h2 id="sector-intel-heading" className="intel-clean-heading">Sector Pulse & Momentum</h2>
             </div>
+            <a href="#sector-stories" className="jump-to-stories-btn">
+              Explore {storyCount} stories ↓
+            </a>
           </header>
 
           <div className="category-metrics-strip">
@@ -122,18 +124,26 @@ export default async function CategoryPage({
 
           {/* Sector Entity Navigator */}
           <div className="category-entities-strip">
-            <span className="sector-entities-label">All Sector Topics:</span>
+            <div className="sector-entities-header">
+              <span className="sector-entities-label">All Sector Topics</span>
+              <span className="sector-entities-hint">Click any company to open dedicated news & trend chart →</span>
+            </div>
             <div className="category-pills-row">
               {entities.map(e => (
                 <Link
                   key={e.id}
                   href={topicPath({ name: e.name })}
                   className="category-entity-pill"
+                  title={`Open news and 30-day trends for ${e.name}`}
                 >
                   <span className="pill-name">{e.name}</span>
-                  {e.latestVelocity !== null && e.latestVelocity !== 0 && (
+                  {e.latestVelocity !== null && e.latestVelocity !== 0 ? (
                     <span className={`pill-vel ${e.latestVelocity > 0 ? 'pos' : 'neg'}`}>
                       {e.latestVelocity > 0 ? '+' : ''}{e.latestVelocity.toFixed(0)}%
+                    </span>
+                  ) : (
+                    <span className="pill-vel neutral">
+                      {e.latestMentions ? `${e.latestMentions}/d` : 'steady'}
                     </span>
                   )}
                 </Link>
@@ -144,7 +154,7 @@ export default async function CategoryPage({
       </section>
 
       {/* Stories Grid */}
-      <section className="category-stories-section">
+      <section className="category-stories-section" id="sector-stories">
         <header className="section-heading">
           <div>
             <span className="section-note">Sector Coverage</span>
