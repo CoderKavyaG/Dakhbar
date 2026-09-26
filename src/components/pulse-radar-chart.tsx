@@ -137,23 +137,23 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
 
           {/* Axis Labels */}
           {/* X Axis Labels */}
-          <text x={padding.left + 10} y={centerY - 6} className="axis-label-text axis-left">
+          <text x={padding.left + 8} y={centerY - 8} className="axis-label-text">
             ← Emerging Volume
           </text>
-          <text x={viewBoxWidth - padding.right - 10} y={centerY - 6} textAnchor="end" className="axis-label-text axis-right">
+          <text x={viewBoxWidth - padding.right - 8} y={centerY - 8} textAnchor="end" className="axis-label-text">
             Established Volume →
           </text>
 
           {/* Y Axis Labels */}
-          <text x={centerX + 8} y={padding.top + 16} className="axis-label-text axis-top">
+          <text x={centerX - 12} y={padding.top + 18} textAnchor="end" className="axis-label-text">
             ↑ Accelerating (+Velocity)
           </text>
-          <text x={centerX + 8} y={viewBoxHeight - padding.bottom - 8} className="axis-label-text axis-bottom">
-            ↓ Steady / Baseline
+          <text x={centerX - 12} y={viewBoxHeight - padding.bottom - 12} textAnchor="end" className="axis-label-text">
+            Steady / Baseline ↓
           </text>
 
           {/* Plotted Entity Dots */}
-          {filteredEntities.map(entity => {
+          {filteredEntities.map((entity, index) => {
             const isHovered = hoveredEntity?.id === entity.id;
             const dotRadius = isHovered ? 7 : Math.min(6, Math.max(3.5, 2.5 + entity.averageDailyMentions * 0.45));
 
@@ -162,6 +162,48 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
             else if (entity.quadrant === 'emerging_accelerating') dotColor = '#9333ea'; // Purple breakout
             else if (entity.quadrant === 'established_stable') dotColor = '#2563eb'; // Blue foundation
             else dotColor = '#64748b'; // Slate niche
+
+            // Show labels for all entities in sector view, or prominent/active entities in 'all' view
+            const isProminent =
+              selectedCategory !== 'all' ||
+              entity.averageDailyMentions >= 0.8 ||
+              Math.abs(entity.velocityPercent) > 0 ||
+              isHovered;
+
+            // Short label for dense chart rendering
+            const displayLabel =
+              entity.name === 'Model Context Protocol'
+                ? 'MCP'
+                : entity.name === 'Amazon Web Services'
+                ? 'AWS'
+                : entity.name;
+
+            // Subtle vertical stagger for zero-velocity dense clusters
+            const staggerY =
+              entity.quadrant === 'emerging_stable' && entity.velocityPercent === 0
+                ? ((index % 5) - 2) * 6
+                : 0;
+
+            const finalSvgY = Math.min(viewBoxHeight - padding.bottom - 14, Math.max(padding.top + 18, entity.svgY + staggerY));
+
+            // Custom micro-adjustments for dense clusters
+            let customDy = 0;
+            if (entity.name === 'Model Context Protocol') {
+              customDy = -8;
+            } else if (entity.name === 'Microsoft') {
+              customDy = 10;
+            } else if (entity.name === 'Python') {
+              customDy = -6;
+            } else if (entity.name === 'React') {
+              customDy = 6;
+            } else if (entity.name === 'Meta') {
+              customDy = -6;
+            }
+
+            // Flip label to left if near right boundary
+            const isNearRight = entity.svgX > viewBoxWidth - padding.right - 65;
+            const labelX = isNearRight ? entity.svgX - dotRadius - 5 : entity.svgX + dotRadius + 5;
+            const textAnchor = isNearRight ? 'end' : 'start';
 
             return (
               <g
@@ -173,7 +215,7 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
                 {/* Clickable Circle Dot */}
                 <circle
                   cx={entity.svgX}
-                  cy={entity.svgY}
+                  cy={finalSvgY}
                   r={dotRadius}
                   fill={dotColor}
                   stroke="var(--paper)"
@@ -182,13 +224,16 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
                 />
 
                 {/* Entity Name Label */}
-                <text
-                  x={entity.svgX + dotRadius + 4}
-                  y={entity.svgY + 3.5}
-                  className={`radar-entity-text ${isHovered ? 'hovered' : ''}`}
-                >
-                  {entity.name}
-                </text>
+                {isProminent && (
+                  <text
+                    x={labelX}
+                    y={finalSvgY + 3.5 + customDy}
+                    textAnchor={textAnchor}
+                    className={`radar-entity-text ${isHovered ? 'hovered' : ''}`}
+                  >
+                    {displayLabel}
+                  </text>
+                )}
               </g>
             );
           })}
