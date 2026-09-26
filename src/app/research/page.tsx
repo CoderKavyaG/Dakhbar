@@ -20,6 +20,7 @@ import {
   assembleResearchEvidence,
   type ResearchReport,
 } from '@/lib/research';
+import { DESK_PRICE_USD } from '@/lib/billing/config';
 
 export const dynamic = 'force-dynamic';
 
@@ -122,7 +123,7 @@ export default async function ResearchPage({
           </div>
           <Button asChild variant="default" className="upgrade-cta-btn">
             <Link href="/pricing">
-              Upgrade to Desk for $12/month <ArrowRight size={16} className="inline-icon" />
+              Upgrade to Desk for ${DESK_PRICE_USD}/month <ArrowRight size={16} className="inline-icon" />
             </Link>
           </Button>
           <small className="upgrade-footnote">Cancel anytime. Free 14-day trial included.</small>
