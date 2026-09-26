@@ -1,0 +1,51 @@
+name: Scheduled Multi-Source Ingestion
+
+on:
+  schedule:
+    # Run every 15 minutes for real-time developer news ingestion
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+    inputs:
+      source:
+        description: 'Ingestion source to trigger (hn, feeds, devto, rss, github, all)'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - hn
+          - feeds
+          - devto
+          - rss
+          - github
+
+jobs:
+  ingest:
+    name: Run Ingestion Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Ingest Hacker News & Cluster Stories
+        if: github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'hn'
+        run: |
+          echo "Triggering HN Ingestion..."
+          curl -f -s -S --max-time 50 -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/ingest?source=hn"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          APP_URL: ${{ secrets.APP_URL }}
+
+      - name: Ingest RSS, Dev.to & GitHub Feeds
+        if: github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'feeds' || github.event.inputs.source == 'devto' || github.event.inputs.source == 'rss' || github.event.inputs.source == 'github'
+        run: |
+          SOURCE_PARAM="${{ github.event.inputs.source || 'feeds' }}"
+          if [ "$SOURCE_PARAM" = "all" ]; then SOURCE_PARAM="feeds"; fi
+          echo "Triggering Feeds Ingestion (source: $SOURCE_PARAM)..."
+          curl -f -s -S --max-time 50 -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/ingest?source=$SOURCE_PARAM"
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          APP_URL: ${{ secrets.APP_URL }}
