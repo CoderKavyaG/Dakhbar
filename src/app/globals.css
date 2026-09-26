@@ -1530,6 +1530,46 @@ html { font-size: 16px; }
   font-weight: 600;
 }
 
+.topics-radar-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1.5rem;
+  margin-top: 1.75rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--data) 40%, var(--line));
+  border-left: 4px solid var(--data);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--data-surface) 60%, var(--paper-raised));
+}
+
+.topics-radar-banner h3 {
+  margin: 0.35rem 0 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.topics-radar-banner p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: var(--ink-soft);
+  max-width: 600px;
+  line-height: 1.45;
+}
+
+.radar-banner-btn {
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .topics-radar-banner {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* Category Intelligence Panel */
 .category-intel-section {
   margin-bottom: 2.5rem;
@@ -2306,6 +2346,393 @@ html { font-size: 16px; }
   line-height: 1.5;
   color: var(--ink-soft);
 }
+
+/* Phase 12: Developer Pulse Radar */
+.pulse-page {
+  padding-top: 1.5rem;
+  padding-bottom: 4rem;
+}
+
+.pulse-header {
+  padding: 1.5rem 0 2rem;
+  border-bottom: 2px solid var(--ink);
+  margin-bottom: 2rem;
+}
+
+.pulse-badge-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.badge-radar {
+  background: color-mix(in srgb, var(--data) 15%, transparent);
+  color: var(--data);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.pulse-header h1 {
+  margin: 0.35rem 0 0.75rem;
+  font-family: var(--font-display);
+  font-size: clamp(2.4rem, 5vw, 3.6rem);
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.pulse-subtitle {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+  max-width: 780px;
+  line-height: 1.55;
+  margin-bottom: 1.5rem;
+}
+
+.pulse-history-strip {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  background: color-mix(in srgb, var(--paper-muted) 60%, var(--paper-raised));
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+}
+
+.history-count-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--ink);
+}
+
+.history-badge-item small {
+  font-family: var(--font-data);
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.pulse-radar-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.radar-filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-label {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+}
+
+.radar-filter-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.radar-category-btn {
+  padding: 0.35rem 0.75rem;
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  background: var(--paper-raised);
+  color: var(--ink);
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.radar-category-btn:hover {
+  border-color: var(--data);
+}
+
+.radar-category-btn.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.cat-count {
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  opacity: 0.8;
+}
+
+.radar-chart-wrapper {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  overflow: hidden;
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+}
+
+.pulse-radar-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Quadrant Rectangles */
+.quadrant-rect {
+  transition: opacity 150ms ease;
+}
+
+.quadrant-breakout {
+  fill: color-mix(in srgb, #9333ea 4%, var(--paper-raised));
+}
+
+.quadrant-surging {
+  fill: color-mix(in srgb, #16a34a 4%, var(--paper-raised));
+}
+
+.quadrant-foundations {
+  fill: color-mix(in srgb, #2563eb 3%, var(--paper-raised));
+}
+
+.quadrant-niche {
+  fill: color-mix(in srgb, #64748b 3%, var(--paper-raised));
+}
+
+.radar-crosshair {
+  stroke: color-mix(in srgb, var(--line) 70%, var(--ink));
+  stroke-width: 1.25;
+  stroke-dasharray: 4 4;
+}
+
+.radar-border {
+  fill: none;
+  stroke: var(--line);
+  stroke-width: 1;
+}
+
+.quadrant-watermark {
+  font-family: var(--font-data);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  fill: var(--ink);
+  opacity: 0.35;
+}
+
+.axis-label-text {
+  font-family: var(--font-data);
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--ink-soft);
+  letter-spacing: 0.02em;
+}
+
+.radar-entity-group {
+  cursor: pointer;
+}
+
+.radar-entity-circle {
+  transition: all 120ms ease;
+}
+
+.radar-entity-group:hover .radar-entity-circle {
+  transform-origin: center;
+  filter: drop-shadow(0 0 6px rgba(0, 0, 0, 0.25));
+}
+
+.radar-entity-text {
+  font-family: var(--font-sans);
+  font-size: 9.5px;
+  font-weight: 550;
+  fill: var(--ink);
+  pointer-events: none;
+  transition: all 120ms ease;
+}
+
+.radar-entity-text.hovered {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--data);
+}
+
+/* Radar Hover Card Overlay */
+.radar-hover-card {
+  position: absolute;
+  transform: translate(-50%, -120%);
+  background: var(--paper-raised);
+  border: 1px solid var(--line);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius);
+  padding: 0.9rem 1.1rem;
+  z-index: 50;
+  pointer-events: none;
+  min-width: 220px;
+  animation: fadeIn 120ms ease;
+}
+
+.hover-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.hover-entity-name {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+.hover-quadrant-badge {
+  font-size: 0.68rem;
+}
+
+.hover-card-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+  padding: 0.5rem 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+}
+
+.hover-card-metrics small {
+  display: block;
+  font-family: var(--font-data);
+  font-size: 0.68rem;
+  color: var(--ink-soft);
+}
+
+.hover-card-metrics strong, .hover-card-metrics span {
+  font-family: var(--font-data);
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+
+.pos-vel {
+  color: #16a34a !important;
+}
+
+.hover-topic-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--data);
+  text-decoration: none;
+}
+
+/* Quadrant Breakdown Grid */
+.radar-quadrants-breakdown {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+.quadrant-summary-card {
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+}
+
+.quad-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.quad-card-header h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.quad-card-header small {
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+}
+
+.quad-entities-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.quad-entity-pill {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0.65rem;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  text-decoration: none;
+  color: var(--ink);
+  font-size: 0.82rem;
+  transition: all 120ms ease;
+}
+
+.quad-entity-pill:hover {
+  border-color: var(--data);
+}
+
+.pill-pos {
+  color: #16a34a;
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.pill-neutral {
+  color: var(--ink-soft);
+  font-family: var(--font-data);
+  font-size: 0.72rem;
+}
+
+.quad-more-text, .quad-empty-text {
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+  font-style: italic;
+  padding: 0.2rem 0.5rem;
+}
+
+.pulse-upgrade-card {
+  max-width: 640px;
+  margin: 3rem auto;
+  padding: 2.75rem 2rem;
+  border: 1px solid color-mix(in srgb, var(--data) 40%, var(--line));
+  border-radius: var(--radius);
+  background: var(--paper-raised);
+  text-align: center;
+}
+
+.radar-excluded-disclosure {
+  margin-top: 2.5rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--paper-muted);
+}
+
 
 
 

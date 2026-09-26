@@ -31,6 +31,7 @@ export async function SiteHeader() {
       <Link href="/category/ai-companies">AI & companies</Link>
       <Link href="/category/infrastructure">Infrastructure</Link>
       <Link href="/category/languages-tools">Languages & tools</Link>
+      <Link href="/pulse" className="pulse-nav-link">Pulse Radar</Link>
       <Link href="/topics" className="topics-link">All topics →</Link>
     </div>
   </header>;

@@ -1,6 +1,7 @@
 import Link from 'next/link';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Compass } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { getTopicsIndexData } from '@/lib/reader-data';
 import { topicPath } from '@/lib/topic-slug';
 
@@ -25,6 +26,23 @@ export default async function TopicsIndexPage() {
             {totalEntities} tracked entities across AI foundation labs, cloud infrastructure, and developer tooling.
             Select any entity for full story coverage and historical mention velocity.
           </p>
+        </div>
+
+        <div className="topics-radar-banner">
+          <div className="radar-banner-content">
+            <Badge className="badge-radar">
+              <Compass size={12} className="inline-icon" /> Developer Pulse Radar
+            </Badge>
+            <h3>Market Momentum Quadrants</h3>
+            <p>
+              Map emerging breakout tools, surging leaders, and foundational infrastructure across all {totalEntities} tracked technologies.
+            </p>
+          </div>
+          <Button asChild variant="default" className="radar-banner-btn">
+            <Link href="/pulse">
+              Open Pulse Radar <ArrowRight size={15} className="inline-icon" />
+            </Link>
+          </Button>
         </div>
       </section>
 

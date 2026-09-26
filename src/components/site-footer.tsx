@@ -15,6 +15,7 @@ export async function SiteFooter() {
         <Link href="/category/ai-companies">AI & companies</Link>
         <Link href="/category/infrastructure">Infrastructure</Link>
         <Link href="/category/languages-tools">Languages & tools</Link>
+        <Link href="/pulse">Developer Pulse Radar</Link>
         <Link href="/topics">All topics index →</Link>
       </nav>
 
