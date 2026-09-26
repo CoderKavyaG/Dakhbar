@@ -10,6 +10,7 @@ import {
   Lock,
   ArrowRight,
   Database,
+  AlertCircle,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -205,6 +206,19 @@ export default async function ResearchPage({
         <div className="research-title-wrap">
           <div className="research-badge-row">
             <span className="section-note">Desk Research Dossier</span>
+            {report.richnessTier === 'preliminary' ? (
+              <Badge className="badge-preliminary">
+                <AlertCircle size={11} className="inline-icon" /> Preliminary Coverage ({report.storyCount} stories)
+              </Badge>
+            ) : report.richnessTier === 'comprehensive' ? (
+              <Badge className="badge-comprehensive">
+                <Sparkles size={11} className="inline-icon" /> Comprehensive Synthesis ({report.storyCount} stories)
+              </Badge>
+            ) : (
+              <Badge className="badge-standard">
+                <Sparkles size={11} className="inline-icon" /> Standard Synthesis ({report.storyCount} stories)
+              </Badge>
+            )}
             {report.cached ? (
               <Badge className="badge-cached">Shared Topic Cache (24h)</Badge>
             ) : (
@@ -237,6 +251,19 @@ export default async function ResearchPage({
           </div>
         </div>
       </header>
+
+      {/* Preliminary Coverage Disclaimer Banner */}
+      {report.richnessTier === 'preliminary' && (
+        <div className="research-preliminary-banner">
+          <AlertCircle size={20} className="text-data inline-icon flex-shrink-0" />
+          <div>
+            <strong>Limited source coverage — fewer independent reports than most topics</strong>
+            <p>
+              This dossier is synthesized from {report.storyCount} stories and {report.evidenceCount} corroborated sources near the minimum evidence gate. While all facts and citations are strictly verified, analytical breadth is narrower than well-corroborated topics.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Section 1: Executive Brief */}
       <section className="research-section" aria-labelledby="exec-brief-title">

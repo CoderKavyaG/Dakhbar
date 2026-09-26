@@ -39,6 +39,17 @@ export type ResearchTimelineItem = {
   sources: { domain: string; url: string; title: string; citation: number }[];
 };
 
+export type EvidenceRichnessTier = 'comprehensive' | 'standard' | 'preliminary';
+
+export type RichnessTierInfo = {
+  tier: EvidenceRichnessTier;
+  label: string;
+  badge: string;
+  description: string;
+  disclaimer?: string;
+  isPreliminary: boolean;
+};
+
 export type ResearchReport = {
   topic: string;
   normalizedTopic: string;
@@ -49,6 +60,10 @@ export type ResearchReport = {
   ineligibleReason?: string;
   storyCount: number;
   evidenceCount: number;
+  richnessTier: EvidenceRichnessTier;
+  richnessLabel: string;
+  richnessBadge: string;
+  richnessDisclaimer?: string;
   executiveBrief: {
     text: string;
     verified: boolean;
@@ -76,6 +91,48 @@ export const RESEARCH_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 export const SUBSCRIBER_DAILY_RESEARCH_LIMIT = 5;
 export const GLOBAL_DAILY_RESEARCH_TOKEN_LIMIT = 80000; // 80k tokens/day (80% of Groq 120b 100k TPD ceiling)
 export const GLOBAL_DAILY_RESEARCH_CALL_LIMIT = 40; // Max 40 calls/day system-wide
+
+/**
+ * Computes the evidence richness tier based on verified empirical thresholds:
+ * - Comprehensive: >= 6 stories OR >= 10 documents (e.g. OpenAI, Rust, PostgreSQL, React 19)
+ * - Standard: >= 4 stories AND >= 5 documents (e.g. Docker, Kubernetes, Linux, Anthropic, Python, Go)
+ * - Preliminary: 2-3 stories OR 3-4 documents (e.g. Redis vs Valkey, Bun, WebAssembly, SQLite)
+ */
+export function computeEvidenceRichness(
+  storyCount: number,
+  evidenceCount?: number
+): RichnessTierInfo {
+  const effectiveDocs = evidenceCount ?? storyCount;
+
+  if (storyCount >= 6 || (evidenceCount !== undefined && evidenceCount >= 10)) {
+    return {
+      tier: 'comprehensive',
+      label: 'Comprehensive Coverage',
+      badge: 'Comprehensive Synthesis',
+      description: `Synthesized across deep multi-source coverage (${storyCount} stories${evidenceCount !== undefined ? ` · ${evidenceCount} sources` : ''}).`,
+      isPreliminary: false,
+    };
+  }
+
+  if (storyCount >= 4 && effectiveDocs >= 5) {
+    return {
+      tier: 'standard',
+      label: 'Standard Coverage',
+      badge: 'Standard Synthesis',
+      description: `Synthesized across standard developer corpus coverage (${storyCount} stories${evidenceCount !== undefined ? ` · ${evidenceCount} sources` : ''}).`,
+      isPreliminary: false,
+    };
+  }
+
+  return {
+    tier: 'preliminary',
+    label: 'Preliminary Coverage',
+    badge: 'Limited Source Coverage',
+    description: `Limited source coverage — fewer independent reports than most topics (${storyCount} stories${evidenceCount !== undefined ? ` · ${evidenceCount} sources` : ''}).`,
+    disclaimer: 'Limited source coverage — this dossier is synthesized from a minimal set of independent reports. While all facts and citations are verified, analytical depth is narrower than well-corroborated topics.',
+    isPreliminary: true,
+  };
+}
 
 export function normalizeResearchTopic(topic: string): string {
   return topic
@@ -448,6 +505,7 @@ export async function generateResearchReport(
   const assembly = await assembleResearchEvidence(topic);
 
   if (!assembly.eligible) {
+    const richness = computeEvidenceRichness(assembly.stories.length, assembly.evidence.length);
     return {
       report: {
         topic,
@@ -459,6 +517,10 @@ export async function generateResearchReport(
         ineligibleReason: assembly.reason,
         storyCount: assembly.stories.length,
         evidenceCount: assembly.evidence.length,
+        richnessTier: richness.tier,
+        richnessLabel: richness.label,
+        richnessBadge: richness.badge,
+        richnessDisclaimer: richness.disclaimer,
         executiveBrief: {
           text: assembly.reason || 'Insufficient verified multi-story evidence.',
           verified: false,
@@ -494,6 +556,11 @@ export async function generateResearchReport(
       cachedReport.cached = true;
       cachedReport.timeline = assembly.timeline;
       cachedReport.sources = assembly.evidence;
+      const richness = computeEvidenceRichness(cachedReport.storyCount, cachedReport.evidenceCount);
+      cachedReport.richnessTier = cachedReport.richnessTier || richness.tier;
+      cachedReport.richnessLabel = cachedReport.richnessLabel || richness.label;
+      cachedReport.richnessBadge = cachedReport.richnessBadge || richness.badge;
+      cachedReport.richnessDisclaimer = cachedReport.richnessDisclaimer ?? richness.disclaimer;
       return { report: cachedReport, cached: true };
     } catch {
       // Invalid cache entry; proceed to live generation
@@ -624,6 +691,8 @@ export async function generateResearchReport(
     ? validKeyPoints
     : ['Verified key points could not be confirmed from the source reports.'];
 
+  const richness = computeEvidenceRichness(assembly.stories.length, assembly.evidence.length);
+
   const report: ResearchReport = {
     topic,
     normalizedTopic: assembly.normalizedTopic,
@@ -633,6 +702,10 @@ export async function generateResearchReport(
     eligible: true,
     storyCount: assembly.stories.length,
     evidenceCount: assembly.evidence.length,
+    richnessTier: richness.tier,
+    richnessLabel: richness.label,
+    richnessBadge: richness.badge,
+    richnessDisclaimer: richness.disclaimer,
     executiveBrief: {
       text: briefText,
       verified: briefVerified,

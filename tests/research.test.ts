@@ -158,3 +158,46 @@ test('Research page gracefully handles both user rate limits and global system c
   assert.match(page, /Daily Research Limit Reached/);
   assert.match(page, /tokens per day \(TPD\) ceilings/);
 });
+
+test('computeEvidenceRichness tiers topics accurately based on empirical evidence volume', async () => {
+  const { computeEvidenceRichness } = await import('../src/lib/research');
+
+  // Comprehensive: >= 6 stories OR >= 10 docs (e.g. OpenAI 13/20, Rust 9/12)
+  const comp1 = computeEvidenceRichness(13, 20);
+  assert.equal(comp1.tier, 'comprehensive');
+  assert.equal(comp1.isPreliminary, false);
+  assert.match(comp1.label, /Comprehensive/);
+
+  const comp2 = computeEvidenceRichness(6, 8);
+  assert.equal(comp2.tier, 'comprehensive');
+
+  // Standard: >= 4 stories AND >= 5 docs (e.g. Docker 4/6, Linux 5/8, Python 5/7)
+  const std1 = computeEvidenceRichness(4, 6);
+  assert.equal(std1.tier, 'standard');
+  assert.equal(std1.isPreliminary, false);
+  assert.match(std1.label, /Standard/);
+
+  const std2 = computeEvidenceRichness(5, 7);
+  assert.equal(std2.tier, 'standard');
+
+  // Preliminary: near minimum gate (2-3 stories OR 3-4 docs, e.g. Redis vs Valkey 3/3, Bun 3/5)
+  const prelim1 = computeEvidenceRichness(3, 3);
+  assert.equal(prelim1.tier, 'preliminary');
+  assert.equal(prelim1.isPreliminary, true);
+  assert.match(prelim1.label, /Preliminary/);
+  assert.match(prelim1.disclaimer || '', /Limited source coverage/);
+
+  const prelim2 = computeEvidenceRichness(2, 4);
+  assert.equal(prelim2.tier, 'preliminary');
+});
+
+test('Search CTA reflects evidence richness signal before generation', async () => {
+  const { readFile } = await import('node:fs/promises');
+  const cta = await readFile('src/components/research-dossier-cta.tsx', 'utf8');
+  assert.match(cta, /computeEvidenceRichness/);
+  assert.match(cta, /Preliminary dossier available/);
+  assert.match(cta, /Generate Comprehensive Dossier/);
+  assert.match(cta, /badge-preliminary/);
+  assert.match(cta, /badge-comprehensive/);
+});
+
