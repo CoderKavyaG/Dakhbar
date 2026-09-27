@@ -183,6 +183,22 @@
   --color-tier-moderate: var(--tier-moderate);
   --color-tier-moderate-text: var(--tier-moderate-text);
   --color-tier-preliminary: var(--tier-preliminary);
+
+  /* 4px Geometric Spacing Scale */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-7: 1.75rem;
+  --spacing-8: 2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-14: 3.5rem;
+  --spacing-16: 4rem;
+  --spacing-20: 5rem;
+
   --font-sans: var(--font-body);
   --font-serif: var(--font-display);
   --font-mono: var(--font-data);
