@@ -197,11 +197,24 @@
   --spacing-12: 3rem;
   --spacing-14: 3.5rem;
   --spacing-16: 4rem;
-  --spacing-20: 5rem;
-
+  /* Broadsheet Typography System */
   --font-sans: var(--font-body);
   --font-serif: var(--font-display);
   --font-mono: var(--font-data);
+  --font-devanagari: var(--font-devanagari);
+
+  --text-lead: clamp(2rem, 3.8vw, 2.75rem);
+  --text-headline: 1.375rem;
+  --text-headline-sm: 1.125rem;
+  --text-dek: 1rem;
+  --text-data: 0.8125rem;
+  --text-data-sm: 0.75rem;
+
+  --leading-lead: 1.08;
+  --leading-headline: 1.22;
+  --leading-dek: 1.5;
+  --leading-body: 1.6;
+
   --radius-sm: calc(var(--radius) - 2px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
