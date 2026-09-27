@@ -4,7 +4,7 @@ import { decideAdminAccess } from './admin-access';
 
 export async function requireAdmin() {
   const session = await auth();
-  if (!session.userId) return session.redirectToSignIn();
+  if (!session.userId) return session.redirectToSignIn({ returnBackUrl: '/' });
   const user = await currentUser();
   const decision = decideAdminAccess(session.userId, user, {
     email: process.env.ADMIN_EMAIL,

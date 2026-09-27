@@ -63,7 +63,7 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
   const openSignIn = () => {
     window.sessionStorage.setItem(PENDING_FOLLOW_KEY, intentKey);
     setAwaitingSignIn(true);
-    clerk.openSignIn({});
+    clerk.openSignIn({ fallbackRedirectUrl: '/', signUpFallbackRedirectUrl: '/' });
     let sawModal = false;
     const observer = new MutationObserver(() => {
       const modalOpen = Boolean(document.querySelector('.cl-modalBackdrop,.cl-modalContent,[data-clerk-modal]'));

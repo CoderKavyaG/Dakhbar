@@ -9,9 +9,9 @@ import { answerStoryQuestion, citationsAreValid, type AskEvidence } from '@/lib/
 export const dynamic = 'force-dynamic';
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: 'sign_in_required' }, { status: 401 });
+  if (!userId) return NextResponse.json({ error: 'sign_in_required', message: 'Sign in to ask questions about this story.' }, { status: 401 });
   const user = await db.user.findUnique({ where: { id: userId }, select: { subscription_status: true } });
-  if (user?.subscription_status !== 'active') return NextResponse.json({ error: 'paid_members_only', upgradeUrl: '/pricing' }, { status: 403 });
+  if (user?.subscription_status !== 'active') return NextResponse.json({ error: 'paid_members_only', message: 'Ask this story is included with Desk membership.', upgradeUrl: '/pricing' }, { status: 403 });
   const { id: storyId } = await params;
   const body = await request.json().catch(() => null) as { question?: unknown } | null;
   if (typeof body?.question !== 'string' || !body.question.trim() || body.question.length > 500) return NextResponse.json({ error: 'question_invalid', message: 'Enter a question of up to 500 characters.' }, { status: 400 });
