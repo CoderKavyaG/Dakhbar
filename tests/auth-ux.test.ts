@@ -40,3 +40,15 @@ test('ordinary story cards expose a follow control for every entity tag', async 
   assert.match(card, /story\.entities\.slice\(1\)\.map/);
   assert.doesNotMatch(card, /slice\(1,\s*3\)/);
 });
+
+test('header consolidates account into single avatar entry point with zero mascot decoration in dropdown', async () => {
+  const [header, accountMenu] = await Promise.all([
+    read('src/components/site-header.tsx'),
+    read('src/components/account-menu.tsx'),
+  ]);
+  assert.match(header, /<AccountMenu/);
+  assert.doesNotMatch(header, /className="desk-member-badge"/);
+  assert.match(accountMenu, /Desk Member|Free Reader/);
+  assert.match(accountMenu, /href="\/saved"/);
+  assert.doesNotMatch(accountMenu, /BrandMark|brand-mark|reporter/i);
+});

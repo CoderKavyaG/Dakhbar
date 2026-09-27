@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
-import { navigationItems, mobileNavigationItems, type NavItem } from '@/lib/navigation';
+import { desktopNavigationItems, mobileNavigationItems, type NavItem } from '@/lib/navigation';
 import { Newspaper, Layers, Search, Heart, BookOpen, Bookmark, Compass, Gem, Menu } from 'lucide-react';
 
 export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefCount: number }) {
@@ -11,6 +11,7 @@ export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefC
   const currentTab = searchParams.get('tab');
   const disclosure = useRef<HTMLDetailsElement>(null);
   const mobile = mobileNavigationItems(signedIn);
+  const desktop = desktopNavigationItems(signedIn);
 
   useEffect(() => {
     if (disclosure.current) disclosure.current.open = false;
@@ -73,7 +74,7 @@ export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefC
         aria-label={label}
         aria-current={selected ? 'page' : undefined}
       >
-        <Icon size={20} aria-hidden="true" />
+        <Icon size={18} aria-hidden="true" />
         <span className="nav-tab-label">{label}</span>
         {isFollowingLink && !selected && briefCount > 0 && (
           <span className="brief-badge" aria-label={`${briefCount} unread stories`}>
@@ -87,7 +88,7 @@ export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefC
   return (
     <>
       <nav aria-label="Primary" className="icon-nav desktop-navigation">
-        {navigationItems(signedIn).map(itemLink)}
+        {desktop.map(itemLink)}
       </nav>
       <nav aria-label="Mobile primary" className="mobile-dock">
         {mobile.primary.map(itemLink)}

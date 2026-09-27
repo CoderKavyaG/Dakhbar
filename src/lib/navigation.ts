@@ -4,6 +4,17 @@ export type NavItem = {
   icon: 'newspaper' | 'layers' | 'search' | 'heart' | 'book' | 'bookmark' | 'compass' | 'gem';
 };
 
+export function desktopNavigationItems(signedIn: boolean): NavItem[] {
+  return [
+    { href: '/', label: 'Today', icon: 'newspaper' },
+    ...(signedIn
+      ? [
+          { href: '/?tab=following', label: 'Following', icon: 'heart' },
+        ] as NavItem[]
+      : []),
+  ];
+}
+
 export function navigationItems(signedIn: boolean): NavItem[] {
   return [
     { href: '/', label: 'Today', icon: 'newspaper' },

@@ -304,6 +304,46 @@ export function ExpandableSearch({
                 </div>
               )}
 
+              {/* Sector Explorer & Radar Chips */}
+              <div className="search-popover-section sectors-explore-section">
+                <div className="section-header-row">
+                  <span className="popover-section-title">
+                    <Layers size={13} className="inline-icon text-data" /> Explore Sectors & Telemetry
+                  </span>
+                </div>
+                <div className="sector-chips-row">
+                  <Link
+                    href="/category/ai-companies"
+                    onClick={() => setIsOpen(false)}
+                    className="sector-chip"
+                  >
+                    AI & companies
+                  </Link>
+                  <Link
+                    href="/category/infrastructure"
+                    onClick={() => setIsOpen(false)}
+                    className="sector-chip"
+                  >
+                    Infrastructure
+                  </Link>
+                  <Link
+                    href="/category/languages-tools"
+                    onClick={() => setIsOpen(false)}
+                    className="sector-chip"
+                  >
+                    Languages & tools
+                  </Link>
+                  <Link
+                    href="/pulse"
+                    onClick={() => setIsOpen(false)}
+                    className="sector-chip sector-chip-pulse"
+                  >
+                    <span className="pulse-dot-inline" aria-hidden="true" />
+                    Pulse Radar
+                  </Link>
+                </div>
+              </div>
+
               {/* Trending Topics Section (Repurposing /topics directory content) */}
               <div className="search-popover-section trending-section">
                 <div className="section-header-row">
