@@ -11,6 +11,8 @@ import { db } from '@/lib/db';
 import { searchStories } from '@/lib/search-data';
 import { getFrontPageStories } from '@/lib/front-page';
 import { storyCountLabel } from '@/lib/story-count';
+import { getTrendingTopics } from '@/lib/search-suggestions';
+import { topicPath } from '@/lib/topic-slug';
 
 export const dynamic = 'force-dynamic';
 
@@ -29,7 +31,10 @@ export default async function SearchPage({
     : null;
   const isSubscriber = reader?.subscription_status === 'active';
 
-  const results = await searchStories(query);
+  const [results, trending] = await Promise.all([
+    searchStories(query),
+    getTrendingTopics(8),
+  ]);
   const entity = results.intent === 'navigational' ? results.entityMatches[0] : undefined;
   const stories = query ? results.stories : await getFrontPageStories();
   const topicCount = entity
@@ -62,7 +67,7 @@ export default async function SearchPage({
 
       <div className="search-workspace">
         <aside className="search-sidebar">
-          <h2>{entity ? 'Matched topic' : 'Browse a sector'}</h2>
+          <h2>{entity ? 'Matched topic' : 'Trending topics'}</h2>
           {entity && (
             <div className="topic-result">
               <TopicSummary
@@ -72,15 +77,35 @@ export default async function SearchPage({
               />
             </div>
           )}
-          <nav aria-label="Browse topics">
-            {['OpenAI', 'React', 'PostgreSQL', 'Rust', 'GitHub'].map(topic => (
-              <Link key={topic} href={'/search?q=' + topic}>
-                {topic}
-                <span>→</span>
-              </Link>
-            ))}
-          </nav>
-          <p>Results lead to the original source or a collection of related reporting.</p>
+          {!entity && (
+            <div className="search-trending-sidebar">
+              <nav aria-label="Trending topics" className="trending-sidebar-nav">
+                {trending.map(item => (
+                  <Link key={item.id} href={topicPath({ name: item.name })} className="trending-sidebar-item">
+                    <span className="trending-sidebar-name">{item.name}</span>
+                    <span className="trending-sidebar-meta">
+                      {item.latestVelocity !== null && item.latestVelocity > 0 ? (
+                        <span className="trending-vel pos">+{Math.round(item.latestVelocity)}%</span>
+                      ) : (
+                        <span>{item.storyCount} stories</span>
+                      )}
+                      <span>→</span>
+                    </span>
+                  </Link>
+                ))}
+              </nav>
+            </div>
+          )}
+          <div className="search-sectors-box">
+            <span className="section-note">Browse by Sector</span>
+            <div className="search-sector-links">
+              <Link href="/category/ai-companies">AI & companies →</Link>
+              <Link href="/category/infrastructure">Infrastructure →</Link>
+              <Link href="/category/languages-tools">Languages & tools →</Link>
+              <Link href="/pulse">Developer Pulse Radar →</Link>
+            </div>
+          </div>
+          <p className="search-sidebar-footnote">Results lead to original source reporting or comprehensive topic dossiers.</p>
         </aside>
 
         <section className="search-results">

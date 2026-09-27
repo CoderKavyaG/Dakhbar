@@ -27,7 +27,7 @@ test('signed-out navigation hides personalized routes and Following tab hides it
     read('src/components/site-header.tsx'),
     read('src/components/primary-nav.tsx'),
   ]);
-  assert.deepEqual(navigationItems(false).map(i => i.href), ['/','/topics','/search','/methodology','/pricing']);
+  assert.deepEqual(navigationItems(false).map(i => i.href), ['/','/methodology','/pricing']);
   assert.ok(navigationItems(true).some(i => i.href === '/?tab=following'));
   assert.ok(navigationItems(true).some(i => i.href === '/saved'));
   assert.doesNotMatch(header, /href="\/sign-in"/);

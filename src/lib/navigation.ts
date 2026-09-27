@@ -13,8 +13,6 @@ export function navigationItems(signedIn: boolean): NavItem[] {
           { href: '/saved', label: 'Saved', icon: 'bookmark' },
         ] as NavItem[]
       : []),
-    { href: '/topics', label: 'Topics', icon: 'layers' },
-    { href: '/search', label: 'Archive', icon: 'search' },
     { href: '/methodology', label: 'Methodology', icon: 'compass' },
     { href: '/pricing', label: 'Desk', icon: 'gem' },
   ];
@@ -23,8 +21,8 @@ export function navigationItems(signedIn: boolean): NavItem[] {
 export function mobileNavigationItems(signedIn: boolean) {
   const items = navigationItems(signedIn);
   const primaryHrefs = signedIn
-    ? ['/', '/?tab=following', '/topics', '/saved']
-    : ['/', '/topics', '/search', '/pricing'];
+    ? ['/', '/?tab=following', '/saved', '/pricing']
+    : ['/', '/methodology', '/pricing'];
   const primary = items.filter(item => primaryHrefs.includes(item.href));
   return { primary, more: items.filter(item => !primaryHrefs.includes(item.href)) };
 }
