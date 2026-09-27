@@ -120,15 +120,15 @@ export function TopicTrendChart({
             >
               <defs>
                 <linearGradient id="trend-area-grad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor="var(--data, #11675f)" stopOpacity="0.22" />
-                  <stop offset="100%" stopColor="var(--data, #11675f)" stopOpacity="0.01" />
+                  <stop offset="0%" stopColor="var(--data)" stopOpacity="0.22" />
+                  <stop offset="100%" stopColor="var(--data)" stopOpacity="0.01" />
                 </linearGradient>
               </defs>
 
               {/* Background Guide Lines */}
-              <line x1="20" y1="20" x2="780" y2="20" stroke="var(--line, #c9c5bc)" strokeDasharray="3 3" opacity="0.4" />
-              <line x1="20" y1="70" x2="780" y2="70" stroke="var(--line, #c9c5bc)" strokeDasharray="3 3" opacity="0.3" />
-              <line x1="20" y1="120" x2="780" y2="120" stroke="var(--line, #c9c5bc)" opacity="0.6" />
+              <line x1="20" y1="20" x2="780" y2="20" stroke="var(--line)" strokeDasharray="3 3" opacity="0.4" />
+              <line x1="20" y1="70" x2="780" y2="70" stroke="var(--line)" strokeDasharray="3 3" opacity="0.3" />
+              <line x1="20" y1="120" x2="780" y2="120" stroke="var(--line)" opacity="0.6" />
 
               {/* Shaded Area */}
               <polygon points={computeTrendStats(snapshots, range, 800, 140).svgArea} fill="url(#trend-area-grad)" />
@@ -138,7 +138,7 @@ export function TopicTrendChart({
                 points={computeTrendStats(snapshots, range, 800, 140).svgPath}
                 className="trend-line-path"
                 fill="none"
-                stroke="var(--data, #11675f)"
+                stroke="var(--data)"
                 strokeWidth="2.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"

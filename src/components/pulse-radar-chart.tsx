@@ -158,10 +158,10 @@ export function PulseRadarChart({ dataset }: { dataset: RadarDataset }) {
             const dotRadius = isHovered ? 7 : Math.min(6, Math.max(3.5, 2.5 + entity.averageDailyMentions * 0.45));
 
             let dotColor = 'var(--data)';
-            if (entity.quadrant === 'established_accelerating') dotColor = '#16a34a'; // Green surge
-            else if (entity.quadrant === 'emerging_accelerating') dotColor = '#9333ea'; // Purple breakout
-            else if (entity.quadrant === 'established_stable') dotColor = '#2563eb'; // Blue foundation
-            else dotColor = '#64748b'; // Slate niche
+            if (entity.quadrant === 'established_accelerating') dotColor = 'var(--velocity-up)'; // Green surge
+            else if (entity.quadrant === 'emerging_accelerating') dotColor = 'var(--accent-ai)'; // Purple breakout
+            else if (entity.quadrant === 'established_stable') dotColor = 'var(--accent-infra)'; // Blue foundation
+            else dotColor = 'var(--velocity-steady)'; // Slate niche
 
             // Show labels for all entities in sector view, or prominent/active entities in 'all' view
             const isProminent =
