@@ -26,8 +26,8 @@ export async function confirmMergeAction(formData: FormData) {
       skipDuplicates: true,
     });
     await tx.story.update({ where: { id: targetId }, data: { status: 'confirmed' } });
-    const saves = await tx.savedStory.findMany({where:{story_id:storyId}});
-    for (const saved of saves) await tx.savedStory.upsert({where:{user_id_story_id:{user_id:saved.user_id,story_id:targetId}},create:{...saved,story_id:targetId},update:saved.include_in_brief?{include_in_brief:true}:{}});
+    const saves = await tx.savedStory.findMany({ where: { story_id: storyId } });
+    for (const saved of saves) await tx.savedStory.upsert({ where: { user_id_story_id: { user_id: saved.user_id, story_id: targetId } }, create: { user_id: saved.user_id, story_id: targetId }, update: {} });
     await tx.story.delete({ where: { id: storyId } });
   });
   await refreshSignificance([targetId]);

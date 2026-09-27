@@ -192,12 +192,13 @@ model UserVisit {
 }
 
 model SavedStory {
- user_id String
- story_id String
- include_in_brief Boolean @default(false)
- saved_at DateTime @default(now()) @db.Timestamptz(3)
- user User @relation(fields:[user_id],references:[id],onDelete:Cascade)
- story Story @relation(fields:[story_id],references:[id],onDelete:Cascade)
- @@id([user_id,story_id])
- @@index([user_id,include_in_brief])
+  user_id  String
+  story_id String
+  saved_at DateTime @default(now()) @db.Timestamptz(3)
+  user     User     @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  story    Story    @relation(fields: [story_id], references: [id], onDelete: Cascade)
+
+  @@id([user_id, story_id])
+  @@index([user_id, saved_at])
 }
+

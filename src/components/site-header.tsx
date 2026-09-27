@@ -24,7 +24,7 @@ export async function SiteHeader() {
         <input id="nav-query" name="q" placeholder="Search the archive…"/>
         <Button size="icon" variant="ghost" aria-label="Search"><span aria-hidden="true">→</span></Button>
       </form>
-      <div className="account-nav">{reader?.subscription_status==='active'&&<Link href="/brief" className="desk-member-badge">Desk member</Link>}{userId ? <UserButton/> : <JoinUsButton/>}</div>
+      <div className="account-nav">{reader?.subscription_status==='active'&&<Link href="/?tab=following" className="desk-member-badge">Desk member</Link>}{userId ? <UserButton/> : <JoinUsButton/>}</div>
     </div>
     <div className="nav-edition">
       <div className="edition-tagline">

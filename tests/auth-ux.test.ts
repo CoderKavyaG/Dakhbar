@@ -1,4 +1,4 @@
-import {navigationItems} from '../src/lib/navigation';
+import { navigationItems } from '../src/lib/navigation';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
@@ -22,18 +22,16 @@ test('reader sign-in entry points use Clerk modal and replay a pending follow', 
   assert.match(css, /backdrop-filter:\s*blur/);
 });
 
-test('signed-out navigation hides personalized routes and Brief hides its badge on visit', async () => {
+test('signed-out navigation hides personalized routes and Following tab hides its badge on visit', async () => {
   const [header, briefLink] = await Promise.all([
     read('src/components/site-header.tsx'),
     read('src/components/primary-nav.tsx'),
   ]);
-  assert.deepEqual(navigationItems(false).map(i=>i.href),['/','/topics','/search','/methodology','/pricing']);
-  assert.ok(navigationItems(true).some(i=>i.href==='/for-you'));
-
-  assert.ok(navigationItems(true).some(i=>i.href==='/brief'));
+  assert.deepEqual(navigationItems(false).map(i => i.href), ['/','/topics','/search','/methodology','/pricing']);
+  assert.ok(navigationItems(true).some(i => i.href === '/?tab=following'));
+  assert.ok(navigationItems(true).some(i => i.href === '/saved'));
   assert.doesNotMatch(header, /href="\/sign-in"/);
-  assert.match(briefLink, /pathname !== href/);
-  assert.match(briefLink, /prefetch=\{href === '\/brief' \? false/);
+  assert.match(briefLink, /briefCount > 0/);
 });
 
 test('ordinary story cards expose a follow control for every entity tag', async () => {

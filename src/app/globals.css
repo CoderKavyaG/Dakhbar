@@ -2970,6 +2970,70 @@ html { font-size: 16px; }
   background: var(--paper-muted);
 }
 
+/* Front Page Tab Switcher for Signed-in Readers */
+.front-tabs-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.75rem 0 0.5rem;
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.front-tabs {
+  display: inline-flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.front-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  font-family: var(--font-plex-sans);
+  font-size: 0.88rem;
+  font-weight: 550;
+  color: var(--ink-soft);
+  text-decoration: none;
+  background: transparent;
+  transition: all 140ms ease;
+}
+
+.front-tab:hover {
+  color: var(--ink);
+  background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.front-tab.active {
+  color: var(--data-ink);
+  background: var(--data-deep);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.front-tab-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.15rem;
+  height: 1.15rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: var(--data-bright);
+  color: var(--data-deep);
+  font-family: var(--font-data);
+  font-size: 0.65rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.front-tab.active .front-tab-badge {
+  background: var(--data-bright);
+  color: var(--data-deep);
+}
+
+
 
 
 

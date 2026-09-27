@@ -28,6 +28,6 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const fonts = [display.variable, body.variable, data.variable, devanagari.variable].join(' ');
   const { userId } = await auth();
   const followedEntityIds = userId ? await getFollowingEntityIds(userId) : [];
-  const saved = userId ? await db.savedStory.findMany({where:{user_id:userId}}) : [];
-  return <ClerkProvider><html lang="en" className={fonts}><body><FollowingProvider initialEntityIds={followedEntityIds}><SavedStoriesProvider key={userId ?? 'anonymous'} initial={Object.fromEntries(saved.map(row=>[row.story_id,row.include_in_brief]))}><SiteHeader/>{children}<SiteFooter/></SavedStoriesProvider></FollowingProvider></body></html></ClerkProvider>;
+  const saved = userId ? await db.savedStory.findMany({ where: { user_id: userId }, select: { story_id: true } }) : [];
+  return <ClerkProvider><html lang="en" className={fonts}><body><FollowingProvider initialEntityIds={followedEntityIds}><SavedStoriesProvider key={userId ?? 'anonymous'} initial={Object.fromEntries(saved.map(row => [row.story_id, true]))}><SiteHeader/>{children}<SiteFooter/></SavedStoriesProvider></FollowingProvider></body></html></ClerkProvider>;
 }

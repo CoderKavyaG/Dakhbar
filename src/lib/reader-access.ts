@@ -1,4 +1,4 @@
-const protectedReaderPrefixes = ['/for-you', '/brief'];
+const protectedReaderPrefixes = ['/saved', '/for-you', '/brief'];
 
 export function isReaderProtectedPath(pathname: string) {
   return protectedReaderPrefixes.some(prefix => pathname === prefix || pathname.startsWith(prefix + '/'));
