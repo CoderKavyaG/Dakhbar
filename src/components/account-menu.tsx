@@ -21,7 +21,7 @@ export function AccountMenu({
   savedCount = 0,
 }: {
   signedIn?: boolean;
-  subscriptionStatus?: 'active' | 'free' | 'past_due' | null;
+  subscriptionStatus?: 'active' | 'free' | 'past_due' | 'canceled' | null;
   savedCount?: number;
 }) {
   const { user, isLoaded, isSignedIn } = useUser();
@@ -119,7 +119,7 @@ export function AccountMenu({
               ) : (
                 <div className="membership-status-box is-free-reader">
                   <div className="membership-badge-row">
-                    <Badge variant="outline" className="badge-free-reader">
+                    <Badge className="badge-free-reader">
                       <UserIcon size={11} className="inline-icon" /> Free Reader
                     </Badge>
                     <span className="membership-limit-tag">5 follows active</span>

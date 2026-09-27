@@ -1,7 +1,6 @@
 import { ArticleGrid } from '@/components/article-grid';
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
-import { EditionWelcome } from '@/components/edition-welcome';
 import { FreshEdition } from '@/components/fresh-edition';
 import { EntityFollowControl } from '@/components/entity-follow-control';
 import { FollowToggle } from '@/components/follow-toggle';
@@ -204,7 +203,6 @@ export default async function FrontPage({
           </nav>
         </div>
       )}
-      <EditionWelcome />
       <FreshEdition />
       <div className="edition-intro">
         <p>{date}</p>

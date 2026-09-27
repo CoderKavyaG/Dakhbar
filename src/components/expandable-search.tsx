@@ -428,7 +428,7 @@ export function ExpandableSearch({
                       >
                         <div className="suggestion-topic-main">
                           <span className="suggestion-title">{topic.name}</span>
-                          <Badge variant="outline" className="suggestion-badge">
+                          <Badge className="suggestion-badge">
                             {topic.categoryTitle}
                           </Badge>
                         </div>
