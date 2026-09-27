@@ -10,7 +10,7 @@ export function selectEligibleFrontPageStories<T extends { entities: readonly un
 }
 
 export async function getFrontPageStories(hours = 48) {
-  const stories = await db.story.findMany({
+  let stories = await db.story.findMany({
     where: {
       updated_at: { gte: new Date(Date.now() - hours * 3600000) },
       entities: { some: {} },
@@ -25,6 +25,24 @@ export async function getFrontPageStories(hours = 48) {
       },
     },
   });
+
+  if (stories.length === 0) {
+    stories = await db.story.findMany({
+      where: {
+        entities: { some: {} },
+      },
+      orderBy: [{ significance_score: 'desc' }, { updated_at: 'desc' }],
+      take: FRONT_PAGE_LIMIT,
+      include: {
+        entities: { include: { entity: true } },
+        documents: {
+          orderBy: [{ is_primary: 'desc' }, { created_at: 'asc' }],
+          include: { raw_document: { include: { source: true } } },
+        },
+      },
+    });
+  }
+
   return selectEligibleFrontPageStories(stories);
 }
 
