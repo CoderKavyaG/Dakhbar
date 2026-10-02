@@ -195,8 +195,8 @@ test('Search CTA reflects evidence richness signal before generation', async () 
   const { readFile } = await import('node:fs/promises');
   const cta = await readFile('src/components/research-dossier-cta.tsx', 'utf8');
   assert.match(cta, /computeEvidenceRichness/);
-  assert.match(cta, /Preliminary dossier available/);
-  assert.match(cta, /Generate Comprehensive Dossier/);
+  assert.match(cta, /Early overview for/);
+  assert.match(cta, /Explore the complete story on/);
   assert.match(cta, /badge-preliminary/);
   assert.match(cta, /badge-comprehensive/);
 });

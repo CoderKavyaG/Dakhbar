@@ -187,11 +187,10 @@ export default async function ResearchPage({
 
         <header className="research-header">
           <div className="research-title-wrap">
-            <span className="section-note">Research Dossier Preview</span>
+            <span className="section-note">Topic Deep Dive Preview</span>
             <h1>{topic}</h1>
-            <p>
-              Multi-story investigation across {previewAssembly.stories.length} indexed story
-              clusters and {previewAssembly.evidence.length} corroborated sources.
+            <p className="research-subtitle">
+              A comprehensive deep dive compiled from {previewAssembly.stories.length} stories and {previewAssembly.evidence.length} verified reporting sources.
             </p>
           </div>
         </header>
@@ -200,29 +199,27 @@ export default async function ResearchPage({
           <div className="upgrade-icon-wrap">
             <Lock size={28} className="text-data" />
           </div>
-          <h2>Research Mode is exclusive to Desk members</h2>
+          <h2>Topic Deep Dives are exclusive to Desk members</h2>
           <p>
-            Desk subscribers receive complete source-grounded executive briefs, deterministic
-            chronological timelines, and verified key takeaways synthesized across the entire
-            developer corpus.
+            Desk members get verified overviews, complete timelines, and key takeaways gathered across all news sources covering this topic.
           </p>
           <div className="upgrade-stats-preview">
             <div className="preview-stat">
               <strong>{previewAssembly.stories.length}</strong>
-              <small>indexed stories</small>
+              <small>stories covered</small>
             </div>
             <div className="preview-stat">
               <strong>{previewAssembly.evidence.length}</strong>
-              <small>corroborated sources</small>
+              <small>sources cited</small>
             </div>
             <div className="preview-stat">
-              <strong>24h</strong>
-              <small>shared cache window</small>
+              <strong>Daily</strong>
+              <small>updated coverage</small>
             </div>
           </div>
           <Button asChild variant="default" className="upgrade-cta-btn">
             <Link href="/pricing">
-              Upgrade to Desk for ${DESK_PRICE_USD}/month <ArrowRight size={16} className="inline-icon" />
+              Read Deep Dives with Desk (${DESK_PRICE_USD}/mo) <ArrowRight size={16} className="inline-icon" />
             </Link>
           </Button>
           <small className="upgrade-footnote">Cancel anytime. Free 14-day trial included.</small>
@@ -232,8 +229,8 @@ export default async function ResearchPage({
           <section className="research-section preview-blur">
             <header className="section-heading">
               <div>
-                <span className="section-note">Chronological Scope</span>
-                <h2>Assembled Reporting Timeline</h2>
+                <span className="section-note">Timeline Preview</span>
+                <h2>Recent Reporting Timeline</h2>
               </div>
             </header>
             <div className="research-timeline">
@@ -331,36 +328,40 @@ export default async function ResearchPage({
         <span>/</span>
         <Link href={`/search?q=${encodeURIComponent(topic)}`}>Search</Link>
         <span>/</span>
-        <span>Research Dossier</span>
+        <span>Deep Dive & Dossier</span>
       </nav>
 
       <header className="research-header">
         <div className="research-title-wrap">
           <div className="research-badge-row">
-            <span className="section-note">Desk Research Dossier</span>
+            <span className="section-note">Topic Deep Dive</span>
             {report.richnessTier === 'preliminary' ? (
               <Badge className="badge-preliminary">
-                <AlertCircle size={11} className="inline-icon" /> Preliminary Coverage ({report.storyCount} stories)
+                <AlertCircle size={11} className="inline-icon" /> Early coverage
               </Badge>
             ) : report.richnessTier === 'comprehensive' ? (
               <Badge className="badge-comprehensive">
-                <Sparkles size={11} className="inline-icon" /> Comprehensive Synthesis ({report.storyCount} stories)
+                <Sparkles size={11} className="inline-icon" /> In-depth coverage
               </Badge>
             ) : (
               <Badge className="badge-standard">
-                <Sparkles size={11} className="inline-icon" /> Standard Synthesis ({report.storyCount} stories)
+                <Sparkles size={11} className="inline-icon" /> Standard coverage
               </Badge>
             )}
             {report.cached ? (
-              <Badge className="badge-cached">Shared Topic Cache (24h)</Badge>
+              <Badge className="badge-cached">
+                <Clock size={11} className="inline-icon" /> Updated today
+              </Badge>
             ) : (
-              <Badge className="badge-live">Live Verified Generation</Badge>
+              <Badge className="badge-live">
+                <Sparkles size={11} className="inline-icon" /> Fresh update
+              </Badge>
             )}
           </div>
           <h1>{report.topic}</h1>
           <p className="research-subtitle">
-            Synthesized from {report.storyCount} story clusters and {report.evidenceCount}{' '}
-            independent reporting sources across the developer corpus.
+            A verified summary and timeline compiled from {report.storyCount} stories and {report.evidenceCount}{' '}
+            independent sources.
           </p>
         </div>
 
@@ -374,12 +375,12 @@ export default async function ResearchPage({
           <div className="research-meta-item">
             <ShieldCheck size={15} className="inline-icon text-data" />
             <span>
-              <strong>{report.evidenceCount}</strong> verified citations
+              <strong>{report.evidenceCount}</strong> cited sources
             </span>
           </div>
           <div className="research-meta-item">
             <Clock size={15} className="inline-icon text-data" />
-            <span>Generated {new Date(report.generatedAt).toISOString().slice(0, 10)}</span>
+            <span>Updated {new Date(report.generatedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
           </div>
         </div>
       </header>
@@ -389,24 +390,24 @@ export default async function ResearchPage({
         <div className="research-preliminary-banner">
           <AlertCircle size={20} className="text-data inline-icon flex-shrink-0" />
           <div>
-            <strong>Limited source coverage — fewer independent reports than most topics</strong>
+            <strong>Early coverage: limited reports available</strong>
             <p>
-              This dossier is synthesized from {report.storyCount} stories and {report.evidenceCount} corroborated sources near the minimum evidence gate. While all facts and citations are strictly verified, analytical breadth is narrower than well-corroborated topics.
+              This overview is compiled from {report.storyCount} stories and {report.evidenceCount} sources near our initial evidence gate. All facts and citations are verified, but coverage will expand as more publishers report on this topic.
             </p>
           </div>
         </div>
       )}
 
-      {/* Section 1: Executive Brief */}
+      {/* Section 1: Executive Brief / Overview */}
       <section className="research-section" aria-labelledby="exec-brief-title">
         <header className="section-heading">
           <div>
             <span className="section-note">Section 1</span>
-            <h2 id="exec-brief-title">Executive Brief</h2>
+            <h2 id="exec-brief-title">Overview & Summary</h2>
           </div>
           {report.executiveBrief.verified && (
             <Badge className="badge-verified">
-              <ShieldCheck size={13} className="inline-icon" /> Source-Grounding Verified
+              <ShieldCheck size={13} className="inline-icon" /> Fact-checked
             </Badge>
           )}
         </header>
@@ -420,10 +421,10 @@ export default async function ResearchPage({
       <section className="research-section" aria-labelledby="timeline-title">
         <header className="section-heading">
           <div>
-            <span className="section-note">Section 2 · Deterministic</span>
+            <span className="section-note">Section 2: Timeline</span>
             <h2 id="timeline-title">Chronological Timeline</h2>
           </div>
-          <span className="timeline-note">Built from authentic document publication records</span>
+          <span className="timeline-note">News reports in order of publication</span>
         </header>
 
         <div className="research-timeline">
@@ -457,11 +458,11 @@ export default async function ResearchPage({
         <header className="section-heading">
           <div>
             <span className="section-note">Section 3</span>
-            <h2 id="keypoints-title">Key Points & Takeaways</h2>
+            <h2 id="keypoints-title">Key Takeaways</h2>
           </div>
           {report.keyPoints.verified && (
             <Badge className="badge-verified">
-              <ShieldCheck size={13} className="inline-icon" /> Fact Citations Confirmed
+              <ShieldCheck size={13} className="inline-icon" /> Direct citations
             </Badge>
           )}
         </header>
@@ -482,10 +483,10 @@ export default async function ResearchPage({
       <section className="research-section" aria-labelledby="sources-title">
         <header className="section-heading">
           <div>
-            <span className="section-note">Section 4 · Provenance</span>
-            <h2 id="sources-title">Source Material & References</h2>
+            <span className="section-note">Section 4: Sources</span>
+            <h2 id="sources-title">Sources & Original Articles</h2>
           </div>
-          <span className="sources-count">{report.sources.length} indexed documents</span>
+          <span className="sources-count">{report.sources.length} articles cited</span>
         </header>
 
         <div className="research-sources-grid">
@@ -524,8 +525,7 @@ export default async function ResearchPage({
         <div className="research-footer-content">
           <Sparkles size={16} className="inline-icon text-data" />
           <p>
-            Dअख़बार Research Dossiers synthesize cross-verified developer reporting into structured intelligence,
-            citing primary evidence with sentence-level provenance across indexed sources.
+            Every claim in this deep dive links directly to the original news articles and verified sources that reported it.
           </p>
         </div>
       </footer>

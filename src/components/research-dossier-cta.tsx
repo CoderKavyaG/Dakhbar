@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Sparkles, Lock, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
+import { Sparkles, Lock, ArrowRight, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { computeEvidenceRichness } from '@/lib/research';
@@ -25,45 +25,47 @@ export function ResearchDossierCta({
         <div className="dossier-header-row">
           {richness.tier === 'preliminary' ? (
             <Badge className="badge-preliminary">
-              <AlertCircle size={12} className="inline-icon" /> Preliminary Coverage ({storyCount} stories)
+              <AlertCircle size={12} className="inline-icon" /> Early Coverage
             </Badge>
           ) : richness.tier === 'comprehensive' ? (
             <Badge className="badge-comprehensive">
-              <Sparkles size={12} className="inline-icon" /> Comprehensive Synthesis ({storyCount} stories)
+              <Sparkles size={12} className="inline-icon" /> In-Depth Deep Dive
             </Badge>
           ) : (
             <Badge className="badge-research">
-              <Sparkles size={12} className="inline-icon" /> Research Dossier ({storyCount} stories)
+              <Sparkles size={12} className="inline-icon" /> Topic Deep Dive
             </Badge>
           )}
           <span className="dossier-stories-count">
-            {evidenceCount ? `${evidenceCount} sources assembled` : `${storyCount} stories indexed`}
+            {evidenceCount
+              ? `${storyCount} stories from ${evidenceCount} sources`
+              : `${storyCount} stories covered`}
           </span>
         </div>
 
         <h3 className="dossier-title">
           {richness.tier === 'preliminary'
-            ? `Preliminary dossier available for “${query}” (limited coverage)`
+            ? `Early overview for “${query}”`
             : richness.tier === 'comprehensive'
-            ? `Generate Comprehensive Dossier for “${query}”`
-            : `Generate Research Dossier for “${query}”`}
+            ? `Explore the complete story on “${query}”`
+            : `Deep dive into “${query}”`}
         </h3>
         <p className="dossier-description">
           {richness.tier === 'preliminary'
-            ? `Synthesize available reporting into a verified brief and timeline. Note: fewer independent reports exist for this topic.`
-            : `Synthesize multi-story coverage into an authoritative Executive Brief, chronological source timeline, and verified Key Takeaways.`}
+            ? `Read an early summary and timeline from initial reporting. More sources will be added as news develops.`
+            : `Get a clear summary, full timeline of reports, and key takeaways gathered across all ${storyCount} stories.`}
         </p>
 
         <div className="dossier-features-row">
-          <span>
-            <ShieldCheck size={13} className="inline-icon text-data" /> Source citations verified
+          <span className="dossier-feature-pill">
+            <ShieldCheck size={13} className="inline-icon text-data" /> Cited sources
           </span>
-          <span>
-            <Sparkles size={13} className="inline-icon text-data" /> Cross-verified synthesis
+          <span className="dossier-feature-pill">
+            <Clock size={13} className="inline-icon text-data" /> Chronological timeline
           </span>
           {richness.isPreliminary && (
-            <span className="text-muted">
-              <AlertCircle size={13} className="inline-icon" /> Limited breadth
+            <span className="dossier-feature-pill text-muted">
+              <AlertCircle size={13} className="inline-icon" /> Developing coverage
             </span>
           )}
         </div>
@@ -73,18 +75,13 @@ export function ResearchDossierCta({
         {isSubscriber ? (
           <Button asChild variant="default" className="dossier-btn">
             <Link href={`/research?q=${encodeURIComponent(query)}`}>
-              {richness.tier === 'preliminary'
-                ? 'Open Preliminary Dossier'
-                : richness.tier === 'comprehensive'
-                ? 'Open Comprehensive Dossier'
-                : 'Open Research Dossier'}{' '}
-              <ArrowRight size={15} className="inline-icon" />
+              Read Deep Dive <ArrowRight size={15} className="inline-icon" />
             </Link>
           </Button>
         ) : (
           <Button asChild variant="default" className="dossier-btn">
             <Link href="/pricing">
-              <Lock size={14} className="inline-icon" /> Unlock with Desk
+              <Lock size={14} className="inline-icon" /> Read with Desk
             </Link>
           </Button>
         )}
