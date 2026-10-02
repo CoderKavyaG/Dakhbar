@@ -236,26 +236,73 @@ body {
   min-height: 100vh;
 }
 
-/* Prompt D3: Subtle, accessible newspaper-evocative paper grain & halftone overlay */
-body::before {
+/* ==========================================================================
+   Background Texture Exploration (Phase 15 - Three Distinct Candidates)
+   ========================================================================== */
+
+/* Candidate 1: Perceptible Broadsheet Halftone Dot-Grain (Default) */
+body::before,
+body[data-texture="halftone"]::before {
   content: "";
   position: fixed;
   inset: 0;
   z-index: -1;
   pointer-events: none;
-  opacity: 0.032;
-  background-image:
-    radial-gradient(circle at center, var(--ink) 0.65px, transparent 0.75px),
-    radial-gradient(circle at center, var(--ink) 0.45px, transparent 0.55px);
-  background-size: 8px 8px, 12px 12px;
-  background-position: 0 0, 4px 4px;
+  opacity: 0.088;
+  background-image: radial-gradient(circle at 1.5px 1.5px, var(--ink) 1px, transparent 0);
+  background-size: 6px 6px;
+  background-repeat: repeat;
 }
 
-.dark body::before {
-  opacity: 0.028;
+.dark body::before,
+.dark body[data-texture="halftone"]::before {
+  opacity: 0.065;
+  background-image: radial-gradient(circle at 1.5px 1.5px, var(--ink) 1px, transparent 0);
+  background-size: 6px 6px;
+}
+
+/* Candidate 2: Fine Paper-Fiber Noise Texture (Organic Press Fiber) */
+body[data-texture="fiber"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.075;
   background-image:
-    radial-gradient(circle at center, var(--ink) 0.65px, transparent 0.75px),
-    radial-gradient(circle at center, var(--ink) 0.45px, transparent 0.55px);
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.85'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(22, 26, 25, 0.04) 4px, rgba(22, 26, 25, 0.04) 5px);
+  background-size: 160px 160px, auto;
+}
+
+.dark body[data-texture="fiber"]::before {
+  opacity: 0.06;
+  background-image:
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.85'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(237, 240, 232, 0.035) 4px, rgba(237, 240, 232, 0.035) 5px);
+  background-size: 160px 160px, auto;
+}
+
+/* Candidate 3: Aged Newsprint Warm-Toned Gradient Wash (Non-repeating Vignette) */
+body[data-texture="wash"]::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(255, 250, 240, 0.6), transparent 70%),
+    radial-gradient(ellipse 80% 80% at 85% 85%, rgba(215, 205, 185, 0.5), transparent 75%),
+    linear-gradient(180deg, #f4efe4 0%, #ece5d6 50%, #e3dbcd 100%);
+}
+
+.dark body[data-texture="wash"]::before {
+  opacity: 1;
+  background:
+    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(25, 34, 31, 0.7), transparent 60%),
+    radial-gradient(ellipse 80% 80% at 85% 85%, rgba(10, 18, 16, 0.8), transparent 70%),
+    linear-gradient(180deg, #131917 0%, #0e1413 100%);
 }
 a { color: inherit; text-decoration: none; }
 a:hover { color: var(--data); }
@@ -7778,6 +7825,264 @@ body {
     width: 100%;
   }
 }
+
+/* ==========================================================================
+   Texture Explorer Control Styles
+   ========================================================================== */
+.footer-texture-row {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--line);
+  background: var(--paper-raised);
+}
+
+.texture-explorer-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.texture-label {
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 500;
+}
+
+.texture-pills {
+  display: inline-flex;
+  gap: 4px;
+  background: var(--paper-muted);
+  padding: 3px;
+  border-radius: 9999px;
+  border: 1px solid var(--line);
+}
+
+.texture-pill-btn {
+  padding: 3px 10px;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: var(--ink-soft);
+  font-size: 0.76rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 120ms ease;
+  line-height: 1.2;
+}
+
+.texture-pill-btn:hover {
+  color: var(--ink);
+}
+
+.texture-pill-btn.active {
+  background: var(--paper-raised);
+  color: var(--ink);
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* ==========================================================================
+   Developer Pulse ("Moving Today") Authoritative Sidebar Styles
+   ========================================================================== */
+.developer-pulse {
+  display: flex;
+  flex-direction: column;
+  background: var(--paper-raised);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  padding: var(--space-5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+  margin-bottom: var(--space-5);
+}
+
+.pulse-header-group {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-2);
+  gap: var(--space-2);
+}
+
+.pulse-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--data);
+  background: var(--data-surface);
+  padding: 2px 8px;
+  border-radius: 9999px;
+  border: 1px solid rgba(17, 103, 95, 0.2);
+}
+
+.pulse-heading h2 {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.pulse-method {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  line-height: 1.45;
+  margin: 0 0 var(--space-4) 0;
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--line);
+}
+
+.pulse-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.pulse-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) 0;
+  border-bottom: 1px dashed var(--line);
+}
+
+.pulse-item:last-child {
+  border-bottom: none;
+}
+
+.pulse-rank {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--data);
+  min-width: 24px;
+}
+
+.pulse-info {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.pulse-topic-link {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: color 120ms ease;
+}
+
+.pulse-topic-link:hover {
+  color: var(--data);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.pulse-metrics {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  display: flex;
+  gap: 6px;
+}
+
+.pulse-velocity-badge {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+
+.pulse-velocity-pos {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+}
+
+.pulse-velocity-neg {
+  background: rgba(194, 65, 12, 0.12);
+  color: #c2410c;
+  border: 1px solid rgba(194, 65, 12, 0.25);
+}
+
+.pulse-footer-meta {
+  margin-top: var(--space-4);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+}
+
+.pulse-footer-meta a {
+  color: var(--data);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pulse-footer-meta a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Liveliness Signals on Story Cards and Front Page
+   ========================================================================== */
+.card-live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #16a34a;
+  margin-right: 4px;
+  box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+}
+
+.edition-intro-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.edition-intro-badges {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.edition-live-badge {
+  background: var(--data-surface);
+  color: var(--data);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
 
 
 

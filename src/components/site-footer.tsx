@@ -3,6 +3,7 @@ import { auth } from '@clerk/nextjs/server';
 import { ArrowUpRight } from 'lucide-react';
 import { BrandMark } from './brand-mark';
 import { Wordmark } from './wordmark';
+import { TextureSelector } from './texture-selector';
 
 export async function SiteFooter() {
   const { userId } = await auth();
@@ -19,6 +20,9 @@ export async function SiteFooter() {
       </nav>
 
       <div className="footer-note"><h2>Keep the source in sight.</h2><p>Every story leads back to the reporting behind it.</p><Link href="/methodology">Explore our methodology <ArrowUpRight size={16}/></Link></div>
+    </div>
+    <div className="footer-texture-row">
+      <TextureSelector />
     </div>
     <div className="footer-bottom"><span>© {new Date().getFullYear()} Dअख़बार</span><span>Built for curious developers</span><span><Link href="/partner">Partner</Link> · <Link href="/legal">Legal</Link> · <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link> · <Link href="/admin">Editorial desk</Link></span></div>
   </footer>;

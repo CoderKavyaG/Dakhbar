@@ -319,8 +319,14 @@ export default async function FrontPage({
       )}
       <FreshEdition />
       <div className="edition-intro">
-        <p>{date}</p>
-        <Badge>{stories.length} selected stories</Badge>
+        <div className="edition-intro-left">
+          <span className="live-pulsing-dot" aria-hidden="true" />
+          <p>{date}</p>
+        </div>
+        <div className="edition-intro-badges">
+          <Badge>{stories.length} indexed stories</Badge>
+          <Badge className="edition-live-badge">Live Edition</Badge>
+        </div>
       </div>
       <section className="lead-stage">
         <article className="lead-copy">

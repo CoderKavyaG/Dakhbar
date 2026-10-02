@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { SaveStory } from './save-story';
-import { TopicIllustration } from './topic-illustration';
 import { EntityFollowControl } from './entity-follow-control';
 import { Badge } from './ui/badge';
 import { StoryImage } from '@/components/story-image';
@@ -16,10 +15,12 @@ type StoryCardData = {
 };
 
 function relativeAge(date: Date) {
-  const hours = Math.max(0, Math.floor((Date.now() - date.getTime()) / 3600000));
-  if (hours < 1) return 'just now';
-  if (hours < 24) return hours + 'h ago';
-  return Math.floor(hours / 24) + 'd ago';
+  const diffMs = Date.now() - date.getTime();
+  const minutes = Math.max(1, Math.floor(diffMs / 60000));
+  if (minutes < 60) return `${minutes}m ago`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours}h ago`;
+  return `${Math.floor(hours / 24)}d ago`;
 }
 
 export function StoryCard({ story, featured = false, dekOverride }: { story: StoryCardData; featured?: boolean; dekOverride?: string }) {
@@ -52,7 +53,6 @@ export function StoryCard({ story, featured = false, dekOverride }: { story: Sto
         src={image}
         alt=""
         className="story-card-image"
-        fallback={<TopicIllustration topic={story.entities[0]?.entity.name ?? "Developer dispatch"} seed={story.id}/>}
       />
       <div className="story-card-body">
         <div className="story-card-meta">
@@ -63,6 +63,9 @@ export function StoryCard({ story, featured = false, dekOverride }: { story: Sto
             />
           )}
           <time className="data-type" dateTime={story.updated_at.toISOString()}>
+            {Date.now() - story.updated_at.getTime() < 7200000 && (
+              <span className="card-live-dot" aria-label="Recent update" />
+            )}
             {relativeAge(story.updated_at)}
           </time>
         </div>
