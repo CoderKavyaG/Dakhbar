@@ -133,12 +133,13 @@ export function computeTrendStats(
     periodDescription = `${startDateStr} – ${endDateStr} (24-hour change)`;
   }
 
-  const paddingLeft = 24;
-  const paddingRight = 24;
-  const paddingTop = 16;
-  const paddingBottom = 28;
-  const plotWidth = viewBoxWidth - paddingLeft - paddingRight;
-  const plotHeight = viewBoxHeight - paddingTop - paddingBottom;
+  const isCompact = viewBoxWidth <= 120;
+  const paddingLeft = isCompact ? 2 : 24;
+  const paddingRight = isCompact ? 2 : 24;
+  const paddingTop = isCompact ? 2 : 16;
+  const paddingBottom = isCompact ? 2 : 28;
+  const plotWidth = Math.max(1, viewBoxWidth - paddingLeft - paddingRight);
+  const plotHeight = Math.max(1, viewBoxHeight - paddingTop - paddingBottom);
   const yBase = viewBoxHeight - paddingBottom;
 
   const mentionCounts = filtered.map(s => s.mention_count);

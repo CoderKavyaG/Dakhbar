@@ -13,10 +13,25 @@ const storyInclude = {
   },
 };
 
+let cachedEntityDictionary: {
+  data: Array<{ id: string; name: string; aliases: string[]; type: any }>;
+  timestamp: number;
+} | null = null;
+const DICTIONARY_TTL_MS = 60_000;
+
+async function getEntityDictionary() {
+  if (cachedEntityDictionary && Date.now() - cachedEntityDictionary.timestamp < DICTIONARY_TTL_MS) {
+    return cachedEntityDictionary.data;
+  }
+  const data = await db.entity.findMany({ select: { id: true, name: true, aliases: true, type: true } });
+  cachedEntityDictionary = { data, timestamp: Date.now() };
+  return data;
+}
+
 export async function searchStories(query: string) {
   const q = query.trim().slice(0, 200);
   if (!q) return { intent: null, entityMatches: [], stories: [] };
-  const dictionary = await db.entity.findMany({ select: { id: true, name: true, aliases: true, type: true } });
+  const dictionary = await getEntityDictionary();
   const plan = planSearchQuery(q, dictionary, new Date());
   const exactIds = extractEntityIds(q, null, dictionary);
   const fuzzyMatches = await db.$queryRaw<{ id: string; name: string; type: string; score: number }[]>`

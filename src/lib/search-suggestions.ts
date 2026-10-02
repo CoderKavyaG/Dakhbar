@@ -49,7 +49,14 @@ export type SearchSuggestionsResponse = {
   totalMatches: number;
 };
 
+let cachedTrending: { data: TrendingTopicItem[]; timestamp: number } | null = null;
+const TRENDING_CACHE_TTL_MS = 60_000;
+
 export async function getTrendingTopics(limit = 8): Promise<TrendingTopicItem[]> {
+  if (cachedTrending && Date.now() - cachedTrending.timestamp < TRENDING_CACHE_TTL_MS) {
+    return cachedTrending.data.slice(0, limit);
+  }
+
   const entities = await db.entity.findMany({
     select: {
       id: true,
@@ -89,7 +96,7 @@ export async function getTrendingTopics(limit = 8): Promise<TrendingTopicItem[]>
       };
     })
     .sort((a, b) => b.score - a.score || b.storyCount - a.storyCount)
-    .slice(0, limit)
+    .slice(0, 20)
     .map((item, index) => ({
       rank: index + 1,
       id: item.id,
@@ -103,12 +110,13 @@ export async function getTrendingTopics(limit = 8): Promise<TrendingTopicItem[]>
       latestVelocity: item.latestVelocity,
     }));
 
-  return ranked;
+  cachedTrending = { data: ranked, timestamp: Date.now() };
+  return ranked.slice(0, limit);
 }
 
 export async function getLiveSearchSuggestions(query: string): Promise<SearchSuggestionsResponse> {
   const q = query.trim().slice(0, 100);
-  const trending = await getTrendingTopics(6);
+  const trending = q ? (cachedTrending?.data.slice(0, 4) ?? []) : await getTrendingTopics(6);
 
   if (!q) {
     return {

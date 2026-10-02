@@ -33,7 +33,7 @@ export function ResearchDossierCta({
             </Badge>
           ) : (
             <Badge className="badge-research">
-              <Sparkles size={12} className="inline-icon" /> Desk Research Mode ({storyCount} stories)
+              <Sparkles size={12} className="inline-icon" /> Research Dossier ({storyCount} stories)
             </Badge>
           )}
           <span className="dossier-stories-count">
@@ -51,7 +51,7 @@ export function ResearchDossierCta({
         <p className="dossier-description">
           {richness.tier === 'preliminary'
             ? `Synthesize available reporting into a verified brief and timeline. Note: fewer independent reports exist for this topic.`
-            : `Synthesize multi-story coverage into a source-grounded Executive Brief, deterministic chronological Timeline, and verified Key Takeaways.`}
+            : `Synthesize multi-story coverage into an authoritative Executive Brief, chronological source timeline, and verified Key Takeaways.`}
         </p>
 
         <div className="dossier-features-row">
@@ -59,7 +59,7 @@ export function ResearchDossierCta({
             <ShieldCheck size={13} className="inline-icon text-data" /> Source citations verified
           </span>
           <span>
-            <Sparkles size={13} className="inline-icon text-data" /> 24h shared topic cache
+            <Sparkles size={13} className="inline-icon text-data" /> Cross-verified synthesis
           </span>
           {richness.isPreliminary && (
             <span className="text-muted">

@@ -1309,18 +1309,8 @@ html { font-size: 16px; }
 .article-grid{--article-span:2}.article-grid-top{--article-span:3}.article-grid-results{--article-span:1}
 .article-grid>.article-cell:nth-child(n){grid-column:span var(--article-span)}
 @media(max-width:1100px){.article-grid{--article-span:1}}
-.front-page-body { display: grid; grid-template-columns: minmax(0, 1fr) 264px; gap: 32px; align-items: start; }
-.developer-pulse { position: sticky; top: 20px; margin-top: 40px; padding: 20px; border: 1px solid var(--line); border-top: 3px solid var(--data); border-radius: 8px; background: var(--paper-raised); }
-.pulse-heading h2 { margin: 6px 0 0; font: 550 30px/1 var(--font-display); }
-.pulse-method { margin: 12px 0 16px; color: var(--ink-soft); font-size: 12px; line-height: 1.5; }
-.developer-pulse ol { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; }
-.developer-pulse li { padding: 12px 0; border-top: 1px solid var(--line); }
-.developer-pulse li a { display: flex; justify-content: space-between; gap: 8px; color: var(--ink); text-decoration: none; font: 500 18px var(--font-display); }
-.developer-pulse li a:hover { color: var(--data); }
-.developer-pulse li strong { color: var(--data); font: 600 13px var(--font-data); white-space: nowrap; }
-.developer-pulse li small, .developer-pulse > time { display: block; margin-top: 4px; color: var(--ink-soft); font: 10px var(--font-data); }
-.developer-pulse > time { margin-top: 14px; }
-@media(max-width:1050px) { .front-page-body { grid-template-columns: 1fr; } .developer-pulse { position: static; margin-top: 0; } }
+.front-page-body { display: grid; grid-template-columns: minmax(0, 1fr) 296px; gap: 32px; align-items: start; }
+@media(max-width:1050px) { .front-page-body { grid-template-columns: 1fr; } }
 
 /* Pocket edition: deliberate mobile composition, independent of desktop lanes. */
 .site-nav .mobile-dock{display:none}
@@ -5103,9 +5093,10 @@ html { font-size: 16px; }
 /* 4. Broadsheet Ad Placement Component */
 .ad-placement-card {
   padding: var(--space-4);
-  border: 1px dashed var(--line);
+  border: 1px solid var(--line);
   border-radius: var(--radius);
-  background: color-mix(in srgb, var(--paper-raised) 70%, transparent);
+  background: var(--paper-raised);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.02);
 }
 
 .ad-placement-header {
@@ -8077,7 +8068,7 @@ body {
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-2) 0;
-  border-bottom: 1px dashed var(--line);
+  border-bottom: 1px solid var(--line);
 }
 
 .pulse-item:last-child {
@@ -8157,6 +8148,12 @@ body {
   font-family: var(--font-mono);
   font-size: 0.72rem;
   color: var(--ink-soft);
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.pulse-footer-meta time {
+  white-space: nowrap;
 }
 
 .pulse-footer-meta a {

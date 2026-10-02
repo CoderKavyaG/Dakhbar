@@ -114,6 +114,20 @@ test('computes valid SVG polyline and polygon coordinates within viewBox bounds'
   assert.equal(stats.points[2].x, 376); // Right edge (400 - 24)
 });
 
+test('computes valid compact sparkline coordinates without collapsing plotWidth to zero', () => {
+  const sample: MetricSnapshotData[] = [
+    { snapshot_at: '2026-09-20T00:00:00Z', mention_count: 2, unique_source_count: 1, discussion_count: 0, mention_velocity: null },
+    { snapshot_at: '2026-09-21T00:00:00Z', mention_count: 8, unique_source_count: 2, discussion_count: 0, mention_velocity: 300 },
+    { snapshot_at: '2026-09-22T00:00:00Z', mention_count: 6, unique_source_count: 2, discussion_count: 0, mention_velocity: -25 },
+  ];
+  const stats = computeTrendStats(sample, '7d', 48, 18);
+  assert.equal(stats.points.length, 3);
+  assert.equal(stats.points[0].x, 2); // left edge with 2px padding
+  assert.equal(stats.points[2].x, 46); // right edge (48 - 2px padding)
+  assert.ok(stats.points[2].x > stats.points[0].x, 'x must spread horizontally');
+  assert.ok(stats.svgPath.includes('46,'), 'path must reach right edge');
+});
+
 test('rankCategoryMovers enforces minimum volume threshold and prevents small-sample noise from outranking real trends', () => {
   const entities: CategoryEntityMetric[] = [
     {

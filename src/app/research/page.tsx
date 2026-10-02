@@ -179,7 +179,7 @@ export default async function ResearchPage({
             <p>
               {isGlobal
                 ? 'To protect free-tier LLM tokens per day (TPD) ceilings across all subscribers, new research dossier generation is paused until quota resets at 00:00 UTC. Existing cached topics remain fully readable.'
-                : 'To protect shared LLM capacity, research reports are limited to 5 new generations per subscriber per day. Your quota resets at 00:00 UTC.'}
+                : 'To maintain verified research quality, accounts are allotted 5 newly generated dossiers per day. Your allotment resets at 00:00 UTC.'}
             </p>
             <Button asChild variant="outline">
               <Link href={`/search?q=${encodeURIComponent(topic)}`}>
@@ -388,13 +388,13 @@ export default async function ResearchPage({
         </div>
       </section>
 
-      {/* Cost & Quota Footnote */}
+      {/* Editorial Methodology Footnote */}
       <footer className="research-footer">
         <div className="research-footer-content">
           <Sparkles size={16} className="inline-icon text-data" />
           <p>
-            Desk Research Mode uses shared 24-hour topic caching and deterministic timestamp
-            validation to provide grounded intelligence while conserving quota.
+            Dअख़बार Research Dossiers synthesize cross-verified developer reporting into structured intelligence,
+            citing primary evidence with sentence-level provenance across indexed sources.
           </p>
         </div>
       </footer>
