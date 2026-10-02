@@ -17,6 +17,8 @@ import { getRelatedStories } from '@/lib/related-stories';
 import { countIndependentSources, publisherDomain, storyDek } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
 import { getCategoryForEntity } from '@/lib/taxonomy';
+import { processStoryContent } from '@/lib/story-content';
+import { GitHubIcon } from '@/components/icons/github';
 import type { Metadata } from 'next';
 import { Layers, ShieldCheck, Clock, ExternalLink, Sparkles } from 'lucide-react';
 
@@ -126,6 +128,17 @@ export default async function StoryPage({
     story.entities.map(e => e.entity_id)
   );
 
+  const processedContent = processStoryContent(evidence.content, story.title, reports[0]?.url);
+  const allRepos = [
+    ...processedContent.githubRepos,
+    ...reports.flatMap(r => (r.url.includes('github.com') ? [{
+      url: r.url,
+      fullName: r.url.replace(/^https?:\/\/github\.com\//i, '').replace(/[/?#].*$/, ''),
+      owner: r.url.replace(/^https?:\/\/github\.com\//i, '').split('/')[0] || '',
+      repo: r.url.replace(/^https?:\/\/github\.com\//i, '').split('/')[1] || '',
+    }] : [])),
+  ].filter((repo, idx, arr) => arr.findIndex(x => x.url.toLowerCase() === repo.url.toLowerCase()) === idx);
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -207,40 +220,80 @@ export default async function StoryPage({
           {/* Master Dek / Summary */}
           <p className="story-master-dek">
             {dek.kind === 'domain' ? 'Reporting from ' : ''}
-            {dek.text}
+            {processedContent.cleanLead || dek.text}
           </p>
 
-          {/* Meta Information & Reader Actions Bar */}
-          <div className="story-action-strip">
-            <div className="action-strip-left">
-              <span className="source-corroboration-pill">
-                <ShieldCheck size={14} className="inline-icon text-data" />
-                {sourceCount} {sourceCount === 1 ? 'reporting source' : 'independent sources verified'}
-              </span>
-              <time
-                dateTime={reports[0].published_at.toISOString()}
-                className="story-pub-time"
-              >
-                <Clock size={13} className="inline-icon" />
-                {reports[0].published_at.toLocaleString('en-IN', {
-                  timeZone: 'Asia/Kolkata',
-                  month: 'short',
-                  day: 'numeric',
-                  hour: 'numeric',
-                  minute: '2-digit',
-                })}
-              </time>
+          {/* Primary Source Reporting Card — Prominently placed at top under Title */}
+          <div className="primary-source-lead-card">
+            <div className="source-lead-meta">
+              <div className="source-lead-publisher">
+                {reports[0].url.includes('github.com') ? (
+                  <span className="source-icon-badge github-badge">
+                    <GitHubIcon size={15} /> GitHub
+                  </span>
+                ) : reports[0].url.includes('news.ycombinator.com') ? (
+                  <span className="source-icon-badge hn-badge">
+                    <span className="y-combinator-icon">Y</span> Hacker News
+                  </span>
+                ) : reports[0].url.includes('dev.to') ? (
+                  <span className="source-icon-badge devto-badge">
+                    DEV
+                  </span>
+                ) : (
+                  <span className="source-icon-badge web-badge">
+                    <ExternalLink size={13} /> {publisherDomain(reports[0].url)}
+                  </span>
+                )}
+                <span className="source-lead-domain">{publisherDomain(reports[0].url)}</span>
+                {reports[0].author && (
+                  <span className="source-lead-author">Dispatched by {reports[0].author}</span>
+                )}
+              </div>
+
+              <div className="source-lead-actions">
+                <a
+                  href={reports[0].url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="read-primary-btn"
+                >
+                  Read original reporting <ExternalLink size={13} className="inline-icon" />
+                </a>
+              </div>
             </div>
 
-            <div className="action-strip-right">
-              <SaveStory id={story.id} />
-              <FollowToggle
-                entityIds={story.entities.map(e => e.entity_id)}
-                returnTo={'/stories/' + story.id}
-                followLabel="Follow this story"
-                followingLabel="Following this story"
-                variant="outline"
-              />
+            {/* Action Strip: Corroboration verification + Pub Time on Left; Save & Follow on Right */}
+            <div className="story-action-strip">
+              <div className="action-strip-left">
+                <span className="source-corroboration-pill">
+                  <ShieldCheck size={14} className="inline-icon text-data" />
+                  {sourceCount} {sourceCount === 1 ? 'reporting source' : 'independent sources verified'}
+                </span>
+                <time
+                  dateTime={reports[0].published_at.toISOString()}
+                  className="story-pub-time"
+                >
+                  <Clock size={13} className="inline-icon" />
+                  {reports[0].published_at.toLocaleString('en-IN', {
+                    timeZone: 'Asia/Kolkata',
+                    month: 'short',
+                    day: 'numeric',
+                    hour: 'numeric',
+                    minute: '2-digit',
+                  })}
+                </time>
+              </div>
+
+              <div className="action-strip-right">
+                <SaveStory id={story.id} variant="outline" />
+                <FollowToggle
+                  entityIds={story.entities.map(e => e.entity_id)}
+                  returnTo={'/stories/' + story.id}
+                  followLabel="Follow story"
+                  followingLabel="Following story"
+                  variant="outline"
+                />
+              </div>
             </div>
           </div>
 
@@ -276,9 +329,62 @@ export default async function StoryPage({
               </header>
 
               <div className="dispatch-lead-prose">
-                <p className="lead-paragraph">
-                  {evidence.og_description ?? evidence.content ?? dek.text}
-                </p>
+                {processedContent.paragraphs.length > 0 ? (
+                  processedContent.paragraphs.map((para, i) => (
+                    <p key={i} className={i === 0 ? "lead-paragraph" : "body-paragraph"}>
+                      {para}
+                    </p>
+                  ))
+                ) : (
+                  <p className="lead-paragraph">
+                    {evidence.og_description ?? dek.text}
+                  </p>
+                )}
+
+                {/* GitHub Open Source Repository Cards */}
+                {allRepos.map(repo => (
+                  <div key={repo.url} className="story-github-repo-card">
+                    <div className="github-card-left">
+                      <span className="github-logo-wrap">
+                        <GitHubIcon size={24} />
+                      </span>
+                      <div className="github-card-info">
+                        <span className="github-card-kicker">Open Source Codebase</span>
+                        <h4 className="github-card-title">{repo.fullName}</h4>
+                        <p className="github-card-desc">Source repository and technical assets on GitHub</p>
+                      </div>
+                    </div>
+                    <a
+                      href={repo.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="github-inspect-btn"
+                    >
+                      View on GitHub <ExternalLink size={13} className="inline-icon" />
+                    </a>
+                  </div>
+                ))}
+
+                {/* Live Project / Web App Deployment Card (if non-HN and non-GitHub) */}
+                {!reports[0].url.includes('news.ycombinator.com') && !reports[0].url.includes('github.com') && (
+                  <div className="story-live-link-card">
+                    <div className="live-link-left">
+                      <div>
+                        <span className="live-link-kicker">Project Site & Demonstration</span>
+                        <h4 className="live-link-title">{publisherDomain(reports[0].url)}</h4>
+                      </div>
+                    </div>
+                    <a
+                      href={reports[0].url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="live-visit-btn"
+                    >
+                      Open {publisherDomain(reports[0].url)} <ExternalLink size={13} className="inline-icon" />
+                    </a>
+                  </div>
+                )}
+
                 {reports.length > 1 && (
                   <p className="subsequent-paragraph">
                     This development was independently reported and cross-corroborated across {sourceCount} developer sources, tracing first from {publisherDomain(reports[0].url)} and subsequently confirmed with additional technical disclosures.

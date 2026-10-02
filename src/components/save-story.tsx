@@ -6,7 +6,17 @@ import { setSavedStory } from '@/app/actions/saved';
 import { useSavedStories } from './saved-stories-provider';
 import { useToast } from './ui/toast';
 
-export function SaveStory({ id }: { id: string }) {
+import { Button } from './ui/button';
+
+export function SaveStory({
+  id,
+  variant = 'default',
+  className = '',
+}: {
+  id: string;
+  variant?: 'default' | 'outline';
+  className?: string;
+}) {
   const { isSignedIn } = useAuth();
   const clerk = useClerk();
   const { toast } = useToast();
@@ -51,17 +61,32 @@ export function SaveStory({ id }: { id: string }) {
   };
 
   return (
-    <div className="save-story-controls">
-      <button
-        type="button"
-        disabled={pending}
-        aria-pressed={saved}
-        aria-label={saved ? 'Remove saved story' : 'Save story'}
-        onClick={() => act(saved ? 'remove' : 'save')}
-      >
-        <Bookmark size={14} fill={saved ? 'currentColor' : 'none'} />
-        {saved ? 'Saved' : 'Save'}
-      </button>
+    <div className={`save-story-controls ${variant === 'outline' ? 'save-controls-outline' : ''} ${className}`}>
+      {variant === 'outline' ? (
+        <Button
+          type="button"
+          variant="outline"
+          disabled={pending}
+          aria-pressed={saved}
+          aria-label={saved ? 'Remove saved story' : 'Save story'}
+          onClick={() => act(saved ? 'remove' : 'save')}
+          className="save-story-btn"
+        >
+          <Bookmark size={15} fill={saved ? 'currentColor' : 'none'} className="inline-icon" />
+          <span>{saved ? 'Saved' : 'Save'}</span>
+        </Button>
+      ) : (
+        <button
+          type="button"
+          disabled={pending}
+          aria-pressed={saved}
+          aria-label={saved ? 'Remove saved story' : 'Save story'}
+          onClick={() => act(saved ? 'remove' : 'save')}
+        >
+          <Bookmark size={14} fill={saved ? 'currentColor' : 'none'} />
+          {saved ? 'Saved' : 'Save'}
+        </button>
+      )}
       {error && <span role="alert">{error}</span>}
     </div>
   );
