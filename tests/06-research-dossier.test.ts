@@ -1,16 +1,10 @@
-import { test } from 'node:test';
+// Consolidated Test Suite: 06-research-dossier.test.ts
 import assert from 'node:assert/strict';
-import {
-  normalizeResearchTopic,
-  researchTopicHash,
-  buildResearchPrompt,
-  verifyResearchSection,
-  parseLlmReportOutput,
-  RESEARCH_CACHE_TTL_MS,
-  SUBSCRIBER_DAILY_RESEARCH_LIMIT,
-  type ResearchEvidence,
-} from '../src/lib/research';
+import { test } from 'node:test';
+import { RESEARCH_CACHE_TTL_MS, SUBSCRIBER_DAILY_RESEARCH_LIMIT, buildResearchPrompt, normalizeResearchTopic, parseLlmReportOutput, researchTopicHash, type ResearchEvidence, verifyResearchSection } from '../src/lib/research';
 
+// --- Section: research.test.ts ---
+{
 const mockEvidence: ResearchEvidence[] = [
   {
     citation: 1,
@@ -200,4 +194,4 @@ test('Search CTA reflects evidence richness signal before generation', async () 
   assert.match(cta, /badge-preliminary/);
   assert.match(cta, /badge-comprehensive/);
 });
-
+}

@@ -1,8 +1,12 @@
-import { test } from 'node:test';
+// Consolidated Test Suite: 07-story-ask.test.ts
 import assert from 'node:assert/strict';
-import { answerStoryQuestion, askQuestionHash, citationsAreValid, normalizeAskQuestion, verifyStoryAnswer, type AskEvidence, type StoryAskDependencies } from '../src/lib/story-ask';
-import type { LlmAttempt } from '../src/lib/llm/provider';
+import { test } from 'node:test';
+import { validateModelCatalog } from '../src/lib/llm/catalog';
+import { type LlmAttempt, completeWithFallback } from '../src/lib/llm/provider';
+import { answerStoryQuestion, askQuestionHash, citationsAreValid, normalizeAskQuestion, type AskEvidence, type StoryAskDependencies, verifyStoryAnswer } from '../src/lib/story-ask';
 
+// --- Section: story-ask.test.ts ---
+{
 const evidence: AskEvidence[] = [
   { citation: 1, title: 'OpenAI announces a new developer API', domain: 'openai.com', reportedAt: '2026-09-22T10:00:00.000Z', excerpt: 'OpenAI announced the API on Tuesday.', url: 'https://openai.com/news' },
   { citation: 2, title: 'Reuters confirms OpenAI API launch', domain: 'reuters.com', reportedAt: '2026-09-22T11:00:00.000Z', excerpt: 'Reuters confirmed the launch details.', url: 'https://reuters.com/technology' },
@@ -109,3 +113,38 @@ test('Ask endpoint enforces the active subscription, independent sources, and sh
   assert.match(route, /input_tokens: attempt\.inputTokens/);
   assert.match(route, /fallback_triggered: attempt\.fallbackTriggered/);
 });
+}
+
+// --- Section: llm-provider.test.ts ---
+{
+const primary = { name: 'groq', baseUrl: 'https://groq.test/v1', apiKey: 'test', model: 'llama' };
+const fallback = { name: 'openrouter', baseUrl: 'https://router.test/v1', apiKey: 'test', model: 'model:free' };
+
+test('OpenAI-compatible provider falls back after primary 429', async () => {
+  const calls: string[] = [];
+  const fetchImpl = (async (url: string | URL | Request) => {
+    calls.push(String(url));
+    if (String(url).includes('groq')) return new Response('{}', { status: 429 });
+    return Response.json({ choices: [{ message: { content: 'Grounded copy.' } }], usage: { prompt_tokens: 12, completion_tokens: 4 } });
+  }) as typeof fetch;
+  const result = await completeWithFallback({ messages: [{ role: 'user', content: 'facts' }], primary, fallback, fetchImpl });
+  assert.equal(result.provider, 'openrouter');
+  assert.equal(result.fallbackTriggered, true);
+  assert.equal(result.content, 'Grounded copy.');
+  assert.deepEqual(calls, ['https://groq.test/v1/chat/completions', 'https://router.test/v1/chat/completions']);
+  assert.equal(result.attempts[0].errorCode, '429');
+});
+
+test('a malformed provider response retains the attempted call for audit logging', async () => {
+ await assert.rejects(completeWithFallback({messages:[{role:'user',content:'facts'}],primary,fetchImpl:(async()=>new Response('not json')) as typeof fetch}), (error:unknown) => {
+  assert.equal((error as Error & {attempts:{errorCode:string}[]}).attempts[0].errorCode,'invalid_response');
+  return true;
+ });
+});
+}
+
+// --- Section: model-catalog.test.ts ---
+{
+test('catalog validates every configured ID and names missing models before generation',async()=>{let calls=0;const configs=['live','retired'].map(model=>({name:'groq',baseUrl:'https://catalog.test/v1',apiKey:'mock',model}));const rows=await validateModelCatalog(configs,(async()=>{calls++;return Response.json({data:[{id:'live'}]});}) as typeof fetch);assert.equal(calls,1);assert.equal(rows[0].available,true);assert.equal(rows[1].error,'configured_model_missing');assert.equal(rows[1].model,'retired');});
+test('catalog outage is not confused with a missing model',async()=>{const rows=await validateModelCatalog([{name:'groq',baseUrl:'https://catalog.test',apiKey:'mock',model:'live'}],(async()=>new Response('{}',{status:503})) as typeof fetch);assert.equal(rows[0].error,'catalog_http_503');});
+}

@@ -21,6 +21,7 @@ import { briefSummary } from '@/lib/brief';
 import { generateBriefEdition } from '@/lib/brief-edition';
 import { db } from '@/lib/db';
 import { getBrief, getForYouStories, getPopularEntities, getBriefNotificationCount, getFollowingEntityIds } from '@/lib/reader-data';
+import { FollowingNotification } from '@/components/following-notification';
 import { WelcomeOnboardingModal } from '@/components/welcome-onboarding-modal';
 import { Sparkles } from 'lucide-react';
 
@@ -46,6 +47,7 @@ export default async function FrontPage({
             <Link href="/?tab=following" className="front-tab active" aria-current="page">Following</Link>
           </nav>
         </div>
+        <FollowingNotification hasFollowedTopics={false} />
         <FollowingEmpty entities={popular} />
       </main>
     );
@@ -71,7 +73,7 @@ export default async function FrontPage({
       }
     }
 
-    // If reader has zero followed entities, show the rich onboarding view
+    // If reader has zero followed entities, show the rich onboarding view with notification tip
     if (!brief.entityIds.length && !forYou.entityIds.length) {
       return (
         <main className="paper-shell reader-page">
@@ -81,6 +83,7 @@ export default async function FrontPage({
               <Link href="/?tab=following" className="front-tab active" aria-current="page">Following</Link>
             </nav>
           </div>
+          <FollowingNotification hasFollowedTopics={false} />
           <FollowingEmpty entities={popular} />
           <WelcomeOnboardingModal
             userId={userId}
@@ -95,6 +98,8 @@ export default async function FrontPage({
     const [followedLead, ...followedRest] = storiesToRender;
 
     if (!followedLead) {
+      const topLead = frontPageStories[0];
+      const otherStories = frontPageStories.slice(1);
       return (
         <main className="paper-shell reader-page">
           <div className="front-tabs-container">
@@ -103,7 +108,50 @@ export default async function FrontPage({
               <Link href="/?tab=following" className="front-tab active" aria-current="page">Following</Link>
             </nav>
           </div>
-          <FollowingEmpty entities={popular} />
+
+          <FollowingNotification
+            hasFollowedTopics={true}
+            topicCount={brief.entityIds.length || forYou.entityIds.length}
+          />
+
+          <div className="following-edition-grid">
+            <div className="following-main-col">
+              <div className="following-section-heading">
+                <span className="section-note">Today&apos;s Dispatches</span>
+                <h2>Wider Wire Coverage</h2>
+                <p className="following-section-sub">
+                  Your followed topics are all caught up. Here is what&apos;s leading tech news across the wire today.
+                </p>
+              </div>
+
+              {topLead && (
+                <div style={{ marginBottom: '2rem' }}>
+                  <StoryCard
+                    story={topLead}
+                    featured={true}
+                  />
+                </div>
+              )}
+
+              <div className="following-feed">
+                {otherStories.slice(0, 8).map(story => (
+                  <StoryCard
+                    key={story.id}
+                    story={story}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <aside className="following-side-col">
+              <FollowingSidebar
+                leadStory={topLead ? { id: topLead.id, title: topLead.title, dek: storyDek(topLead.documents[0]?.raw_document, 160).text } : null}
+                suggestedEntities={popular.filter(e => !new Set(brief.entityIds).has(e.id))}
+                trendingTopics={(pulse.items || []).map(p => ({ entityId: p.entityId, name: p.name, mentionCount: p.mentionCount, velocity: p.velocity }))}
+              />
+            </aside>
+          </div>
+
           <WelcomeOnboardingModal
             userId={userId}
             initialFollowedIds={brief.entityIds}

@@ -9249,6 +9249,180 @@ body {
   background: var(--tabloid-yellow);
 }
 
+/* Following Dismissable Notification Banner */
+.following-notification-banner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.5rem;
+  background: var(--paper-raised, #ffffff);
+  border: 2px solid var(--line, #000000);
+  box-shadow: 4px 4px 0px var(--line, #000000);
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+.following-notification-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex: 1;
+}
+
+.following-notification-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  background: var(--tabloid-yellow, #ffea00);
+  color: #000000;
+  border: 1.5px solid var(--line, #000000);
+  font-family: var(--font-plex-mono, monospace);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+  text-transform: uppercase;
+}
+
+.following-notification-title {
+  font-family: 'Funnel Display', -apple-system, sans-serif;
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: var(--ink, #121311);
+  margin: 0;
+}
+
+.following-notification-dek {
+  font-family: var(--font-plex-sans, sans-serif);
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: var(--ink-soft, #444746);
+  margin: 0;
+  max-width: 65ch;
+}
+
+.following-notification-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.following-notification-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.4rem 0.85rem;
+  font-family: var(--font-plex-mono, monospace);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+  border: 1.5px solid var(--line, #000000);
+  transition: all 120ms ease;
+}
+
+.following-notification-btn.primary {
+  background: var(--tabloid-red, #ff3b00);
+  color: #ffffff;
+  box-shadow: 2px 2px 0px var(--line, #000000);
+}
+
+.following-notification-btn.primary:hover {
+  background: #e63500;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--line, #000000);
+}
+
+.following-notification-btn.outline {
+  background: #ffffff;
+  color: #000000;
+  box-shadow: 2px 2px 0px var(--line, #000000);
+}
+
+.following-notification-btn.outline:hover {
+  background: var(--tabloid-yellow, #ffea00);
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--line, #000000);
+}
+
+.following-notification-close {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #ffffff;
+  border: 1.5px solid var(--line, #000000);
+  padding: 0.35rem 0.65rem;
+  font-family: var(--font-plex-mono, monospace);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ink, #121311);
+  cursor: pointer;
+  box-shadow: 2px 2px 0px var(--line, #000000);
+  transition: all 120ms ease;
+  flex-shrink: 0;
+}
+
+.following-notification-close:hover {
+  background: #ffea00;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--line, #000000);
+}
+
+.following-notification-close:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0px var(--line, #000000);
+}
+
+/* Tabloid Spacing Enhancements & Hierarchy */
+.paper-shell {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 4rem;
+}
+
+.front-tabs-container {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.following-edition-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .following-edition-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+}
+
+.following-section-heading {
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--line);
+}
+
+.following-section-heading h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0.25rem 0;
+}
+
+.following-section-sub {
+  font-size: 0.95rem;
+  color: var(--ink-soft);
+  margin: 0;
+}
+
 
 
 

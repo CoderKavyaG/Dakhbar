@@ -1,9 +1,32 @@
-import { test } from 'node:test';
+// Consolidated Test Suite: 03-embedding-search.test.ts
 import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { test } from 'node:test';
+import { EMBEDDING_DIMENSIONS, cosineSimilarity, createEmbedding, parseVector, toVectorLiteral } from '../src/lib/clustering/embedding';
 import { extractEntityIds } from '../src/lib/clustering/entities';
 import { fuseRankedStoryDocuments, parseTemporalWindow, planSearchQuery, reciprocalRankFusion } from '../src/lib/retrieval';
-import { createEmbedding, parseVector, toVectorLiteral, EMBEDDING_DIMENSIONS } from '../src/lib/clustering/embedding';
+import { getLiveSearchSuggestions, getTrendingTopics } from '../src/lib/search-suggestions';
 
+// --- Section: embedding.test.ts ---
+{
+test('local embeddings are deterministic, normalized and fixed width', () => {
+  const first = createEmbedding('PostgreSQL releases a new query planner');
+  const second = createEmbedding('PostgreSQL releases a new query planner');
+  assert.deepEqual(first, second);
+  assert.equal(first.length, EMBEDDING_DIMENSIONS);
+  const norm = Math.sqrt(first.reduce((sum, value) => sum + value * value, 0));
+  assert.ok(Math.abs(norm - 1) < 1e-9);
+});
+test('related text scores above unrelated text', () => {
+  const anchor = createEmbedding('React server components framework update');
+  const related = createEmbedding('React framework server component update');
+  const unrelated = createEmbedding('PostgreSQL database vacuum indexing');
+  assert.ok(cosineSimilarity(anchor, related) > cosineSimilarity(anchor, unrelated));
+});
+}
+
+// --- Section: hybrid-retrieval.test.ts ---
+{
 const entities = [{ id:'openai', name:'OpenAI', aliases:['Open AI'] }, { id:'go', name:'Go', aliases:['Golang'] }];
 const now = new Date('2026-09-23T15:30:00.000Z');
 
@@ -56,3 +79,60 @@ test('search queryVector construction produces exact 384-dimensional numeric vec
    assert.ok(Math.abs(parsed[i] - embedding[i]) < 1e-6, `Dimension ${i} mismatch`);
  }
 });
+}
+
+// --- Section: expandable-search.test.ts ---
+{
+test('getTrendingTopics returns valid ranked entities with taxonomy categories', async () => {
+  const trending = await getTrendingTopics(6);
+  assert.ok(Array.isArray(trending));
+  if (trending.length > 0) {
+    trending.forEach((item, index) => {
+      assert.equal(item.rank, index + 1);
+      assert.ok(item.name.length > 0);
+      assert.ok(item.slug.length > 0);
+      assert.ok(['AI & companies', 'Infrastructure', 'Languages & tools'].includes(item.categoryTitle));
+      assert.ok(typeof item.storyCount === 'number');
+    });
+  }
+});
+
+test('getLiveSearchSuggestions handles empty and populated search queries', async () => {
+  const emptyRes = await getLiveSearchSuggestions('');
+  assert.ok(Array.isArray(emptyRes.trending));
+  assert.deepEqual(emptyRes.stories, []);
+  assert.deepEqual(emptyRes.topics, []);
+  assert.deepEqual(emptyRes.sources, []);
+  assert.equal(emptyRes.researchEligible, false);
+
+  const populatedRes = await getLiveSearchSuggestions('Python');
+  assert.ok(Array.isArray(populatedRes.trending));
+  assert.ok(Array.isArray(populatedRes.stories));
+  assert.ok(Array.isArray(populatedRes.topics));
+  assert.ok(Array.isArray(populatedRes.sources));
+});
+
+test('standalone /topics redirects to /search while /topics/[slug] remains dedicated dossier', async () => {
+  const [topicsIndex, topicSlugPage] = await Promise.all([
+    readFile('src/app/topics/page.tsx', 'utf8'),
+    readFile('src/app/topics/[slug]/page.tsx', 'utf8'),
+  ]);
+
+  assert.match(topicsIndex, /redirect\(['"]\/search['"]\)/);
+  assert.match(topicSlugPage, /<TopicTrendChart/);
+  assert.match(topicSlugPage, /<TopicSummary/);
+  assert.match(topicSlugPage, /<StoryCard/);
+});
+
+test('SiteHeader embeds ExpandableSearch component in place of old static search and topics nav', async () => {
+  const [header, primaryNav] = await Promise.all([
+    readFile('src/components/site-header.tsx', 'utf8'),
+    readFile('src/components/primary-nav.tsx', 'utf8'),
+  ]);
+
+  assert.match(header, /<ExpandableSearch/);
+  assert.doesNotMatch(header, /className="nav-search"/);
+  assert.doesNotMatch(primaryNav, /href="\/topics"/);
+  assert.doesNotMatch(primaryNav, /href="\/search"/);
+});
+}
