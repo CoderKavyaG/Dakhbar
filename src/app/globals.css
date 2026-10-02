@@ -241,68 +241,185 @@ body {
    ========================================================================== */
 
 /* Candidate 1: Perceptible Broadsheet Halftone Dot-Grain (Default) */
-body::before,
-body[data-texture="halftone"]::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.088;
-  background-image: radial-gradient(circle at 1.5px 1.5px, var(--ink) 1px, transparent 0);
-  background-size: 6px 6px;
+body,
+body[data-texture="halftone"],
+html[data-texture="halftone"] body {
+  background-color: var(--paper);
+  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(22, 26, 25, 0.12) 1.25px, transparent 0);
+  background-size: 8px 8px;
   background-repeat: repeat;
+  background-attachment: fixed;
 }
 
-.dark body::before,
-.dark body[data-texture="halftone"]::before {
-  opacity: 0.065;
-  background-image: radial-gradient(circle at 1.5px 1.5px, var(--ink) 1px, transparent 0);
-  background-size: 6px 6px;
+.dark body,
+.dark body[data-texture="halftone"],
+html.dark[data-texture="halftone"] body {
+  background-color: var(--paper);
+  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(237, 240, 232, 0.10) 1.25px, transparent 0);
+  background-size: 8px 8px;
+  background-repeat: repeat;
+  background-attachment: fixed;
 }
 
 /* Candidate 2: Fine Paper-Fiber Noise Texture (Organic Press Fiber) */
-body[data-texture="fiber"]::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.075;
+body[data-texture="fiber"],
+html[data-texture="fiber"] body {
+  background-color: var(--paper);
   background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.85'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(22, 26, 25, 0.04) 4px, rgba(22, 26, 25, 0.04) 5px);
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(22, 26, 25, 0.035) 5px, rgba(22, 26, 25, 0.035) 6px);
   background-size: 160px 160px, auto;
+  background-attachment: fixed;
 }
 
-.dark body[data-texture="fiber"]::before {
-  opacity: 0.06;
+.dark body[data-texture="fiber"],
+html.dark[data-texture="fiber"] body {
+  background-color: var(--paper);
   background-image:
-    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.85'/%3E%3C/svg%3E"),
-    repeating-linear-gradient(45deg, transparent, transparent 4px, rgba(237, 240, 232, 0.035) 4px, rgba(237, 240, 232, 0.035) 5px);
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.075'/%3E%3C/svg%3E"),
+    repeating-linear-gradient(45deg, transparent, transparent 5px, rgba(237, 240, 232, 0.035) 5px, rgba(237, 240, 232, 0.035) 6px);
   background-size: 160px 160px, auto;
+  background-attachment: fixed;
 }
 
 /* Candidate 3: Aged Newsprint Warm-Toned Gradient Wash (Non-repeating Vignette) */
-body[data-texture="wash"]::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 1;
-  background:
-    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(255, 250, 240, 0.6), transparent 70%),
-    radial-gradient(ellipse 80% 80% at 85% 85%, rgba(215, 205, 185, 0.5), transparent 75%),
-    linear-gradient(180deg, #f4efe4 0%, #ece5d6 50%, #e3dbcd 100%);
+body[data-texture="wash"],
+html[data-texture="wash"] body {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(255, 250, 240, 0.75), transparent 70%),
+    radial-gradient(ellipse 80% 80% at 85% 85%, rgba(215, 205, 185, 0.65), transparent 75%),
+    linear-gradient(180deg, #f7f2e8 0%, #ece5d6 50%, #e2dacb 100%);
+  background-attachment: fixed;
 }
 
-.dark body[data-texture="wash"]::before {
+.dark body[data-texture="wash"],
+html.dark[data-texture="wash"] body {
+  background-color: var(--paper);
+  background-image:
+    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(25, 34, 31, 0.75), transparent 60%),
+    radial-gradient(ellipse 80% 80% at 85% 85%, rgba(10, 18, 16, 0.85), transparent 70%),
+    linear-gradient(180deg, #131917 0%, #0d1312 100%);
+  background-attachment: fixed;
+}
+
+/* Texture Selector Controls */
+.texture-dots-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  background: rgba(22, 26, 25, 0.04);
+  border: 1px solid var(--line);
+  border-radius: 9999px;
+  transition: all 0.15s ease;
+  vertical-align: middle;
+}
+
+.dark .texture-dots-bar {
+  background: rgba(237, 240, 232, 0.05);
+}
+
+.texture-dots-label {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft);
+  user-select: none;
+}
+
+.texture-dots-list {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.texture-dot-node {
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: transform 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.texture-dot-node:hover {
+  transform: scale(1.2);
+  border-color: var(--data);
+}
+
+.texture-dot-node .texture-dot-inner {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ink-soft);
+  opacity: 0.45;
+  transition: all 0.15s ease;
+}
+
+.texture-dot-node.active {
+  border-color: var(--data);
+  box-shadow: 0 0 0 1.5px var(--data);
+  transform: scale(1.15);
+}
+
+.texture-dot-node.active .texture-dot-inner {
+  background: var(--data);
   opacity: 1;
-  background:
-    radial-gradient(ellipse 90% 70% at 20% 15%, rgba(25, 34, 31, 0.7), transparent 60%),
-    radial-gradient(ellipse 80% 80% at 85% 85%, rgba(10, 18, 16, 0.8), transparent 70%),
-    linear-gradient(180deg, #131917 0%, #0e1413 100%);
+  transform: scale(1.1);
+}
+
+.texture-explorer-bar {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.texture-label {
+  color: var(--ink-soft);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.texture-pills {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.texture-pill-btn {
+  padding: 2px 8px;
+  font-size: 0.72rem;
+  font-family: var(--font-mono);
+  background: var(--paper);
+  border: 1px solid var(--line);
+  color: var(--ink-soft);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.texture-pill-btn:hover {
+  border-color: var(--data);
+  color: var(--ink);
+}
+
+.texture-pill-btn.active {
+  background: var(--data);
+  color: var(--data-ink);
+  border-color: var(--data);
+  font-weight: 600;
 }
 a { color: inherit; text-decoration: none; }
 a:hover { color: var(--data); }
@@ -5526,6 +5643,10 @@ html { font-size: 16px; }
   line-height: 1.45;
   color: var(--ink-soft);
   margin: 0 0 var(--space-2);
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .evidence-source-link {

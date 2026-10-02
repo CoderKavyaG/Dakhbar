@@ -22,6 +22,7 @@ import { generateBriefEdition } from '@/lib/brief-edition';
 import { db } from '@/lib/db';
 import { getBrief, getForYouStories, getPopularEntities, getBriefNotificationCount, getFollowingEntityIds } from '@/lib/reader-data';
 import { WelcomeOnboardingModal } from '@/components/welcome-onboarding-modal';
+import { TextureSelector } from '@/components/texture-selector';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,7 +161,10 @@ export default async function FrontPage({
         <FreshEdition />
         <div className="edition-intro">
           <p>{date} — Followed Edition</p>
-          <Badge>{storiesToRender.length} followed {storiesToRender.length === 1 ? 'story' : 'stories'}</Badge>
+          <div className="edition-intro-badges">
+            <TextureSelector variant="dots" />
+            <Badge>{storiesToRender.length} followed {storiesToRender.length === 1 ? 'story' : 'stories'}</Badge>
+          </div>
         </div>
 
         <section className="lead-stage">
@@ -324,6 +328,7 @@ export default async function FrontPage({
           <p>{date}</p>
         </div>
         <div className="edition-intro-badges">
+          <TextureSelector variant="dots" />
           <Badge>{stories.length} indexed stories</Badge>
           <Badge className="edition-live-badge">Live Edition</Badge>
         </div>
