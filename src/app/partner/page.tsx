@@ -29,12 +29,12 @@ export default function PartnerPage() {
             visibility without invasive tracking or banner blindness.
           </p>
           <div className="partner-cta-row">
-            <Button asChild size="lg" className="partner-primary-btn">
+            <Button asChild className="partner-primary-btn">
               <a href="mailto:partnerships@dakhbar.com?subject=Dakhbar%20Partnership%20Inquiry">
                 <Mail size={16} className="inline-icon" /> Inquire for Sponsorship
               </a>
             </Button>
-            <Button asChild variant="outline" size="lg">
+            <Button asChild variant="outline">
               <Link href="/pricing">View Reader Memberships</Link>
             </Button>
           </div>

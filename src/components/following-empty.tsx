@@ -34,7 +34,7 @@ const STARTER_PACKS = [
     badge: 'Popular',
     icon: Sparkles,
     description: 'Frontier labs, LLMs, fine-tuning runtimes, and agent architecture.',
-    topics: ['OpenAI', 'Anthropic', 'DeepSeek', 'PyTorch', 'Hugging Face', 'Mistral AI'],
+    topics: ['OpenAI', 'Anthropic', 'Google', 'Meta', 'DeepSeek', 'Hugging Face'],
   },
   {
     id: 'modern-web',
@@ -42,7 +42,7 @@ const STARTER_PACKS = [
     badge: 'Frontend',
     icon: Code2,
     description: 'High-performance frameworks, JavaScript engines, and design systems.',
-    topics: ['React', 'Next.js', 'TypeScript', 'Tailwind CSS', 'Bun', 'Vue.js'],
+    topics: ['React', 'JavaScript', 'TypeScript', 'Next.js', 'GitHub', 'Svelte'],
   },
   {
     id: 'cloud-infra',
@@ -50,7 +50,7 @@ const STARTER_PACKS = [
     badge: 'DevOps',
     icon: Server,
     description: 'Container orchestrators, managed cloud, distributed SQL, and caching.',
-    topics: ['Kubernetes', 'Docker', 'PostgreSQL', 'Redis', 'Amazon Web Services', 'Terraform'],
+    topics: ['Kubernetes', 'Docker', 'PostgreSQL', 'Amazon Web Services', 'Redis', 'Supabase'],
   },
   {
     id: 'systems-compilers',
@@ -58,7 +58,7 @@ const STARTER_PACKS = [
     badge: 'Core',
     icon: Cpu,
     description: 'Memory-safe systems programming, modern runtimes, and local databases.',
-    topics: ['Rust', 'Go', 'Linux', 'SQLite', 'WebAssembly', 'C++'],
+    topics: ['Rust', 'Python', 'Linux', 'WebAssembly', 'Apple', 'SQLite'],
   },
 ];
 

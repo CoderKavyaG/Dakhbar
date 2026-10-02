@@ -115,7 +115,7 @@ export async function getTopicBySlug(slug: string) {
   return { entity, stories, storyCount, snapshots };
 }
 
-export async function getPopularEntities(limit = 8) {
+export async function getPopularEntities(limit = 48) {
   return db.entity.findMany({
     orderBy: { stories: { _count: 'desc' } },
     take: limit,

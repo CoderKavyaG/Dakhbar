@@ -20,7 +20,8 @@ import { topicPath } from '@/lib/topic-slug';
 import { briefSummary } from '@/lib/brief';
 import { generateBriefEdition } from '@/lib/brief-edition';
 import { db } from '@/lib/db';
-import { getBrief, getForYouStories, getPopularEntities, getBriefNotificationCount } from '@/lib/reader-data';
+import { getBrief, getForYouStories, getPopularEntities, getBriefNotificationCount, getFollowingEntityIds } from '@/lib/reader-data';
+import { WelcomeOnboardingModal } from '@/components/welcome-onboarding-modal';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,7 +32,7 @@ export default async function FrontPage({
 }) {
   const { tab } = (await searchParams) ?? {};
   const { userId } = await auth();
-  const isFollowingTab = tab === 'following';
+  const isFollowingTab = userId ? (tab !== 'today') : tab === 'following';
 
   // --- Anonymous Reader Following Tab ---
   if (isFollowingTab && !userId) {
@@ -80,6 +81,11 @@ export default async function FrontPage({
             </nav>
           </div>
           <FollowingEmpty entities={popular} />
+          <WelcomeOnboardingModal
+            userId={userId}
+            initialFollowedIds={brief.entityIds}
+            popularEntities={popular}
+          />
         </main>
       );
     }
@@ -97,6 +103,11 @@ export default async function FrontPage({
             </nav>
           </div>
           <FollowingEmpty entities={popular} />
+          <WelcomeOnboardingModal
+            userId={userId}
+            initialFollowedIds={brief.entityIds}
+            popularEntities={popular}
+          />
         </main>
       );
     }
@@ -131,6 +142,11 @@ export default async function FrontPage({
     return (
       <main className="paper-shell">
         <BriefReadReceipt at={brief.visitedAt.toISOString()} />
+        <WelcomeOnboardingModal
+          userId={userId}
+          initialFollowedIds={brief.entityIds}
+          popularEntities={popular}
+        />
         <div className="front-tabs-container">
           <nav className="front-tabs" aria-label="Edition view">
             <Link href="/?tab=today" className="front-tab">Today</Link>
@@ -246,10 +262,12 @@ export default async function FrontPage({
   }
 
   // --- "Today" Front Page (Default & Anonymous) ---
-  const [stories, pulse, briefCount] = await Promise.all([
+  const [stories, pulse, briefCount, userFollowed, popular] = await Promise.all([
     getFrontPageStories(),
     getDeveloperPulse(),
     userId ? getBriefNotificationCount(userId) : Promise.resolve(0),
+    userId ? getFollowingEntityIds(userId) : Promise.resolve([]),
+    userId ? getPopularEntities() : Promise.resolve([]),
   ]);
 
   const [lead, ...rest] = stories;
@@ -281,6 +299,13 @@ export default async function FrontPage({
 
   return (
     <main className="paper-shell">
+      {userId && (
+        <WelcomeOnboardingModal
+          userId={userId}
+          initialFollowedIds={userFollowed}
+          popularEntities={popular}
+        />
+      )}
       {userId && (
         <div className="front-tabs-container">
           <nav className="front-tabs" aria-label="Edition view">

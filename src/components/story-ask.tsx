@@ -184,7 +184,6 @@ export function StoryAsk({
           <Button
             type="button"
             variant={isOpen ? 'outline' : 'default'}
-            size="sm"
             className="mascot-expand-btn"
             onClick={e => {
               e.stopPropagation();
