@@ -20,7 +20,13 @@ import { getCategoryForEntity } from '@/lib/taxonomy';
 import { processStoryContent } from '@/lib/story-content';
 import { GitHubIcon } from '@/components/icons/github';
 import type { Metadata } from 'next';
-import { Layers, ShieldCheck, Clock, ExternalLink, Sparkles } from 'lucide-react';
+import {
+  TabloidLayers as Layers,
+  TabloidShieldCheck as ShieldCheck,
+  TabloidClock as Clock,
+  TabloidExternalLink as ExternalLink,
+  TabloidSparkles as Sparkles,
+} from '@/components/pop-tabloid-icons';
 
 export const dynamic = 'force-dynamic';
 

@@ -4,14 +4,12 @@ import React, { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser, useClerk } from '@clerk/nextjs';
 import {
-  Bookmark,
-  Heart,
-  Compass,
-  LogOut,
-  Sparkles,
-  ChevronDown,
-  User as UserIcon,
-} from 'lucide-react';
+  TabloidBookmark as Bookmark,
+  TabloidHeart as Heart,
+  TabloidCompass as Compass,
+  TabloidSparkles as Sparkles,
+} from '@/components/pop-tabloid-icons';
+import { LogOut, ChevronDown, User as UserIcon } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { JoinUsButton } from './join-us-button';
 

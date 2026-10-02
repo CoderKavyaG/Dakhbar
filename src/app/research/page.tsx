@@ -2,16 +2,15 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { auth } from '@clerk/nextjs/server';
 import {
-  FileText,
-  Clock,
-  Sparkles,
-  ExternalLink,
-  ShieldCheck,
-  Lock,
-  ArrowRight,
-  Database,
-  AlertCircle,
-} from 'lucide-react';
+  TabloidFileText as FileText,
+  TabloidClock as Clock,
+  TabloidSparkles as Sparkles,
+  TabloidExternalLink as ExternalLink,
+  TabloidShieldCheck as ShieldCheck,
+  TabloidLock as Lock,
+  TabloidArrowRight as ArrowRight,
+} from '@/components/pop-tabloid-icons';
+import { Database, AlertCircle } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { db } from '@/lib/db';

@@ -6,7 +6,12 @@ import { Badge } from './ui/badge';
 import { StoryImage } from '@/components/story-image';
 import { publisherDomain, countIndependentSources, storyDek, storyDestination } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
-import { ShieldCheck, CheckCircle2, FileText, Sparkles } from 'lucide-react';
+import {
+  TabloidShieldCheck as ShieldCheck,
+  TabloidCheckCircle2 as CheckCircle2,
+  TabloidFileText as FileText,
+  TabloidSparkles as Sparkles,
+} from '@/components/pop-tabloid-icons';
 
 type StoryCardData = {
   id: string;

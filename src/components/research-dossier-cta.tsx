@@ -1,5 +1,12 @@
 import Link from 'next/link';
-import { Sparkles, Lock, ArrowRight, ShieldCheck, AlertCircle, Clock } from 'lucide-react';
+import {
+  TabloidSparkles as Sparkles,
+  TabloidLock as Lock,
+  TabloidArrowRight as ArrowRight,
+  TabloidShieldCheck as ShieldCheck,
+  TabloidClock as Clock,
+} from '@/components/pop-tabloid-icons';
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { computeEvidenceRichness } from '@/lib/research';

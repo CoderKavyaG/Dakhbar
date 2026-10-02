@@ -1,6 +1,12 @@
 import React from 'react';
 import Link from 'next/link';
-import { Radio, Flame, Sparkles, ArrowRight, TrendingUp } from 'lucide-react';
+import {
+  TabloidRadio as Radio,
+  TabloidFlame as Flame,
+  TabloidSparkles as Sparkles,
+  TabloidArrowRight as ArrowRight,
+  TabloidTrendUp as TrendingUp,
+} from '@/components/pop-tabloid-icons';
 import { EntityFollowControl } from './entity-follow-control';
 import { AdPlacement } from './ad-placement';
 import { Badge } from './ui/badge';

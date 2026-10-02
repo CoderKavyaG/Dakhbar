@@ -1,7 +1,7 @@
 'use client';
 import { useCallback, useEffect, useState, useTransition } from 'react';
 import { useAuth, useClerk } from '@clerk/nextjs';
-import { Bookmark } from 'lucide-react';
+import { TabloidBookmark as Bookmark } from '@/components/pop-tabloid-icons';
 import { setSavedStory } from '@/app/actions/saved';
 import { useSavedStories } from './saved-stories-provider';
 import { useToast } from './ui/toast';

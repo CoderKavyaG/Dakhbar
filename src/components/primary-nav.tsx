@@ -3,7 +3,17 @@ import Link from 'next/link';
 import { usePathname, useSearchParams } from 'next/navigation';
 import { useEffect, useRef } from 'react';
 import { desktopNavigationItems, mobileNavigationItems, type NavItem } from '@/lib/navigation';
-import { Newspaper, Layers, Search, Heart, BookOpen, Bookmark, Compass, Gem, Menu } from 'lucide-react';
+import {
+  TabloidNewspaper,
+  TabloidLayers,
+  TabloidSearch,
+  TabloidHeart,
+  TabloidBookOpen,
+  TabloidBookmark,
+  TabloidCompass,
+  TabloidGem,
+  TabloidMenu,
+} from '@/components/pop-tabloid-icons';
 
 export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefCount: number }) {
   const pathname = usePathname();
@@ -38,14 +48,14 @@ export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefC
   }, []);
 
   const icons = {
-    newspaper: Newspaper,
-    layers: Layers,
-    search: Search,
-    heart: Heart,
-    book: BookOpen,
-    bookmark: Bookmark,
-    compass: Compass,
-    gem: Gem,
+    newspaper: TabloidNewspaper,
+    layers: TabloidLayers,
+    search: TabloidSearch,
+    heart: TabloidHeart,
+    book: TabloidBookOpen,
+    bookmark: TabloidBookmark,
+    compass: TabloidCompass,
+    gem: TabloidGem,
   };
 
   const isSelected = (href: string) => {
@@ -94,7 +104,7 @@ export function PrimaryNav({ signedIn, briefCount }: { signedIn: boolean; briefC
         {mobile.primary.map(itemLink)}
         <details ref={disclosure} className="mobile-more">
           <summary aria-label="More destinations">
-            <Menu size={20} />
+            <TabloidMenu size={20} />
             <span>More</span>
           </summary>
           <div className="mobile-more-sheet">

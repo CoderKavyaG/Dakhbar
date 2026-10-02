@@ -2,7 +2,15 @@
 
 import React, { useState, type FormEvent } from 'react';
 import Link from 'next/link';
-import { ArrowUpRight, Send, Sparkles, HelpCircle, ShieldCheck, CheckCircle2, ChevronDown, ChevronUp, Zap } from 'lucide-react';
+import {
+  TabloidArrowUpRight as ArrowUpRight,
+  TabloidSend as Send,
+  TabloidSparkles as Sparkles,
+  TabloidShieldCheck as ShieldCheck,
+  TabloidCheckCircle2 as CheckCircle2,
+  TabloidZap as Zap,
+} from '@/components/pop-tabloid-icons';
+import { HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { JoinUsButton } from './join-us-button';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';

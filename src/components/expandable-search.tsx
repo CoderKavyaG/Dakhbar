@@ -4,17 +4,17 @@ import React, { useState, useEffect, useRef, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
-  Search,
-  X,
-  TrendingUp,
-  Clock,
-  Sparkles,
-  Layers,
-  Globe,
-  FileText,
-  ArrowRight,
-  Compass,
-} from 'lucide-react';
+  TabloidSearch as Search,
+  TabloidX as X,
+  TabloidTrendUp as TrendingUp,
+  TabloidClock as Clock,
+  TabloidSparkles as Sparkles,
+  TabloidLayers as Layers,
+  TabloidFileText as FileText,
+  TabloidArrowRight as ArrowRight,
+  TabloidCompass as Compass,
+} from '@/components/pop-tabloid-icons';
+import { Globe } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { topicPath } from '@/lib/topic-slug';
 import type {

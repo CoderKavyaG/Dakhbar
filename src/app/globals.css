@@ -2,41 +2,54 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@font-face {
+  font-family: 'Funnel Display';
+  src: url('/fonts/FunnelDisplay-Variable.ttf') format('truetype');
+  font-weight: 300 800;
+  font-display: swap;
+  font-style: normal;
+}
+
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --paper: #efeae0;
-  --paper-raised: #f8f5ee;
-  --paper-muted: #e3ded4;
-  --ink: #161a19;
-  --ink-soft: #626864;
-  --line: #c9c5bc;
-  --data: #11675f;
-  --data-bright: #13a89b;
-  --data-deep: #102b29;
-  --data-surface: #d9ebe7;
-  --data-ink: #dcfff8;
+  --paper: #faf3dd;
+  --paper-raised: #ffffff;
+  --paper-muted: #f2ebd2;
+  --ink: #0f100f;
+  --ink-soft: #383b38;
+  --line: #0f100f;
+  --tabloid-orange: #ff3b00;
+  --tabloid-yellow: #ffe600;
+  --tabloid-blue: #1c52f0;
+  --tabloid-green: #05a855;
+  --tabloid-border: #0f100f;
+  --data: #ff3b00;
+  --data-bright: #ff5522;
+  --data-deep: #0f100f;
+  --data-surface: #ffe600;
+  --data-ink: #ffffff;
   --background: var(--paper);
   --foreground: var(--ink);
   --card: var(--paper-raised);
   --card-foreground: var(--ink);
   --popover: var(--paper-raised);
   --popover-foreground: var(--ink);
-  --primary: var(--data-deep);
-  --primary-foreground: var(--data-ink);
+  --primary: var(--tabloid-orange);
+  --primary-foreground: #ffffff;
   --secondary: var(--paper-muted);
   --secondary-foreground: var(--ink);
   --muted: var(--paper-muted);
   --muted-foreground: var(--ink-soft);
-  --accent: var(--data-surface);
-  --accent-foreground: var(--data-deep);
-  --destructive: #9f3f42;
-  --destructive-alert: #a74635;
-  --destructive-text: #a13d2f;
+  --accent: var(--tabloid-yellow);
+  --accent-foreground: #0f100f;
+  --destructive: #d90429;
+  --destructive-alert: #ef233c;
+  --destructive-text: #9b001a;
   --border: var(--line);
   --input: var(--line);
-  --ring: var(--data-bright);
-  --radius: .5rem;
+  --ring: var(--tabloid-orange);
+  --radius: 0px;
   --space-1: .25rem;
   --space-2: .5rem;
   --space-3: .75rem;
@@ -47,50 +60,55 @@
   --space-10: 2.5rem;
   --space-12: 3rem;
   --space-16: 4rem;
-  --font-display: var(--font-newsreader), serif;
-  --font-headline: var(--font-newsreader), serif;
+  --font-display: 'Funnel Display', var(--font-newsreader), serif;
+  --font-headline: 'Funnel Display', var(--font-plex-sans), sans-serif;
   --font-body: var(--font-plex-sans), sans-serif;
   --font-sans: var(--font-plex-sans), sans-serif;
   --font-data: var(--font-plex-mono), monospace;
   --font-devanagari: var(--font-martel), serif;
 
   /* Sector Accents */
-  --accent-ai: #9333ea;
-  --accent-ai-surface: #dfe8e1;
-  --accent-ai-ink: #426255;
-  --accent-infra: #2563eb;
-  --accent-infra-text: #1d4ed8;
-  --accent-infra-surface: #dce1ed;
-  --accent-infra-ink: #465770;
-  --accent-tools: #16a34a;
-  --accent-tools-surface: #e7d9c7;
-  --accent-tools-ink: #6c503a;
+  --accent-ai: #1c52f0;
+  --accent-ai-surface: #d8e4ff;
+  --accent-ai-ink: #0d2a8a;
+  --accent-infra: #ff3b00;
+  --accent-infra-text: #d92d00;
+  --accent-infra-surface: #ffe4db;
+  --accent-infra-ink: #8a1f00;
+  --accent-tools: #05a855;
+  --accent-tools-surface: #d6f5e3;
+  --accent-tools-ink: #035c2e;
 
   /* Velocity & Momentum Accents */
-  --velocity-up: #16a34a;
-  --velocity-down: #c2410c;
-  --velocity-steady: #64748b;
+  --velocity-up: #05a855;
+  --velocity-down: #ff3b00;
+  --velocity-steady: #383b38;
 
   /* Evidence Richness Tiers */
-  --tier-comprehensive: #2563eb;
-  --tier-comprehensive-text: #1d4ed8;
-  --tier-moderate: #d97706;
-  --tier-moderate-text: #b45309;
-  --tier-preliminary: #626864;
+  --tier-comprehensive: #1c52f0;
+  --tier-comprehensive-text: #1c52f0;
+  --tier-moderate: #ff3b00;
+  --tier-moderate-text: #ff3b00;
+  --tier-preliminary: #383b38;
 }
 
 .dark {
-  --paper: #121716;
-  --paper-raised: #1b211f;
-  --paper-muted: #242b28;
-  --ink: #edf0e8;
-  --ink-soft: #a7b0aa;
-  --line: #3d4743;
-  --data: #43c8ba;
-  --data-bright: #65e1d2;
-  --data-deep: #092725;
-  --data-surface: #173d39;
-  --data-ink: #d8fff9;
+  --paper: #0f1115;
+  --paper-raised: #181b22;
+  --paper-muted: #222631;
+  --ink: #f5f4ef;
+  --ink-soft: #a1a7b5;
+  --line: #2b313f;
+  --tabloid-orange: #ff4400;
+  --tabloid-yellow: #facc15;
+  --tabloid-blue: #3b82f6;
+  --tabloid-green: #22c55e;
+  --tabloid-border: #3b4252;
+  --data: #ff4400;
+  --data-bright: #ff6622;
+  --data-deep: #080a0d;
+  --data-surface: #262c38;
+  --data-ink: #ffffff;
   --background: var(--paper);
   --foreground: var(--ink);
   --card: var(--paper-raised);
@@ -98,7 +116,7 @@
   --popover: var(--paper-raised);
   --popover-foreground: var(--ink);
   --primary: var(--data);
-  --primary-foreground: #071917;
+  --primary-foreground: #ffffff;
   --secondary: var(--paper-muted);
   --secondary-foreground: var(--ink);
   --muted: var(--paper-muted);
@@ -110,19 +128,19 @@
   --destructive-text: #fca5a5;
   --border: var(--line);
   --input: var(--line);
-  --ring: var(--data-bright);
+  --ring: var(--data);
 
   /* Sector Accents */
-  --accent-ai: #c084fc;
-  --accent-ai-surface: #1e2d27;
-  --accent-ai-ink: #86efac;
-  --accent-infra: #60a5fa;
-  --accent-infra-text: #93c5fd;
-  --accent-infra-surface: #1e293b;
-  --accent-infra-ink: #94a3b8;
+  --accent-ai: #818cf8;
+  --accent-ai-surface: #1e1b4b;
+  --accent-ai-ink: #c7d2fe;
+  --accent-infra: #fb923c;
+  --accent-infra-text: #fed7aa;
+  --accent-infra-surface: #431407;
+  --accent-infra-ink: #ffedd5;
   --accent-tools: #4ade80;
-  --accent-tools-surface: #382e25;
-  --accent-tools-ink: #fdba74;
+  --accent-tools-surface: #052e16;
+  --accent-tools-ink: #bbf7d0;
 
   /* Velocity & Momentum Accents */
   --velocity-up: #4ade80;
@@ -8933,6 +8951,304 @@ body {
   color: var(--ink);
   margin-bottom: 14px;
 }
+
+/* ==========================================================================
+   POP TABLOID VISUAL LANGUAGE (Direction A Application)
+   Energy over restraint. Color-blocked sections, punchy headlines in
+   Funnel Display, sticker/stamp-style labels, hard offset shadows.
+   ========================================================================== */
+
+/* Navbar: Pop Tabloid Street Gazette Header */
+.site-header {
+  border-bottom: 3px solid var(--line);
+  background: var(--paper);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  box-shadow: 0 4px 0px rgba(15, 16, 15, 0.08);
+}
+
+.site-header .wordmark {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-size: 34px;
+  color: var(--ink);
+}
+
+.site-header .wordmark-latin {
+  color: #ffffff;
+  background: #000000;
+  padding: 1px 7px;
+  margin-right: 4px;
+  border-radius: 0;
+  display: inline-block;
+  transform: rotate(-2deg);
+  box-shadow: 2px 2px 0px var(--line);
+}
+
+/* Nav Tabs as Tactile Sticker Buttons */
+.icon-nav .nav-tab {
+  border: 2px solid var(--line);
+  background: var(--paper-raised);
+  box-shadow: 2px 2px 0px var(--line);
+  border-radius: 0px;
+  padding: 6px 12px;
+  font-family: var(--font-data);
+  font-weight: 700;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.icon-nav .nav-tab:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--line);
+  background: var(--tabloid-yellow);
+  color: #000000;
+}
+
+.icon-nav .nav-tab.selected {
+  background: #000000;
+  color: #ffffff;
+  box-shadow: 3px 3px 0px var(--line);
+}
+
+.icon-nav .nav-tab.selected svg {
+  color: var(--tabloid-yellow);
+}
+
+/* Nav Search: Hard Boxed Tabloid Input */
+.nav-search {
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0px var(--line);
+  border-radius: 0px;
+  background: var(--paper-raised);
+}
+
+.nav-search:focus-within {
+  box-shadow: 4px 4px 0px var(--tabloid-orange);
+}
+
+/* Desk Pill Badge */
+.nav-desk-active-pill {
+  border: 2px solid var(--line);
+  box-shadow: 2px 2px 0px var(--line);
+  background: var(--tabloid-yellow);
+  color: #000;
+  font-weight: 800;
+  font-family: var(--font-data);
+  text-transform: uppercase;
+  border-radius: 0;
+  padding: 4px 10px;
+}
+
+/* Story Cards: Hard physical print offset with newsprint punch */
+.story-card, .story-card-featured {
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0px var(--line);
+  border-radius: 0px;
+  background: var(--paper-raised);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.story-card:hover, .story-card-featured:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px var(--line);
+}
+
+.story-card h3, .story-card-featured h3 {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ink);
+}
+
+.story-card-pullquote {
+  border-left: 3.5px solid var(--tabloid-orange);
+  background: var(--paper);
+  padding: 14px 16px;
+  border-radius: 0px;
+  box-shadow: 2px 2px 0px rgba(15, 16, 15, 0.08);
+}
+
+.pullquote-mark {
+  color: var(--tabloid-orange);
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+}
+
+/* Category & Topic Sticker Badges */
+.card-evidence-pill, .badge-sources-count {
+  border: 1.5px solid var(--line);
+  box-shadow: 2px 2px 0px var(--line);
+  border-radius: 0px;
+  font-family: var(--font-data);
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+}
+
+.card-evidence-pill.corroborated {
+  background: var(--tabloid-yellow);
+  color: #000000;
+}
+
+.card-new-arrival-tag {
+  background: var(--tabloid-orange);
+  color: #ffffff;
+  border: 1.5px solid var(--line);
+  box-shadow: 2px 2px 0px var(--line);
+  border-radius: 0;
+  font-weight: 800;
+  text-transform: uppercase;
+  font-family: var(--font-data);
+  transform: rotate(-1deg);
+}
+
+/* Developer Pulse: Electric Pop Yellow Board */
+.developer-pulse {
+  background: var(--tabloid-yellow);
+  border: 3px solid var(--line);
+  box-shadow: 5px 5px 0px var(--line);
+  border-radius: 0px;
+  padding: 20px;
+  color: #000000;
+}
+
+.developer-pulse .pulse-heading h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.developer-pulse .section-note {
+  font-family: var(--font-data);
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--tabloid-orange);
+  font-size: 0.75rem;
+}
+
+.developer-pulse .pulse-item {
+  border-bottom: 2px solid var(--line);
+  padding: 10px 0;
+}
+
+.developer-pulse .pulse-rank {
+  font-family: var(--font-data);
+  font-weight: 800;
+  color: #000000;
+}
+
+.developer-pulse .pulse-topic-link {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 700;
+  color: #000000;
+  font-size: 1.05rem;
+}
+
+.developer-pulse .pulse-velocity-badge {
+  background: #ffffff;
+  border: 2px solid var(--line);
+  box-shadow: 2px 2px 0px var(--line);
+  border-radius: 0px;
+  font-weight: 800;
+  font-family: var(--font-data);
+  color: #000000;
+}
+
+/* UI Buttons & Controls */
+.ui-button, button.follow-toggle-btn, .save-story-controls button {
+  border-radius: 0px;
+  font-family: var(--font-data);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ui-button-default {
+  background: var(--tabloid-orange);
+  color: #ffffff;
+  border: 2px solid var(--line);
+  box-shadow: 3px 3px 0px var(--line);
+}
+
+.ui-button-default:hover {
+  background: #e63500;
+  color: #ffffff;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0px var(--line);
+}
+
+.ui-button-outline {
+  background: #ffffff;
+  color: var(--ink);
+  border: 2px solid var(--line);
+  box-shadow: 2px 2px 0px var(--line);
+}
+
+.ui-button-outline:hover {
+  background: var(--tabloid-yellow);
+  color: #000;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0px var(--line);
+}
+
+/* Mobile Dock: Newsprint Command Strip */
+.site-nav .mobile-dock {
+  background: var(--paper-raised);
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0px var(--line);
+  border-radius: 0px;
+}
+
+.site-nav .mobile-dock .nav-tab.selected {
+  background: var(--tabloid-yellow);
+  color: #000;
+  font-weight: 800;
+}
+
+/* Story Detail Page: Tabloid Investigation */
+.story-detail h1 {
+  font-family: 'Funnel Display', sans-serif;
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+}
+
+.source-card, .evidence-detail-card, .research-dossier-card {
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0px var(--line);
+  border-radius: 0px;
+  background: var(--paper-raised);
+}
+
+.source-card-featured {
+  border: 3px solid var(--line);
+  box-shadow: 5px 5px 0px var(--line);
+}
+
+/* Pricing Page: Circulation Desk Cards */
+.price-card {
+  border: 2px solid var(--line);
+  box-shadow: 4px 4px 0px var(--line);
+  border-radius: 0px;
+  background: var(--paper-raised);
+}
+
+.price-card.featured, .price-card:has(.price-card-badge) {
+  border: 3px solid var(--line);
+  box-shadow: 6px 6px 0px var(--line);
+  background: var(--tabloid-yellow);
+}
+
 
 
 

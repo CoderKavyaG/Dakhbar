@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, useTransition } from 'react';
 import { useAuth, useClerk } from '@clerk/nextjs';
-import { Check, Plus } from 'lucide-react';
+import { TabloidCheck as Check, TabloidPlus as Plus } from '@/components/pop-tabloid-icons';
 import { useRouter } from 'next/navigation';
 import { toggleFollowingAction } from '@/app/actions/follow';
 import { useFollowing } from './following-provider';
