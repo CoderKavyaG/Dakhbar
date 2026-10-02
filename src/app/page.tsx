@@ -23,6 +23,7 @@ import { db } from '@/lib/db';
 import { getBrief, getForYouStories, getPopularEntities, getBriefNotificationCount, getFollowingEntityIds } from '@/lib/reader-data';
 import { FollowingNotification } from '@/components/following-notification';
 import { WelcomeOnboardingModal } from '@/components/welcome-onboarding-modal';
+import { TabloidDispatchBanner } from '@/components/tabloid-dispatch-banner';
 import { Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,11 @@ export default async function FrontPage({
     const popular = await getPopularEntities();
     return (
       <main className="paper-shell reader-page">
+        <TabloidDispatchBanner
+          label="FOLLOWING DISPATCH"
+          subtext="CURATED WIRE • FOR YOUR TECH STACK"
+          tag="PERSONAL WIRE"
+        />
         <div className="front-tabs-container">
           <nav className="front-tabs" aria-label="Edition view">
             <Link href="/?tab=today" className="front-tab">Today</Link>
@@ -77,6 +83,11 @@ export default async function FrontPage({
     if (!brief.entityIds.length && !forYou.entityIds.length) {
       return (
         <main className="paper-shell reader-page">
+          <TabloidDispatchBanner
+            label="FOLLOWING DISPATCH"
+            subtext="CURATED WIRE • FOR YOUR TECH STACK"
+            tag="PERSONAL WIRE"
+          />
           <div className="front-tabs-container">
             <nav className="front-tabs" aria-label="Edition view">
               <Link href="/?tab=today" className="front-tab">Today</Link>
@@ -102,6 +113,11 @@ export default async function FrontPage({
       const otherStories = frontPageStories.slice(1);
       return (
         <main className="paper-shell reader-page">
+          <TabloidDispatchBanner
+            label="FOLLOWING DISPATCH"
+            subtext="CURATED WIRE • FOR YOUR TECH STACK"
+            tag="PERSONAL WIRE"
+          />
           <div className="front-tabs-container">
             <nav className="front-tabs" aria-label="Edition view">
               <Link href="/?tab=today" className="front-tab">Today</Link>
@@ -195,6 +211,11 @@ export default async function FrontPage({
           userId={userId}
           initialFollowedIds={brief.entityIds}
           popularEntities={popular}
+        />
+        <TabloidDispatchBanner
+          label="FOLLOWING DISPATCH"
+          subtext="CURATED WIRE • FOR YOUR TECH STACK"
+          tag="PERSONAL WIRE"
         />
         <div className="front-tabs-container">
           <nav className="front-tabs" aria-label="Edition view">
@@ -373,6 +394,11 @@ export default async function FrontPage({
           popularEntities={popular}
         />
       )}
+      <TabloidDispatchBanner
+        label="FRONT PAGE DISPATCH"
+        subtext="LIVE WIRE • 24H TECH INTELLIGENCE"
+        tag="TODAY'S EDITION"
+      />
       {userId && (
         <div className="front-tabs-container">
           <nav className="front-tabs" aria-label="Edition view">

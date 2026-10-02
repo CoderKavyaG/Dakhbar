@@ -263,8 +263,10 @@ body,
 body[data-texture="halftone"],
 html[data-texture="halftone"] body {
   background-color: var(--paper);
-  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(22, 26, 25, 0.12) 1.25px, transparent 0);
-  background-size: 8px 8px;
+  background-image: 
+    radial-gradient(circle at 1.5px 1.5px, rgba(15, 16, 15, 0.08) 1.25px, transparent 0),
+    radial-gradient(circle at 9.5px 9.5px, rgba(15, 16, 15, 0.04) 1px, transparent 0);
+  background-size: 16px 16px;
   background-repeat: repeat;
   background-attachment: fixed;
 }
@@ -273,8 +275,10 @@ html[data-texture="halftone"] body {
 .dark body[data-texture="halftone"],
 html.dark[data-texture="halftone"] body {
   background-color: var(--paper);
-  background-image: radial-gradient(circle at 1.5px 1.5px, rgba(237, 240, 232, 0.10) 1.25px, transparent 0);
-  background-size: 8px 8px;
+  background-image: 
+    radial-gradient(circle at 1.5px 1.5px, rgba(255, 255, 255, 0.065) 1.25px, transparent 0),
+    radial-gradient(circle at 9.5px 9.5px, rgba(255, 255, 255, 0.035) 1px, transparent 0);
+  background-size: 16px 16px;
   background-repeat: repeat;
   background-attachment: fixed;
 }
@@ -9422,6 +9426,83 @@ body {
   color: var(--ink-soft);
   margin: 0;
 }
+
+/* ==========================================================================
+   Pop Tabloid Dispatch Sticker Banner (Reference Image Alignment)
+   ========================================================================== */
+.tabloid-dispatch-banner-link {
+  text-decoration: none;
+  display: inline-block;
+  color: inherit;
+}
+
+.tabloid-dispatch-banner-wrap {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  margin-top: 0.25rem;
+  user-select: none;
+}
+
+.tabloid-dispatch-sticker {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--tabloid-yellow, #ffe600);
+  color: #000000;
+  border: 2px solid #000000;
+  box-shadow: 3.5px 3.5px 0px #000000;
+  transform: rotate(-1.5deg);
+  transform-origin: left center;
+  padding: 0.25rem 0.65rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.tabloid-dispatch-banner-link:hover .tabloid-dispatch-sticker,
+.tabloid-dispatch-sticker:hover {
+  transform: rotate(-0.5deg) translate(-1px, -1px);
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.tabloid-dispatch-sticker .sticker-label {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.8125rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  line-height: 1.15;
+  color: #000000;
+}
+
+.tabloid-dispatch-subtext {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.tabloid-dispatch-tag {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.45rem;
+  background-color: var(--paper-raised);
+  color: var(--ink);
+  border: 1.5px solid var(--line);
+  box-shadow: 2px 2px 0px var(--line);
+}
+
 
 
 

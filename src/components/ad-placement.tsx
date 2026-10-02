@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { ExternalLink, Sparkles } from 'lucide-react';
+import { TabloidArrowUpRight, TabloidSparkles } from './pop-tabloid-icons';
 
 interface AdPlacementProps {
   slot?: 'sidebar' | 'inline' | 'story-sidebar' | 'footer';
@@ -36,7 +36,7 @@ export function AdPlacement({
       >
         <div className="ad-editorial-fallback">
           <div className="ad-icon-wrap">
-            <Sparkles size={16} className="text-data" />
+            <TabloidSparkles size={16} className="text-data" />
           </div>
           <div className="ad-text-body">
             <h4>Modern Developer Infrastructure</h4>
@@ -44,7 +44,7 @@ export function AdPlacement({
           </div>
           <div className="ad-action-row">
             <Link href="/partner" className="ad-cta-link">
-              Partner with Dअख़बार <ExternalLink size={12} className="inline-icon" />
+              Partner with Dअख़बार <TabloidArrowUpRight size={12} className="inline-icon" />
             </Link>
           </div>
         </div>

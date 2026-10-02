@@ -1,20 +1,138 @@
 'use client';
-import {useEffect,useRef,useState,type CSSProperties,type PointerEvent} from 'react';
-import {ChevronLeft,ChevronRight,RotateCcw,Move} from 'lucide-react';
-import {rotationFromPointer,clampRotation} from '@/lib/edition-motion';
-import {BrandMark} from './brand-mark';
-import {StoryImage} from './story-image';
-import {Button} from './ui/button';
-type EditionStory={id:string;title:string;href:string;external:boolean;image?:string|null};
-const RESTING={rotateX:-4,rotateY:6};
-export function TodayEdition({stories,date}:{stories:EditionStory[];date:string}){
- const [rotation,setRotation]=useState(RESTING);const [reduced,setReduced]=useState(true);const [selected,setSelected]=useState(0);const [entered,setEntered]=useState(false);
- const root=useRef<HTMLDivElement>(null);const drag=useRef<{x:number;y:number;rotation:typeof RESTING}|null>(null);
- useEffect(()=>{const q=matchMedia('(prefers-reduced-motion: reduce)');const change=()=>{setReduced(q.matches);setRotation(RESTING)};change();q.addEventListener('change',change);const observer=new IntersectionObserver(entries=>{if(entries.some(e=>e.isIntersecting)){setEntered(true);observer.disconnect();}},{threshold:.4});if(root.current)observer.observe(root.current);return()=>{q.removeEventListener('change',change);observer.disconnect();};},[]);
- const move=(e:PointerEvent<HTMLDivElement>)=>{if(reduced||matchMedia('(prefers-reduced-motion: reduce)').matches)return;if(drag.current)setRotation({rotateX:clampRotation(drag.current.rotation.rotateX-(e.clientY-drag.current.y)/12),rotateY:clampRotation(drag.current.rotation.rotateY+(e.clientX-drag.current.x)/12)});else if(e.pointerType==='mouse'){const r=e.currentTarget.getBoundingClientRect();setRotation(rotationFromPointer(e.clientX-r.left,e.clientY-r.top,r.width,r.height));}};
- const active=stories[selected%stories.length];
- return <div ref={root} className={'edition-interactive edition-browse '+(entered?'edition-entered':'')}><div className="edition-scene" role="group" aria-label="Browse today's three newspaper stories" style={{'--edition-rotate-x':rotation.rotateX+'deg','--edition-rotate-y':rotation.rotateY+'deg'} as CSSProperties} onPointerMove={move} onPointerDown={e=>{if(reduced||matchMedia('(prefers-reduced-motion: reduce)').matches||(e.target as HTMLElement).closest('button,a'))return;e.currentTarget.setPointerCapture(e.pointerId);drag.current={x:e.clientX,y:e.clientY,rotation};}} onPointerUp={()=>{drag.current=null}} onPointerCancel={()=>{drag.current=null}} onPointerLeave={()=>{if(!drag.current)setRotation(RESTING);}}>
- <div className="edition-stack">{stories.map((story,index)=>{const layer=(index-selected+stories.length)%stories.length;return <div key={story.id} className={'edition-sheet edition-real-page '+(layer===0?'edition-sheet-front':'edition-rear-page')} style={{'--page-layer':layer,zIndex:stories.length-layer} as CSSProperties}>{layer>0?<button className="edition-rear-select" onClick={()=>setSelected(index)} aria-label={'Show newspaper story: '+story.title}><span>Also in this edition</span><strong>{story.title}</strong></button>:<><div className="edition-mini-masthead"><span className="wordmark"><span className="wordmark-latin">D</span><span className="wordmark-devanagari">अख़बार</span></span><span className="data-type">Today’s edition</span></div><p className="edition-mini-date data-type">{date}</p><StoryImage key={story.id} src={story.image} alt="" className="edition-mini-image" fallback={<div className="edition-logo-fallback"><BrandMark size={96}/></div>}/><h2><a href={story.href}>{story.title}</a></h2><div className="edition-mini-columns"><p>Reporting worth your time.</p><p>Turn the page. Find your next story.</p></div></>}</div>;})}</div></div>
- <div className="edition-controls"><Button variant="ghost" size="icon" aria-label="Previous newspaper story" onClick={()=>setSelected((selected+stories.length-1)%stories.length)}><ChevronLeft size={18}/></Button><span aria-live="polite">{selected+1} of {stories.length}</span><Button variant="ghost" size="icon" aria-label="Next newspaper story" onClick={()=>setSelected((selected+1)%stories.length)}><ChevronRight size={18}/></Button><Button variant="ghost" size="icon" aria-label="Reset newspaper rotation" onClick={()=>setRotation(RESTING)}><RotateCcw size={16}/></Button><a href={active.href} target={active.external?'_blank':undefined} rel={active.external?'noopener noreferrer':undefined}>Read this story ↗</a></div><p className="edition-hint"><Move size={12}/>{reduced?'Choose a page to explore':'Drag to tilt. Select a page to explore.'}</p></div>;
+import { useEffect, useRef, useState, type CSSProperties, type PointerEvent } from 'react';
+import { rotationFromPointer, clampRotation } from '@/lib/edition-motion';
+import { BrandMark } from './brand-mark';
+import { StoryImage } from './story-image';
+import { Button } from './ui/button';
+import { TabloidCompass, TabloidArrowRight } from './pop-tabloid-icons';
+
+type EditionStory = { id: string; title: string; href: string; external: boolean; image?: string | null };
+const RESTING = { rotateX: -4, rotateY: 6 };
+
+export function TodayEdition({ stories, date }: { stories: EditionStory[]; date: string }) {
+  const [rotation, setRotation] = useState(RESTING);
+  const [reduced, setReduced] = useState(true);
+  const [selected, setSelected] = useState(0);
+  const [entered, setEntered] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
+  const drag = useRef<{ x: number; y: number; rotation: typeof RESTING } | null>(null);
+
+  useEffect(() => {
+    const q = matchMedia('(prefers-reduced-motion: reduce)');
+    const change = () => {
+      setReduced(q.matches);
+      setRotation(RESTING);
+    };
+    change();
+    q.addEventListener('change', change);
+    const observer = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) {
+        setEntered(true);
+        observer.disconnect();
+      }
+    }, { threshold: 0.4 });
+    if (root.current) observer.observe(root.current);
+    return () => {
+      q.removeEventListener('change', change);
+      observer.disconnect();
+    };
+  }, []);
+
+  const move = (e: PointerEvent<HTMLDivElement>) => {
+    if (reduced || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (drag.current) {
+      setRotation({
+        rotateX: clampRotation(drag.current.rotation.rotateX - (e.clientY - drag.current.y) / 12),
+        rotateY: clampRotation(drag.current.rotation.rotateY + (e.clientX - drag.current.x) / 12),
+      });
+    } else if (e.pointerType === 'mouse') {
+      const r = e.currentTarget.getBoundingClientRect();
+      setRotation(rotationFromPointer(e.clientX - r.left, e.clientY - r.top, r.width, r.height));
+    }
+  };
+
+  const active = stories[selected % stories.length];
+
+  return (
+    <div ref={root} className={'edition-interactive edition-browse ' + (entered ? 'edition-entered' : '')}>
+      <div
+        className="edition-scene"
+        role="group"
+        aria-label="Browse today's three newspaper stories"
+        style={{ '--edition-rotate-x': rotation.rotateX + 'deg', '--edition-rotate-y': rotation.rotateY + 'deg' } as CSSProperties}
+        onPointerMove={move}
+        onPointerDown={e => {
+          if (reduced || matchMedia('(prefers-reduced-motion: reduce)').matches || (e.target as HTMLElement).closest('button,a')) return;
+          e.currentTarget.setPointerCapture(e.pointerId);
+          drag.current = { x: e.clientX, y: e.clientY, rotation };
+        }}
+        onPointerUp={() => { drag.current = null; }}
+        onPointerCancel={() => { drag.current = null; }}
+        onPointerLeave={() => { if (!drag.current) setRotation(RESTING); }}
+      >
+        <div className="edition-stack">
+          {stories.map((story, index) => {
+            const layer = (index - selected + stories.length) % stories.length;
+            return (
+              <div
+                key={story.id}
+                className={'edition-sheet edition-real-page ' + (layer === 0 ? 'edition-sheet-front' : 'edition-rear-page')}
+                style={{ '--page-layer': layer, zIndex: stories.length - layer } as CSSProperties}
+              >
+                {layer > 0 ? (
+                  <button className="edition-rear-select" onClick={() => setSelected(index)} aria-label={'Show newspaper story: ' + story.title}>
+                    <span className="edition-rear-label">Also in this edition</span>
+                    <strong>{story.title}</strong>
+                  </button>
+                ) : (
+                  <>
+                    <div className="edition-mini-masthead">
+                      <span className="wordmark">
+                        <span className="wordmark-latin">D</span>
+                        <span className="wordmark-devanagari">अख़बार</span>
+                      </span>
+                      <span className="edition-sticker-badge">PRINT DESK</span>
+                    </div>
+                    <p className="edition-mini-date data-type">{date}</p>
+                    <StoryImage
+                      key={story.id}
+                      src={story.image}
+                      alt=""
+                      className="edition-mini-image"
+                      fallback={<div className="edition-logo-fallback"><BrandMark size={96} /></div>}
+                    />
+                    <h2><a href={story.href}>{story.title}</a></h2>
+                    <div className="edition-mini-columns">
+                      <p>Reporting worth your time.</p>
+                      <p>Turn the page. Find your next story.</p>
+                    </div>
+                  </>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div className="edition-controls">
+        <Button variant="outline" aria-label="Previous newspaper story" onClick={() => setSelected((selected + stories.length - 1) % stories.length)}>
+          ← Prev
+        </Button>
+        <span aria-live="polite" className="edition-page-indicator">{selected + 1} / {stories.length}</span>
+        <Button variant="outline" aria-label="Next newspaper story" onClick={() => setSelected((selected + 1) % stories.length)}>
+          Next →
+        </Button>
+        <Button variant="outline" aria-label="Reset newspaper rotation" onClick={() => setRotation(RESTING)}>
+          Reset
+        </Button>
+        <a href={active.href} target={active.external ? '_blank' : undefined} rel={active.external ? 'noopener noreferrer' : undefined} className="edition-read-action">
+          Read story ↗
+        </a>
+      </div>
+      <p className="edition-hint">
+        <TabloidCompass size={13} className="inline-icon" />
+        {reduced ? 'Choose a page to explore' : 'Drag to tilt • Select a page to explore'}
+      </p>
+    </div>
+  );
 }
 

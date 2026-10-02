@@ -3,15 +3,15 @@
 import React, { useState, useEffect, useTransition } from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Sparkles,
-  Newspaper,
-  ShieldCheck,
-  Check,
-  Plus,
-  ArrowRight,
-  Flame,
-  Layers,
-} from 'lucide-react';
+  TabloidSparkles as Sparkles,
+  TabloidNewspaper as Newspaper,
+  TabloidShieldCheck as ShieldCheck,
+  TabloidCheck as Check,
+  TabloidPlus as Plus,
+  TabloidArrowRight as ArrowRight,
+  TabloidFlame as Flame,
+  TabloidLayers as Layers,
+} from './pop-tabloid-icons';
 import { BrandMark } from './brand-mark';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';

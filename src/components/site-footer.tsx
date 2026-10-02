@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
-import { ArrowUpRight } from 'lucide-react';
+import { TabloidArrowUpRight } from './pop-tabloid-icons';
 import { BrandMark } from './brand-mark';
 import { Wordmark } from './wordmark';
 
@@ -18,7 +18,7 @@ export async function SiteFooter() {
         <Link href="/topics">All topics index →</Link>
       </nav>
 
-      <div className="footer-note"><h2>Keep the source in sight.</h2><p>Every story leads back to the reporting behind it.</p><Link href="/methodology">Explore our methodology <ArrowUpRight size={16}/></Link></div>
+      <div className="footer-note"><h2>Keep the source in sight.</h2><p>Every story leads back to the reporting behind it.</p><Link href="/methodology">Explore our methodology <TabloidArrowUpRight size={14} className="inline-icon" /></Link></div>
     </div>
     <div className="footer-bottom"><span>© {new Date().getFullYear()} Dअख़बार</span><span>Built for curious developers</span><span><Link href="/partner">Partner</Link> · <Link href="/legal">Legal</Link> · <Link href="/terms">Terms</Link> · <Link href="/privacy">Privacy</Link> · <Link href="/admin">Editorial desk</Link></span></div>
   </footer>;
