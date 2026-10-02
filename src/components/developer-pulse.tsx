@@ -39,6 +39,28 @@ export function DeveloperPulse({ snapshotAt, items }: { snapshotAt: Date | null;
                   <span>{item.uniqueSourceCount} source{item.uniqueSourceCount === 1 ? '' : 's'}</span>
                 </div>
               </div>
+              {item.sparkline && (
+                <div className="pulse-sparkline" aria-hidden="true" title={`7-day trend for ${item.name}`}>
+                  <svg width="48" height="20" viewBox="0 0 48 20" className="pulse-sparkline-svg">
+                    <polyline
+                      points={item.sparkline.svgPath}
+                      fill="none"
+                      stroke={isPositive ? 'var(--velocity-up)' : 'var(--velocity-down)'}
+                      strokeWidth="1.75"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                    {item.sparkline.lastPoint && (
+                      <circle
+                        cx={item.sparkline.lastPoint.x}
+                        cy={item.sparkline.lastPoint.y}
+                        r="2.2"
+                        fill={isPositive ? 'var(--velocity-up)' : 'var(--velocity-down)'}
+                      />
+                    )}
+                  </svg>
+                </div>
+              )}
               <span className={`pulse-velocity-badge ${isPositive ? 'pulse-velocity-pos' : 'pulse-velocity-neg'}`}>
                 {percent(item.velocity)}
               </span>

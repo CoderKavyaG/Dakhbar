@@ -8204,6 +8204,222 @@ body {
   text-transform: uppercase;
 }
 
+/* Phase 16: Mini Trend Sparklines in Developer Pulse */
+.pulse-sparkline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 50px;
+  height: 22px;
+  opacity: 0.85;
+  transition: opacity 150ms ease;
+}
+
+.pulse-item:hover .pulse-sparkline {
+  opacity: 1;
+}
+
+.pulse-sparkline-svg {
+  overflow: visible;
+  width: 48px;
+  height: 20px;
+}
+
+/* Phase 16: Intentional Editorial Pull-Quote for Text-Only Cards */
+.story-card-pullquote {
+  margin: var(--space-3) 0 var(--space-2);
+  padding: var(--space-2) 0 var(--space-2) var(--space-3);
+  border-left: 2.5px solid var(--data);
+  background: rgba(17, 103, 95, 0.035);
+  border-radius: 0 4px 4px 0;
+  position: relative;
+}
+
+.dark .story-card-pullquote {
+  background: rgba(67, 200, 186, 0.04);
+  border-left-color: var(--data);
+}
+
+.pullquote-mark {
+  position: absolute;
+  top: -8px;
+  left: 6px;
+  font-family: var(--font-display);
+  font-size: 1.8rem;
+  line-height: 1;
+  color: var(--data);
+  opacity: 0.35;
+  pointer-events: none;
+  user-select: none;
+}
+
+.pullquote-text {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.48;
+  color: var(--ink);
+  margin: 0 0 var(--space-2) 0;
+  letter-spacing: -0.01em;
+}
+
+.pullquote-attribution {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  font-style: normal;
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pullquote-attribution cite {
+  font-style: normal;
+}
+
+/* Phase 16: Surface the Evidence Signal Earlier */
+.story-card-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.story-card-meta-left {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.story-card-meta-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.card-evidence-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  white-space: nowrap;
+  letter-spacing: 0.02em;
+}
+
+.card-evidence-pill.corroborated {
+  background: var(--data-surface);
+  color: var(--data-deep);
+  border: 1px solid rgba(17, 103, 95, 0.25);
+}
+
+.dark .card-evidence-pill.corroborated {
+  background: rgba(67, 200, 186, 0.15);
+  color: var(--data-ink);
+  border-color: rgba(67, 200, 186, 0.3);
+}
+
+.card-evidence-pill.primary {
+  background: var(--paper-muted);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+
+.dark .card-evidence-pill.primary {
+  background: var(--paper-muted);
+  color: var(--ink-soft);
+  border-color: var(--line);
+}
+
+.badge-sources-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+}
+
+.badge-sources-count.badge-corroborated {
+  background: var(--data-surface);
+  color: var(--data-deep);
+  border: 1px solid rgba(17, 103, 95, 0.2);
+}
+
+.dark .badge-sources-count.badge-corroborated {
+  background: rgba(67, 200, 186, 0.12);
+  color: var(--data-ink);
+  border-color: rgba(67, 200, 186, 0.25);
+}
+
+.badge-sources-count.badge-primary {
+  background: var(--paper-muted);
+  color: var(--ink-soft);
+  border: 1px solid var(--line);
+}
+
+/* Phase 16: Retention Loop Highlighting */
+.card-new-arrival-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #15803d;
+  background: rgba(22, 163, 74, 0.12);
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  border-radius: 9999px;
+  padding: 1px 6px;
+  letter-spacing: 0.02em;
+}
+
+.dark .card-new-arrival-tag {
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.12);
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+.story-card-new-arrival {
+  border-color: rgba(22, 163, 74, 0.35);
+  box-shadow: 0 0 0 1px rgba(22, 163, 74, 0.15);
+}
+
+.dark .story-card-new-arrival {
+  border-color: rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 0 1px rgba(74, 222, 128, 0.1);
+}
+
+.edition-brief-summary {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  display: block;
+  margin-top: 2px;
+}
+
+.badge-new-arrivals {
+  background: rgba(22, 163, 74, 0.12);
+  color: #15803d;
+  border: 1px solid rgba(22, 163, 74, 0.25);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.dark .badge-new-arrivals {
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.25);
+}
+
+
 
 
 

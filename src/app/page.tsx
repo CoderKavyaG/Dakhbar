@@ -23,6 +23,7 @@ import { db } from '@/lib/db';
 import { getBrief, getForYouStories, getPopularEntities, getBriefNotificationCount, getFollowingEntityIds } from '@/lib/reader-data';
 import { WelcomeOnboardingModal } from '@/components/welcome-onboarding-modal';
 import { TextureSelector } from '@/components/texture-selector';
+import { Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -160,10 +161,19 @@ export default async function FrontPage({
 
         <FreshEdition />
         <div className="edition-intro">
-          <p>{date} — Followed Edition</p>
+          <div className="edition-intro-left">
+            <span className="live-pulsing-dot" aria-hidden="true" />
+            <div>
+              <p>{date} — Followed Edition</p>
+              <span className="edition-brief-summary">{briefSummary(brief.stories.length)}</span>
+            </div>
+          </div>
           <div className="edition-intro-badges">
             <TextureSelector variant="dots" />
             <Badge>{storiesToRender.length} followed {storiesToRender.length === 1 ? 'story' : 'stories'}</Badge>
+            {brief.stories.length > 0 && (
+              <Badge className="badge-new-arrivals">{brief.stories.length} new arrivals</Badge>
+            )}
           </div>
         </div>
 
@@ -177,6 +187,11 @@ export default async function FrontPage({
                   returnTo={topicPath(e.entity)}
                 />
               ))}
+              {brief.stories.some(s => s.id === followedLead.id) && (
+                <span className="card-new-arrival-tag" title="New development since your last visit">
+                  <Sparkles size={11} className="inline-icon" /> New since last visit
+                </span>
+              )}
             </div>
             <h1>
               <a href={destination.href}>{followedLead.title}</a>
@@ -226,6 +241,7 @@ export default async function FrontPage({
                     story={story}
                     featured={i === 0}
                     dekOverride={generated.get(story.id)}
+                    isNewSinceVisit={brief.stories.some(s => s.id === story.id)}
                   />
                 ))}
               </ArticleGrid>
@@ -246,6 +262,7 @@ export default async function FrontPage({
                       key={story.id}
                       story={story}
                       dekOverride={generated.get(story.id)}
+                      isNewSinceVisit={brief.stories.some(s => s.id === story.id)}
                     />
                   ))}
                 </ArticleGrid>

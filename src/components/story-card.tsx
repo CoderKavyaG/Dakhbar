@@ -1,3 +1,4 @@
+import React from 'react';
 import Link from 'next/link';
 import { SaveStory } from './save-story';
 import { EntityFollowControl } from './entity-follow-control';
@@ -5,6 +6,7 @@ import { Badge } from './ui/badge';
 import { StoryImage } from '@/components/story-image';
 import { publisherDomain, countIndependentSources, storyDek, storyDestination } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
+import { ShieldCheck, CheckCircle2, FileText, Sparkles } from 'lucide-react';
 
 type StoryCardData = {
   id: string;
@@ -23,7 +25,17 @@ function relativeAge(date: Date) {
   return `${Math.floor(hours / 24)}d ago`;
 }
 
-export function StoryCard({ story, featured = false, dekOverride }: { story: StoryCardData; featured?: boolean; dekOverride?: string }) {
+export function StoryCard({
+  story,
+  featured = false,
+  dekOverride,
+  isNewSinceVisit = false,
+}: {
+  story: StoryCardData;
+  featured?: boolean;
+  dekOverride?: string;
+  isNewSinceVisit?: boolean;
+}) {
   const primary = story.documents[0].raw_document;
   const documents = story.documents.map(item => item.raw_document);
   const evidence = documents.find(document => document.og_description) ?? primary;
@@ -35,45 +47,82 @@ export function StoryCard({ story, featured = false, dekOverride }: { story: Sto
   const isMultiSource = sources >= 2 || reportsCount >= 2;
   const isHighImpact = sources >= 3 || reportsCount >= 3;
 
-  const cardClass = featured
-    ? 'story-card story-card-featured'
-    : isHighImpact
-    ? 'story-card story-card-high-impact'
-    : isMultiSource
-    ? 'story-card story-card-corroborated'
-    : 'story-card story-card-standard';
+  const cardClasses = [
+    featured
+      ? 'story-card story-card-featured'
+      : isHighImpact
+      ? 'story-card story-card-high-impact'
+      : isMultiSource
+      ? 'story-card story-card-corroborated'
+      : 'story-card story-card-standard',
+    !image ? 'story-card-text-only' : '',
+    isNewSinceVisit ? 'story-card-new-arrival' : '',
+  ].filter(Boolean).join(' ');
 
   const titleLink = destination.external
     ? <a href={destination.href} target="_blank" rel="noopener noreferrer">{story.title}<span className="sr-only"> (opens original source)</span></a>
     : <Link href={destination.href}>{story.title}</Link>;
 
   return (
-    <article className={cardClass}>
-      <StoryImage
-        src={image}
-        alt=""
-        className="story-card-image"
-      />
+    <article className={cardClasses}>
+      {image && (
+        <StoryImage
+          src={image}
+          alt=""
+          className="story-card-image"
+        />
+      )}
       <div className="story-card-body">
         <div className="story-card-meta">
-          {story.entities[0] && (
-            <EntityFollowControl
-              entity={{ id: story.entities[0].entity_id, name: story.entities[0].entity.name }}
-              returnTo={topicPath(story.entities[0].entity)}
-            />
-          )}
-          <time className="data-type" dateTime={story.updated_at.toISOString()}>
-            {Date.now() - story.updated_at.getTime() < 7200000 && (
-              <span className="card-live-dot" aria-label="Recent update" />
+          <div className="story-card-meta-left">
+            {story.entities[0] && (
+              <EntityFollowControl
+                entity={{ id: story.entities[0].entity_id, name: story.entities[0].entity.name }}
+                returnTo={topicPath(story.entities[0].entity)}
+              />
             )}
-            {relativeAge(story.updated_at)}
-          </time>
+            <time className="data-type" dateTime={story.updated_at.toISOString()}>
+              {Date.now() - story.updated_at.getTime() < 7200000 && (
+                <span className="card-live-dot" aria-label="Recent update" />
+              )}
+              {relativeAge(story.updated_at)}
+            </time>
+          </div>
+          <div className="story-card-meta-right">
+            {isNewSinceVisit && (
+              <span className="card-new-arrival-tag" title="New reporting ingested since your last visit">
+                <Sparkles size={11} className="inline-icon" /> New
+              </span>
+            )}
+            <span
+              className={`card-evidence-pill ${isMultiSource ? 'corroborated' : 'primary'}`}
+              title={isMultiSource ? `${sources} independent sources cross-verified on this story` : 'Single primary source report'}
+            >
+              <ShieldCheck size={11} className="inline-icon" />
+              <span>{isMultiSource ? `${sources} sources verified` : 'Primary report'}</span>
+            </span>
+          </div>
         </div>
+
         <h3 className="story-card-title">{titleLink}</h3>
-        <p className={dekOverride ? 'story-dek generated-dek' : dek.kind === 'domain' ? 'story-dek domain-dek' : 'story-dek'}>
-          {dek.kind === 'domain' ? 'via ' : ''}{dek.text}
-        </p>
-        {dek.kind !== 'domain' && <p className="card-source">From {publisherDomain(evidence.url)}</p>}
+
+        {!image ? (
+          <blockquote className="story-card-pullquote">
+            <span className="pullquote-mark" aria-hidden="true">“</span>
+            <p className="pullquote-text">{dek.text}</p>
+            <footer className="pullquote-attribution">
+              <cite>Reporting via {publisherDomain(evidence.url)}</cite>
+            </footer>
+          </blockquote>
+        ) : (
+          <>
+            <p className={dekOverride ? 'story-dek generated-dek' : dek.kind === 'domain' ? 'story-dek domain-dek' : 'story-dek'}>
+              {dek.kind === 'domain' ? 'via ' : ''}{dek.text}
+            </p>
+            {dek.kind !== 'domain' && <p className="card-source">From {publisherDomain(evidence.url)}</p>}
+          </>
+        )}
+
         <div className="story-card-footer">
           <div className="story-tags">
             {story.entities.slice(1).map(item => (
@@ -84,14 +133,23 @@ export function StoryCard({ story, featured = false, dekOverride }: { story: Sto
               />
             ))}
           </div>
-          {reportsCount >= 2 && (
-            <Badge className="badge-sources-count">
-              {sources >= 2 ? `${sources} verified sources` : `${reportsCount} reports`}
-            </Badge>
-          )}
+          <Badge className={`badge-sources-count ${isMultiSource ? 'badge-corroborated' : 'badge-primary'}`}>
+            {isMultiSource ? (
+              <>
+                <CheckCircle2 size={11} className="inline-icon" />
+                <span>{sources >= 2 ? `${sources} verified sources` : `${reportsCount} reports`}</span>
+              </>
+            ) : (
+              <>
+                <FileText size={11} className="inline-icon" />
+                <span>1 indexed source</span>
+              </>
+            )}
+          </Badge>
         </div>
         <SaveStory id={story.id} />
       </div>
     </article>
   );
 }
+

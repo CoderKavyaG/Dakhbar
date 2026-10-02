@@ -108,6 +108,8 @@ export async function backfillEntityMetricSnapshots(now = new Date()) {
   };
 }
 
+import { computeTrendStats } from './trend';
+
 export async function computeLatestEntityMetricSnapshots(now = new Date()) {
   return backfillEntityMetricSnapshots(now);
 }
@@ -119,6 +121,10 @@ export type PulseSidebarItem = {
   uniqueSourceCount: number;
   velocity: number;
   snapshotAt: Date;
+  sparkline?: {
+    svgPath: string;
+    lastPoint?: { x: number; y: number };
+  } | null;
 };
 
 export function usablePulseItems<T extends { mention_velocity: number | null; mention_count: number; unique_source_count: number }>(items: T[]) {
@@ -134,15 +140,42 @@ export async function getDeveloperPulse(limit = 5) {
     orderBy: [{ mention_velocity: 'desc' }, { mention_count: 'desc' }],
     take: limit * 3,
   });
+  const filtered = usablePulseItems(rows).slice(0, limit);
+  const entityIds = filtered.map(row => row.entity.id);
+
+  // Fetch recent snapshots to build mini sparklines
+  const historical = await db.entityMetricSnapshot.findMany({
+    where: { entity_id: { in: entityIds } },
+    orderBy: { snapshot_at: 'asc' },
+    select: { entity_id: true, snapshot_at: true, mention_count: true, mention_velocity: true },
+  });
+
+  const historyByEntity = new Map<string, typeof historical>();
+  for (const h of historical) {
+    const list = historyByEntity.get(h.entity_id) ?? [];
+    list.push(h);
+    historyByEntity.set(h.entity_id, list);
+  }
+
   return {
     snapshotAt: latest.snapshot_at,
-    items: usablePulseItems(rows).slice(0, limit).map(row => ({
-      entityId: row.entity.id,
-      name: row.entity.name,
-      mentionCount: row.mention_count,
-      uniqueSourceCount: row.unique_source_count,
-      velocity: row.mention_velocity!,
-      snapshotAt: row.snapshot_at,
-    })),
+    items: filtered.map(row => {
+      const entityHistory = historyByEntity.get(row.entity.id) ?? [];
+      const stats = computeTrendStats(entityHistory, '7d', 48, 18);
+      const lastPoint = stats.points.length ? stats.points[stats.points.length - 1] : undefined;
+      return {
+        entityId: row.entity.id,
+        name: row.entity.name,
+        mentionCount: row.mention_count,
+        uniqueSourceCount: row.unique_source_count,
+        velocity: row.mention_velocity!,
+        snapshotAt: row.snapshot_at,
+        sparkline: stats.svgPath ? {
+          svgPath: stats.svgPath,
+          lastPoint: lastPoint ? { x: lastPoint.x, y: lastPoint.y } : undefined,
+        } : null,
+      };
+    }),
   };
 }
+
