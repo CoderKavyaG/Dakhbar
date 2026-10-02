@@ -16,6 +16,7 @@ import { ReadingAccordion } from '@/components/ui/accordion';
 import { getRelatedStories } from '@/lib/related-stories';
 import { countIndependentSources, publisherDomain, storyDek } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
+import { getCategoryForEntity } from '@/lib/taxonomy';
 import type { Metadata } from 'next';
 import { Layers, ShieldCheck, Clock, ExternalLink, Sparkles } from 'lucide-react';
 
@@ -127,7 +128,7 @@ export default async function StoryPage({
 
   const jsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'NewsArticle',
+    '@type': 'Article',
     headline: story.title,
     description: dek.text,
     datePublished: documents[0]?.published_at ? new Date(documents[0].published_at).toISOString() : story.created_at.toISOString(),
@@ -136,9 +137,16 @@ export default async function StoryPage({
       '@type': 'WebPage',
       '@id': `/stories/${story.id}`,
     },
+    author: [
+      {
+        '@type': 'Organization',
+        name: 'Dअख़बार Editorial',
+        url: 'https://dakhbar.com',
+      },
+    ],
     image: heroImage ? [heroImage] : undefined,
     publisher: {
-      '@type': 'NewsMediaOrganization',
+      '@type': 'Organization',
       name: 'Dअख़बार',
       url: 'https://dakhbar.com',
     },
@@ -148,6 +156,10 @@ export default async function StoryPage({
       name: e.entity.name,
     })),
   };
+
+  const primaryCategory = primaryEntity
+    ? getCategoryForEntity(primaryEntity.name, primaryEntity.type)
+    : null;
 
   return (
     <main className="paper-shell story-detail-page">
@@ -159,6 +171,12 @@ export default async function StoryPage({
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href="/">Today</Link>
         <span>/</span>
+        {primaryCategory ? (
+          <>
+            <Link href={`/category/${primaryCategory.slug}`}>{primaryCategory.title}</Link>
+            <span>/</span>
+          </>
+        ) : null}
         {primaryEntity ? (
           <>
             <Link href={topicPath(primaryEntity)}>{primaryEntity.name}</Link>

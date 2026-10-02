@@ -6,8 +6,36 @@ import { StoryCard } from '@/components/story-card';
 import { Badge } from '@/components/ui/badge';
 import { getCategoryPageData } from '@/lib/reader-data';
 import { topicPath } from '@/lib/topic-slug';
+import { getCategoryBySlug } from '@/lib/taxonomy';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const category = getCategoryBySlug(decodeURIComponent(slug));
+  if (!category) return { title: 'Sector Not Found' };
+
+  return {
+    title: `${category.title} Developer Intelligence & Trends`,
+    description: category.description,
+    openGraph: {
+      title: `${category.title} | Developer Intelligence & Trends`,
+      description: category.description,
+      type: 'website',
+      url: `/category/${category.slug}`,
+    },
+    twitter: {
+      card: 'summary',
+      title: `${category.title} | Developer Intelligence & Trends`,
+      description: category.description,
+    },
+  };
+}
 
 export default async function CategoryPage({
   params,

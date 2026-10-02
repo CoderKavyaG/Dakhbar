@@ -37,7 +37,7 @@ export async function generateMetadata({
   const topic = (q ?? '').trim();
   if (!topic) {
     return {
-      title: 'Research Dossier · Cross-Verified Intelligence',
+      title: 'Research Dossier — Cross-Verified Intelligence',
       description: 'Synthesize multi-story developer coverage into an authoritative Executive Brief, chronological source timeline, and verified Key Takeaways.',
     };
   }
@@ -148,6 +148,35 @@ export default async function ResearchPage({
 
     return (
       <main className="paper-shell research-page">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Article',
+              headline: `Research Dossier Preview: ${topic}`,
+              description: `Multi-story investigation across ${previewAssembly.stories.length} indexed story clusters and ${previewAssembly.evidence.length} corroborated sources.`,
+              mainEntityOfPage: {
+                '@type': 'WebPage',
+                '@id': `/research?q=${encodeURIComponent(topic)}`,
+              },
+              author: {
+                '@type': 'Organization',
+                name: 'Dअख़बार Intelligence Desk',
+                url: 'https://dakhbar.com',
+              },
+              publisher: {
+                '@type': 'Organization',
+                name: 'Dअख़बार',
+                url: 'https://dakhbar.com',
+              },
+              about: {
+                '@type': 'Thing',
+                name: topic,
+              },
+            }),
+          }}
+        />
         <nav className="breadcrumbs" aria-label="Breadcrumb">
           <Link href="/">Today</Link>
           <span>/</span>
@@ -265,6 +294,38 @@ export default async function ResearchPage({
 
   return (
     <main className="paper-shell research-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: `Research Dossier: ${report.topic}`,
+            description: report.executiveBrief.text.replace(/\[\d+\]/g, '').trim().slice(0, 240),
+            datePublished: new Date(report.generatedAt).toISOString(),
+            dateModified: new Date(report.generatedAt).toISOString(),
+            mainEntityOfPage: {
+              '@type': 'WebPage',
+              '@id': `/research?q=${encodeURIComponent(topic)}`,
+            },
+            author: {
+              '@type': 'Organization',
+              name: 'Dअख़बार Intelligence Desk',
+              url: 'https://dakhbar.com',
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'Dअख़बार',
+              url: 'https://dakhbar.com',
+            },
+            citation: report.timeline.flatMap(t => t.sources.map(s => s.url)),
+            about: {
+              '@type': 'Thing',
+              name: report.topic,
+            },
+          }),
+        }}
+      />
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href="/">Today</Link>
         <span>/</span>
