@@ -9,12 +9,14 @@ import { FollowToggle } from '@/components/follow-toggle';
 import { StoryImage } from '@/components/story-image';
 import { StoryCard } from '@/components/story-card';
 import { TopicTrendChart } from '@/components/topic-trend-chart';
+import { AdPlacement } from '@/components/ad-placement';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { ReadingAccordion } from '@/components/ui/accordion';
 import { getRelatedStories } from '@/lib/related-stories';
 import { countIndependentSources, publisherDomain, storyDek } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
+import { Layers, ShieldCheck, Clock, ExternalLink } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,10 +51,11 @@ export default async function StoryPage({
   const reports = documents.filter((d, i, all) => all.findIndex(other => other.url === d.url) === i);
   const evidence = documents.find(d => d.og_description) ?? documents[0];
   const dek = storyDek(evidence, 420);
-  const image = documents.find(d => d.og_image_url)?.og_image_url;
+  const heroImage = documents.find(d => d.og_image_url)?.og_image_url;
   const isSingleSource = reports.length < 2;
+  const sourceCount = countIndependentSources(documents);
 
-  // For single-source stories, load the involved entity's trend snapshots
+  // Load trend snapshots for the primary entity
   const primaryEntity = story.entities[0]?.entity;
   const entitySnapshots = primaryEntity
     ? await db.entityMetricSnapshot.findMany({
@@ -74,190 +77,272 @@ export default async function StoryPage({
   );
 
   return (
-    <main className="paper-shell story-page">
+    <main className="paper-shell story-detail-page">
+      {/* Breadcrumb Navigation */}
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href="/">Today</Link>
         <span>/</span>
-        <span>Story & sources</span>
+        {primaryEntity ? (
+          <>
+            <Link href={topicPath(primaryEntity)}>{primaryEntity.name}</Link>
+            <span>/</span>
+          </>
+        ) : null}
+        <span>Story & Sources</span>
       </nav>
 
-      <article className="story-detail">
-        <header className="story-detail-header">
-          <div>
-            <div className="story-context">
-              {story.entities.map(e => (
-                <EntityFollowControl
-                  key={e.entity_id}
-                  entity={{ id: e.entity_id, name: e.entity.name }}
-                  returnTo={topicPath(e.entity)}
-                />
-              ))}
+      {/* Main Story Article */}
+      <article className="story-master-article">
+        {/* Top Hero Masthead Section */}
+        <header className="story-master-header">
+          {/* Entity Tags & Category Badge */}
+          <div className="story-entity-chips">
+            {story.entities.map(e => (
+              <EntityFollowControl
+                key={e.entity_id}
+                entity={{ id: e.entity_id, name: e.entity.name }}
+                returnTo={topicPath(e.entity)}
+              />
+            ))}
+          </div>
+
+          {/* BroadSheet Headline */}
+          <h1 className="story-master-title">{story.title}</h1>
+
+          {/* Master Dek / Summary */}
+          <p className="story-master-dek">
+            {dek.kind === 'domain' ? 'Reporting from ' : ''}
+            {dek.text}
+          </p>
+
+          {/* Meta Information & Reader Actions Bar */}
+          <div className="story-action-strip">
+            <div className="action-strip-left">
+              <span className="source-corroboration-pill">
+                <ShieldCheck size={14} className="inline-icon text-data" />
+                {sourceCount} {sourceCount === 1 ? 'reporting source' : 'independent sources verified'}
+              </span>
+              <time
+                dateTime={reports[0].published_at.toISOString()}
+                className="story-pub-time"
+              >
+                <Clock size={13} className="inline-icon" />
+                {reports[0].published_at.toLocaleString('en-IN', {
+                  timeZone: 'Asia/Kolkata',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+              </time>
             </div>
-            <h1>{story.title}</h1>
-            <p className="detail-dek">
-              {dek.kind === 'domain' ? 'Reporting from ' : ''}
-              {dek.text}
-            </p>
-            <div className="detail-actions">
+
+            <div className="action-strip-right">
               <SaveStory id={story.id} />
               <FollowToggle
                 entityIds={story.entities.map(e => e.entity_id)}
                 returnTo={'/stories/' + story.id}
-                followLabel="Follow the story"
+                followLabel="Follow this story"
                 followingLabel="Following this story"
                 variant="outline"
               />
-              <span className="source-count-indicator">
-                {countIndependentSources(documents)}{' '}
-                {countIndependentSources(documents) === 1 ? 'reporting source' : 'reporting sources'}
-              </span>
             </div>
           </div>
-          <StoryImage src={image} alt="" className="story-detail-image" />
+
+          {/* Featured Hero Visual Image */}
+          {heroImage && (
+            <div className="story-hero-media-wrap">
+              <StoryImage
+                src={heroImage}
+                alt={story.title}
+                className="story-hero-featured-image"
+              />
+              <span className="hero-media-caption">
+                Primary report visual via {publisherDomain(reports[0].url)}
+              </span>
+            </div>
+          )}
         </header>
 
-        <div className="story-editorial-layout">
-          {/* Main Column: Original Reporting & Timelines */}
-          <div className="story-main-column">
-            {isSingleSource ? (
-              <section className="source-section single-source-section">
-                <header className="section-heading">
-                  <div>
-                    <span className="section-note">Original Coverage</span>
-                    <h2>Primary source reporting</h2>
-                  </div>
-                  <p>Direct report indexed by TheDailyDev</p>
-                </header>
-
-                <article className="source-card single-source-card">
-                  <StoryImage
-                    src={reports[0].og_image_url}
-                    alt=""
-                    className="source-card-image"
-                  />
-                  <div className="source-card-content">
-                    <div className="source-card-meta">
-                      <Badge>{publisherDomain(reports[0].url)}</Badge>
-                      <time dateTime={reports[0].published_at.toISOString()}>
-                        {reports[0].published_at.toLocaleString('en-IN', {
-                          timeZone: 'Asia/Kolkata',
-                          month: 'short',
-                          day: 'numeric',
-                          hour: 'numeric',
-                          minute: '2-digit',
-                        })}
-                      </time>
-                    </div>
-                    <h3>{reports[0].title}</h3>
-                    {(reports[0].og_description || reports[0].content) && (
-                      <p>{storyDek(reports[0], 360).text}</p>
-                    )}
-                    <Button asChild variant="default">
-                      <a href={reports[0].url} target="_blank" rel="noopener noreferrer">
-                        Read original reporting ↗
-                      </a>
-                    </Button>
-                  </div>
-                </article>
-
-                {/* Entity trend context reusing Phase 9 sparkline */}
-                {primaryEntity && (
-                  <div className="story-entity-trend-wrapper">
-                    <TopicTrendChart
-                      snapshots={entitySnapshots}
-                      entityName={primaryEntity.name}
-                      entityType={primaryEntity.type}
-                    />
-                  </div>
-                )}
-              </section>
-            ) : (
-              <section className="source-section">
-                <header className="section-heading">
-                  <div>
-                    <span className="section-note">Follow the evidence</span>
-                    <h2>Original reporting</h2>
-                  </div>
-                  <p>In the order shared across developer sources</p>
-                </header>
-
-                <ol className="reporting-timeline">
-                  {reports.map((document, index) => (
-                    <li key={document.id}>
-                      <div className="reporting-time">
-                        <span className="reporting-dot" />
-                        <time dateTime={document.published_at.toISOString()}>
-                          {document.published_at.toLocaleString('en-IN', {
-                            timeZone: 'Asia/Kolkata',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: 'numeric',
-                            minute: '2-digit',
-                          })}
-                        </time>
-                        <span>{index === 0 ? 'First indexed report' : 'Further reporting'}</span>
-                      </div>
-
-                      <article className="source-card">
-                        <StoryImage
-                          src={document.og_image_url}
-                          alt=""
-                          className="source-card-image"
-                        />
-                        <div className="source-card-content">
-                          <Badge>{publisherDomain(document.url)}</Badge>
-                          <h3>{document.title}</h3>
-                          {(document.og_description || document.content) && (
-                            <p>{storyDek(document, 320).text}</p>
-                          )}
-                          <Button asChild variant="outline">
-                            <a href={document.url} target="_blank" rel="noopener noreferrer">
-                              Read original ↗
-                            </a>
-                          </Button>
-                        </div>
-                      </article>
-                    </li>
-                  ))}
-                </ol>
-
-                <ReadingAccordion title="What does this timeline represent?">
-                  <p>
-                    These timestamps record when each link was indexed. They do not establish when the publisher first reported the news. Reports are grouped by matching topics and text; read the original sources to assess their claims.
-                  </p>
-                </ReadingAccordion>
-              </section>
-            )}
-
-            <aside className="source-disclaimer">
-              <p>
-                TheDailyDev indexes and links to original reporting. We don’t host or claim ownership of this content — click through to read the full piece.
-              </p>
-              <Link href="/methodology">Learn how we source and rank →</Link>
-            </aside>
-          </div>
-
-          {/* Sidebar Column: Ask This Story Intelligence */}
-          <aside className="story-side-column">
+        {/* 2-Column Broadsheet Reading Grid */}
+        <div className="story-columns-grid">
+          {/* Left Main Column: Grounded QA + Primary Sources */}
+          <div className="story-content-column">
+            {/* Grounded Story Q&A Assistant */}
             <StoryAsk
               storyId={story.id}
               signedIn={Boolean(userId)}
               subscriber={reader?.subscription_status === 'active'}
             />
+
+            {/* Primary Source Reporting Section */}
+            <section className="source-reporting-section" aria-labelledby="sources-heading">
+              <header className="section-heading">
+                <div>
+                  <span className="section-note">Original Coverage</span>
+                  <h2 id="sources-heading">
+                    {isSingleSource ? 'Primary source reporting' : 'Corroborated reporting timeline'}
+                  </h2>
+                </div>
+                <p>
+                  {isSingleSource
+                    ? `Direct report indexed by Dअख़बार from ${publisherDomain(reports[0].url)}`
+                    : 'Ordered by first discovery and subsequent confirmation across developer sources'}
+                </p>
+              </header>
+
+              {isSingleSource ? (
+                /* Single Source Clean Card */
+                <article className="primary-source-card">
+                  <div className="source-card-header">
+                    <Badge className="badge-source-domain">{publisherDomain(reports[0].url)}</Badge>
+                    <time dateTime={reports[0].published_at.toISOString()} className="source-time">
+                      {reports[0].published_at.toLocaleString('en-IN', {
+                        timeZone: 'Asia/Kolkata',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </time>
+                  </div>
+                  <h3 className="source-card-title">{reports[0].title}</h3>
+                  {(reports[0].og_description || reports[0].content) && (
+                    <p className="source-card-dek">{storyDek(reports[0], 360).text}</p>
+                  )}
+                  <div className="source-card-footer">
+                    <Button asChild variant="default" className="read-original-btn">
+                      <a href={reports[0].url} target="_blank" rel="noopener noreferrer">
+                        Read original on {publisherDomain(reports[0].url)} <ExternalLink size={14} />
+                      </a>
+                    </Button>
+                  </div>
+                </article>
+              ) : (
+                /* Multi-Source Timeline */
+                <div className="reporting-timeline-wrap">
+                  <ol className="reporting-timeline">
+                    {reports.map((document, index) => (
+                      <li key={document.id} className="timeline-node">
+                        <div className="reporting-time">
+                          <span className="reporting-dot" />
+                          <time dateTime={document.published_at.toISOString()}>
+                            {document.published_at.toLocaleString('en-IN', {
+                              timeZone: 'Asia/Kolkata',
+                              month: 'short',
+                              day: 'numeric',
+                              hour: 'numeric',
+                              minute: '2-digit',
+                            })}
+                          </time>
+                          <span className="timeline-status-tag">
+                            {index === 0 ? 'First indexed report' : 'Further reporting'}
+                          </span>
+                        </div>
+
+                        <article className="source-card">
+                          <div className="source-card-header">
+                            <Badge className="badge-source-domain">{publisherDomain(document.url)}</Badge>
+                          </div>
+                          <h3 className="source-card-title">{document.title}</h3>
+                          {(document.og_description || document.content) && (
+                            <p className="source-card-dek">{storyDek(document, 320).text}</p>
+                          )}
+                          <div className="source-card-footer">
+                            <Button asChild variant="outline">
+                              <a href={document.url} target="_blank" rel="noopener noreferrer">
+                                Read original ↗
+                              </a>
+                            </Button>
+                          </div>
+                        </article>
+                      </li>
+                    ))}
+                  </ol>
+
+                  <ReadingAccordion title="What does this timeline represent?">
+                    <p>
+                      These timestamps record when each link was indexed. They do not establish when the
+                      publisher first reported the news. Reports are grouped by matching topics and text;
+                      read the original sources to assess their claims.
+                    </p>
+                  </ReadingAccordion>
+                </div>
+              )}
+
+              {/* Publisher Provenance & Fair Use Notice */}
+              <aside className="source-disclaimer">
+                <p>
+                  Dअख़बार indexes and links to original reporting. We don’t host or claim ownership of
+                  this content — click through to read the full piece on the original publication.
+                </p>
+                <Link href="/methodology" className="disclaimer-methodology-link">
+                  Learn how we source and rank signals →
+                </Link>
+              </aside>
+            </section>
+          </div>
+
+          {/* Right Sidebar Column: Topic Telemetry, Key Entities, and Sponsor Placement */}
+          <aside className="story-sidebar-column">
+            {/* Entity Trend Sparkline Widget (Moved cleanly to sidebar) */}
+            {primaryEntity && entitySnapshots.length > 0 && (
+              <div className="sidebar-widget story-trend-widget">
+                <div className="widget-header">
+                  <div className="widget-title-group">
+                    <Layers size={14} className="text-data inline-icon" />
+                    <h4>{primaryEntity.name} Buzz</h4>
+                  </div>
+                  <Link href={topicPath(primaryEntity)} className="widget-view-all">
+                    Topic ↗
+                  </Link>
+                </div>
+                <TopicTrendChart
+                  snapshots={entitySnapshots}
+                  entityName={primaryEntity.name}
+                  entityType={primaryEntity.type}
+                />
+              </div>
+            )}
+
+            {/* Key Entities in This Story */}
+            <div className="sidebar-widget tagged-entities-widget">
+              <div className="widget-header">
+                <h4>Tagged Topics</h4>
+                <span className="data-count">{story.entities.length}</span>
+              </div>
+              <div className="tagged-entities-list">
+                {story.entities.map(e => (
+                  <div key={e.entity_id} className="tagged-entity-row">
+                    <Link href={topicPath(e.entity)} className="entity-link-title">
+                      {e.entity.name}
+                    </Link>
+                    <EntityFollowControl
+                      entity={{ id: e.entity_id, name: e.entity.name }}
+                      returnTo={'/stories/' + story.id}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Sponsor / Partner Dispatch Placement */}
+            <AdPlacement slot="story-sidebar" />
           </aside>
         </div>
       </article>
 
+      {/* Related Coverage Bottom Grid */}
       {related.length > 0 && (
-        <section className="related-section">
+        <section className="related-section" aria-labelledby="related-heading">
           <header className="section-heading">
             <div>
               <span className="section-note">Continue reading</span>
-              <h2>More in this sector</h2>
+              <h2 id="related-heading">More in this sector</h2>
             </div>
-            <p>Shared topics, related coverage</p>
+            <p>Shared topics, related developments</p>
           </header>
-          <div className="related-grid">
+          <div className="related-stories-grid">
             {related.map(item => (
               <StoryCard story={item} key={item.id} />
             ))}

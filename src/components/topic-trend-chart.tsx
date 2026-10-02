@@ -81,7 +81,7 @@ export function TopicTrendChart({
           </div>
 
           <div className="trend-stat-item">
-            <span className="trend-stat-label">Velocity</span>
+            <span className="trend-stat-label">Buzz</span>
             <div className="trend-stat-value">
               {stats.currentVelocity !== null ? (
                 <span className={`trend-velocity-pill ${stats.currentVelocity > 0 ? 'pos' : stats.currentVelocity < 0 ? 'neg' : 'neutral'}`}>

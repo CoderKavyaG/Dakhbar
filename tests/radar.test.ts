@@ -245,15 +245,8 @@ test('Eligible entities are classified into the four distinct momentum quadrants
   }
 });
 
-test('Pulse Radar page and route files are properly configured and gated', async () => {
+test('Radar route redirects gracefully to search', async () => {
   const { readFile } = await import('node:fs/promises');
-  const pulsePage = await readFile('src/app/pulse/page.tsx', 'utf8');
-  assert.match(pulsePage, /Developer Pulse Radar/);
-  assert.match(pulsePage, /getPulseRadarData/);
-  assert.match(pulsePage, /subscription_status === 'active'/);
-  assert.match(pulsePage, /PulseRadarChart/);
-  assert.match(pulsePage, /pulse-upgrade-card/);
-
   const radarRedirect = await readFile('src/app/radar/page.tsx', 'utf8');
-  assert.match(radarRedirect, /redirect\('\/pulse'\)/);
+  assert.match(radarRedirect, /redirect\('\/search'\)/);
 });

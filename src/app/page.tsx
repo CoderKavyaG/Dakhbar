@@ -8,6 +8,8 @@ import { StoryCard } from '@/components/story-card';
 import { TodayEdition } from '@/components/today-edition';
 import { DeveloperPulse } from '@/components/developer-pulse';
 import { FollowingEmpty } from '@/components/following-empty';
+import { FollowingSidebar } from '@/components/following-sidebar';
+import { AdPlacement } from '@/components/ad-placement';
 import { BriefReadReceipt } from '@/components/brief-read-receipt';
 import { getDeveloperPulse } from '@/lib/pulse';
 import { Badge } from '@/components/ui/badge';
@@ -29,16 +31,34 @@ export default async function FrontPage({
 }) {
   const { tab } = (await searchParams) ?? {};
   const { userId } = await auth();
-  const isFollowingTab = Boolean(userId && tab === 'following');
+  const isFollowingTab = tab === 'following';
+
+  // --- Anonymous Reader Following Tab ---
+  if (isFollowingTab && !userId) {
+    const popular = await getPopularEntities();
+    return (
+      <main className="paper-shell reader-page">
+        <div className="front-tabs-container">
+          <nav className="front-tabs" aria-label="Edition view">
+            <Link href="/?tab=today" className="front-tab">Today</Link>
+            <Link href="/?tab=following" className="front-tab active" aria-current="page">Following</Link>
+          </nav>
+        </div>
+        <FollowingEmpty entities={popular} />
+      </main>
+    );
+  }
 
   // --- Following Tab for Signed-In Users ---
   if (userId && isFollowingTab) {
-    const [brief, forYou, popular, subscription, briefCount] = await Promise.all([
+    const [brief, forYou, popular, subscription, briefCount, frontPageStories, pulse] = await Promise.all([
       getBrief(userId),
       getForYouStories(userId),
       getPopularEntities(),
       db.user.findUnique({ where: { id: userId }, select: { subscription_status: true } }),
       getBriefNotificationCount(userId),
+      getFrontPageStories(48),
+      getDeveloperPulse(6),
     ]);
 
     const generated = new Map<string, string>();
@@ -49,10 +69,7 @@ export default async function FrontPage({
       }
     }
 
-    const summary = generated.size
-      ? `An editorial Brief synthesized from ${brief.stories.length} verified development${brief.stories.length === 1 ? '' : 's'}.`
-      : briefSummary(brief.stories.length);
-
+    // If reader has zero followed entities, show the rich onboarding view
     if (!brief.entityIds.length && !forYou.entityIds.length) {
       return (
         <main className="paper-shell reader-page">
@@ -62,20 +79,57 @@ export default async function FrontPage({
               <Link href="/?tab=following" className="front-tab active" aria-current="page">Following</Link>
             </nav>
           </div>
-          <header className="reader-hero">
-            <p className="section-note">Personalized edition</p>
-            <h1>Your developer world.</h1>
-            <p>Stories from topics you choose, ordered by the same evidence-led ranking as Today.</p>
-          </header>
           <FollowingEmpty entities={popular} />
         </main>
       );
     }
 
     const storiesToRender = brief.stories.length > 0 ? brief.stories : forYou.stories;
+    const [followedLead, ...followedRest] = storiesToRender;
+
+    if (!followedLead) {
+      return (
+        <main className="paper-shell reader-page">
+          <div className="front-tabs-container">
+            <nav className="front-tabs" aria-label="Edition view">
+              <Link href="/?tab=today" className="front-tab">Today</Link>
+              <Link href="/?tab=following" className="front-tab active" aria-current="page">Following</Link>
+            </nav>
+          </div>
+          <FollowingEmpty entities={popular} />
+        </main>
+      );
+    }
+
+    const date = new Intl.DateTimeFormat('en-IN', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+      timeZone: 'Asia/Kolkata',
+    }).format(new Date());
+
+    const topFrontLead = frontPageStories[0]
+      ? {
+          id: frontPageStories[0].id,
+          title: frontPageStories[0].title,
+          dek: storyDek(frontPageStories[0].documents[0]?.raw_document, 160).text,
+        }
+      : null;
+
+    const followedSet = new Set([...brief.entityIds, ...forYou.entityIds]);
+    const suggestedEntities = popular.filter(e => !followedSet.has(e.id));
+
+    const leadDocs = followedLead.documents.map(m => m.raw_document);
+    const destination = storyDestination(followedLead.id, leadDocs);
+    const evidence = leadDocs.find(d => d.og_description) ?? leadDocs[0];
+    const dek = generated.has(followedLead.id)
+      ? { kind: 'self' as const, text: generated.get(followedLead.id)! }
+      : storyDek(evidence, 360);
+    const count = countIndependentSources(leadDocs);
 
     return (
-      <main className="paper-shell reader-page">
+      <main className="paper-shell">
         <BriefReadReceipt at={brief.visitedAt.toISOString()} />
         <div className="front-tabs-container">
           <nav className="front-tabs" aria-label="Edition view">
@@ -87,71 +141,106 @@ export default async function FrontPage({
           </nav>
         </div>
 
-        <header className="reader-hero paper-hero">
-          <div>
-            <p className="section-note">Personalized edition</p>
-            <h1>Your developer world.</h1>
-            <p>
-              {brief.revisited
-                ? 'You are caught up. Your last Brief is kept here to finish reading.'
-                : brief.stories.length > 0
-                ? summary
-                : 'You are caught up on new reporting. Here is the topic archive from everything you follow.'}
-            </p>
-            {generated.size > 0 && (
-              <span className="synthesis-note">Grounded synthesis — every claim constrained to indexed reporting</span>
-            )}
-          </div>
-          <div className="brief-window">
-            <span>Since</span>
-            <time dateTime={brief.since.toISOString()}>
-              {brief.since.toLocaleString('en-IN', {
-                timeZone: 'Asia/Kolkata',
-                day: 'numeric',
-                month: 'short',
-                hour: 'numeric',
-                minute: '2-digit',
-              })}
-            </time>
-          </div>
-        </header>
+        <FreshEdition />
+        <div className="edition-intro">
+          <p>{date} — Followed Edition</p>
+          <Badge>{storiesToRender.length} followed {storiesToRender.length === 1 ? 'story' : 'stories'}</Badge>
+        </div>
 
-        <section>
-          <header className="section-heading">
-            <div>
-              <span className="section-note">Topic telemetry</span>
-              <h2>
-                {brief.revisited
-                  ? 'Your latest edition'
-                  : brief.stories.length > 0
-                  ? 'Updates from followed topics'
-                  : 'Followed topics archive'}
-              </h2>
-            </div>
-            <Badge>
-              {brief.entityIds.length} {brief.entityIds.length === 1 ? 'topic' : 'topics'} followed
-            </Badge>
-          </header>
-
-          {storiesToRender.length > 0 ? (
-            <ArticleGrid className="article-grid-results">
-              {storiesToRender.map((story, index) => (
-                <StoryCard
-                  key={story.id}
-                  story={story}
-                  featured={generated.has(story.id) && index === 0}
-                  dekOverride={generated.get(story.id)}
+        <section className="lead-stage">
+          <article className="lead-copy">
+            <div className="lead-meta">
+              {followedLead.entities.slice(0, 3).map(e => (
+                <EntityFollowControl
+                  key={e.entity_id}
+                  entity={{ id: e.entity_id, name: e.entity.name }}
+                  returnTo={topicPath(e.entity)}
                 />
               ))}
-            </ArticleGrid>
-          ) : (
-            <div className="brief-caught-up">
-              <h3>No stories recorded yet for followed topics.</h3>
-              <p>Explore all topics to add frameworks, databases, and companies to your feed.</p>
-              <Link href="/topics">Browse all topics →</Link>
             </div>
-          )}
+            <h1>
+              <a href={destination.href}>{followedLead.title}</a>
+            </h1>
+            <p className="lead-dek">{dek.kind === 'domain' ? 'Reporting from ' : ''}{dek.text}</p>
+            <div className="lead-actions">
+              <FollowToggle
+                entityIds={followedLead.entities.map(e => e.entity_id)}
+                returnTo="/?tab=following"
+                followLabel="Follow the story"
+                followingLabel="Following this story"
+              />
+              <Button asChild variant="outline">
+                <a href={destination.href}>{destination.external ? 'Read original' : 'Read coverage'} ↗</a>
+              </Button>
+              {count > 1 && <span>{count} reporting sources</span>}
+            </div>
+          </article>
+          <TodayEdition
+            stories={storiesToRender.slice(0, 3).map(story => {
+              const docs = story.documents.map(item => item.raw_document);
+              return {
+                id: story.id,
+                title: story.title,
+                ...storyDestination(story.id, docs),
+                image: docs.find(doc => doc.og_image_url)?.og_image_url,
+              };
+            })}
+            date={date}
+          />
         </section>
+
+        <div className="front-page-body">
+          <div>
+            <section className="top-stories">
+              <header className="section-heading">
+                <div>
+                  <span className="section-note">Personalized Stack</span>
+                  <h2>Worth your attention</h2>
+                </div>
+                <span>{followedRest.slice(0, 4).length} stories to start with</span>
+              </header>
+              <ArticleGrid className="article-grid-top">
+                {followedRest.slice(0, 4).map((story, i) => (
+                  <StoryCard
+                    key={story.id}
+                    story={story}
+                    featured={i === 0}
+                    dekOverride={generated.get(story.id)}
+                  />
+                ))}
+              </ArticleGrid>
+            </section>
+
+            {followedRest.length > 4 && (
+              <section className="story-section">
+                <header className="section-heading">
+                  <div>
+                    <span className="section-note">Across your followed topics</span>
+                    <h2>More from your stack</h2>
+                  </div>
+                  <Link href="/topics">Explore all topics →</Link>
+                </header>
+                <ArticleGrid>
+                  {followedRest.slice(4).map(story => (
+                    <StoryCard
+                      key={story.id}
+                      story={story}
+                      dekOverride={generated.get(story.id)}
+                    />
+                  ))}
+                </ArticleGrid>
+              </section>
+            )}
+          </div>
+
+          <div className="front-sidebar-stack">
+            <FollowingSidebar
+              leadStory={topFrontLead}
+              suggestedEntities={suggestedEntities}
+              trendingTopics={pulse.items}
+            />
+          </div>
+        </div>
       </main>
     );
   }
@@ -282,7 +371,11 @@ export default async function FrontPage({
             </ArticleGrid>
           </section>
         </div>
-        <DeveloperPulse snapshotAt={pulse.snapshotAt} items={pulse.items} />
+
+        <div className="front-sidebar-stack">
+          <DeveloperPulse snapshotAt={pulse.snapshotAt} items={pulse.items} />
+          <AdPlacement slot="sidebar" />
+        </div>
       </div>
     </main>
   );

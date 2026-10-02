@@ -1,5 +1,5 @@
 import { redirect } from 'next/navigation';
 
-export default function RadarRedirectPage() {
-  redirect('/pulse');
+export default function RadarPage() {
+  redirect('/search');
 }

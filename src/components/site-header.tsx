@@ -13,7 +13,14 @@ export async function SiteHeader() {
   const { userId } = await auth();
   const [briefCount, reader, initialTrending, savedCount] = await Promise.all([
     userId ? getBriefNotificationCount(userId) : Promise.resolve(0),
-    userId ? db.user.findUnique({ where: { id: userId }, select: { subscription_status: true } }) : Promise.resolve(null),
+    userId
+      ? db.user.upsert({
+          where: { id: userId },
+          update: {},
+          create: { id: userId, subscription_status: 'free' },
+          select: { subscription_status: true },
+        })
+      : Promise.resolve(null),
     getTrendingTopics(6),
     userId ? db.savedStory.count({ where: { user_id: userId } }) : Promise.resolve(0),
   ]);

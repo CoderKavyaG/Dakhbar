@@ -87,12 +87,18 @@ export async function backfillEntityMetricSnapshots(now = new Date()) {
   const through = previousCompletedDay(now);
   const { entities, documents } = await loadPulseData();
   const snapshots = buildMetricSnapshots(entities, documents, through);
-  for (const snapshot of snapshots) {
-    await db.entityMetricSnapshot.upsert({
-      where: { entity_id_snapshot_at: { entity_id: snapshot.entity_id, snapshot_at: snapshot.snapshot_at } },
-      update: snapshot,
-      create: snapshot,
-    });
+  const chunkSize = 50;
+  for (let i = 0; i < snapshots.length; i += chunkSize) {
+    const chunk = snapshots.slice(i, i + chunkSize);
+    await Promise.all(
+      chunk.map(snapshot =>
+        db.entityMetricSnapshot.upsert({
+          where: { entity_id_snapshot_at: { entity_id: snapshot.entity_id, snapshot_at: snapshot.snapshot_at } },
+          update: snapshot,
+          create: snapshot,
+        })
+      )
+    );
   }
   return {
     through,

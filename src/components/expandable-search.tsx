@@ -333,14 +333,6 @@ export function ExpandableSearch({
                   >
                     Languages & tools
                   </Link>
-                  <Link
-                    href="/pulse"
-                    onClick={() => setIsOpen(false)}
-                    className="sector-chip sector-chip-pulse"
-                  >
-                    <span className="pulse-dot-inline" aria-hidden="true" />
-                    Pulse Radar
-                  </Link>
                 </div>
               </div>
 
@@ -351,11 +343,11 @@ export function ExpandableSearch({
                     <TrendingUp size={13} className="inline-icon text-data" /> Trending in Developer World
                   </span>
                   <Link
-                    href="/pulse"
+                    href="/topics"
                     onClick={() => setIsOpen(false)}
                     className="popover-section-action"
                   >
-                    <Compass size={12} className="inline-icon" /> Pulse Radar →
+                    <Compass size={12} className="inline-icon" /> All Topics →
                   </Link>
                 </div>
 
@@ -382,7 +374,7 @@ export function ExpandableSearch({
                           <span>{item.storyCount} stories indexed</span>
                           {item.latestVelocity !== null && item.latestVelocity !== 0 ? (
                             <span className="trending-vel pos">
-                              +{Math.round(item.latestVelocity)}% velocity
+                              +{Math.round(item.latestVelocity)}% buzz
                             </span>
                           ) : item.latestMentions > 0 ? (
                             <span className="trending-vel neutral">
