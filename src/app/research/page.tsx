@@ -15,14 +15,84 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { db } from '@/lib/db';
+import type { Metadata } from 'next';
 import {
   generateResearchReport,
   assembleResearchEvidence,
+  normalizeResearchTopic,
+  researchTopicHash,
+  RESEARCH_CACHE_TTL_MS,
   type ResearchReport,
 } from '@/lib/research';
 import { DESK_PRICE_USD } from '@/lib/billing/config';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ q?: string }>;
+}): Promise<Metadata> {
+  const { q } = await searchParams;
+  const topic = (q ?? '').trim();
+  if (!topic) {
+    return {
+      title: 'Research Dossier · Cross-Verified Intelligence',
+      description: 'Synthesize multi-story developer coverage into an authoritative Executive Brief, chronological source timeline, and verified Key Takeaways.',
+    };
+  }
+
+  const normalized = normalizeResearchTopic(topic);
+  const topicHash = researchTopicHash(normalized);
+  const cachedCall = await db.llmCall.findFirst({
+    where: {
+      story_id: 'research:' + topicHash,
+      accepted: true,
+      created_at: { gte: new Date(Date.now() - RESEARCH_CACHE_TTL_MS) },
+    },
+    orderBy: { created_at: 'desc' },
+    select: { output_text: true },
+  });
+
+  let excerpt = `Cross-verified developer research dossier for ${topic}. Source-grounded Executive Brief, chronological timeline, and verified primary citations.`;
+  let tierPrefix = 'Research Dossier';
+
+  if (cachedCall?.output_text) {
+    try {
+      const parsed = JSON.parse(cachedCall.output_text) as ResearchReport;
+      const briefText = parsed.executiveBrief?.text;
+      if (briefText) {
+        excerpt = briefText.replace(/\[\d+\]/g, '').trim().slice(0, 240);
+        if (excerpt.length >= 240) excerpt += '…';
+      }
+      if (parsed.richnessTier === 'comprehensive') {
+        tierPrefix = 'Comprehensive Research Dossier';
+      } else if (parsed.richnessTier === 'preliminary') {
+        tierPrefix = 'Preliminary Research Dossier';
+      }
+    } catch {
+      // fallback
+    }
+  }
+
+  const title = `${tierPrefix}: “${topic}”`;
+
+  return {
+    title,
+    description: excerpt,
+    openGraph: {
+      title,
+      description: excerpt,
+      type: 'article',
+      url: `/research?q=${encodeURIComponent(topic)}`,
+    },
+    twitter: {
+      card: 'summary',
+      title,
+      description: excerpt,
+    },
+  };
+}
 
 export default async function ResearchPage({
   searchParams,

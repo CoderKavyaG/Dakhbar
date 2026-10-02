@@ -7,8 +7,40 @@ import { TopicTrendChart, type ContributingStoryItem } from '@/components/topic-
 import { Badge } from '@/components/ui/badge';
 import { getTopicBySlug } from '@/lib/reader-data';
 import { storyDestination, publisherDomain, countIndependentSources } from '@/lib/story-evidence';
+import type { Metadata } from 'next';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const topic = await getTopicBySlug(decodeURIComponent(slug));
+  if (!topic) return { title: 'Topic Not Found' };
+
+  const name = topic.entity.name;
+  const type = topic.entity.type;
+  const count = topic.storyCount;
+  const description = `Cross-source developer coverage, velocity metrics, and recent reporting for ${name} (${type}) across ${count} indexed stories.`;
+
+  return {
+    title: `${name} Developer News & Velocity Trends`,
+    description,
+    openGraph: {
+      title: `${name} | Developer News & Trend Signals`,
+      description,
+      type: 'website',
+      url: `/topics/${slug}`,
+    },
+    twitter: {
+      card: 'summary',
+      title: `${name} | Developer News & Trend Signals`,
+      description,
+    },
+  };
+}
 
 export default async function TopicPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;

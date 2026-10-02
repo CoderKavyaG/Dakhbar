@@ -16,9 +16,58 @@ import { ReadingAccordion } from '@/components/ui/accordion';
 import { getRelatedStories } from '@/lib/related-stories';
 import { countIndependentSources, publisherDomain, storyDek } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
+import type { Metadata } from 'next';
 import { Layers, ShieldCheck, Clock, ExternalLink, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const story = await db.story.findUnique({
+    where: { id },
+    include: {
+      documents: {
+        orderBy: { raw_document: { published_at: 'asc' } },
+        include: { raw_document: { select: { title: true, url: true, og_description: true, og_image_url: true, content: true, published_at: true } } },
+      },
+      entities: { include: { entity: true } },
+    },
+  });
+
+  if (!story || !story.documents.length) {
+    return { title: 'Story Not Found' };
+  }
+
+  const documents = story.documents.map(m => m.raw_document);
+  const evidence = documents.find(d => d.og_description) ?? documents[0];
+  const dek = storyDek(evidence, 240);
+  const heroImage = documents.find(d => d.og_image_url)?.og_image_url;
+
+  return {
+    title: story.title,
+    description: dek.text,
+    openGraph: {
+      title: story.title,
+      description: dek.text,
+      type: 'article',
+      url: `/stories/${story.id}`,
+      images: heroImage ? [{ url: heroImage, alt: story.title }] : undefined,
+      publishedTime: documents[0]?.published_at ? new Date(documents[0].published_at).toISOString() : undefined,
+      modifiedTime: story.updated_at.toISOString(),
+      tags: story.entities.map(e => e.entity.name),
+    },
+    twitter: {
+      card: heroImage ? 'summary_large_image' : 'summary',
+      title: story.title,
+      description: dek.text,
+      images: heroImage ? [heroImage] : undefined,
+    },
+  };
+}
 
 export default async function StoryPage({
   params,
@@ -76,8 +125,36 @@ export default async function StoryPage({
     story.entities.map(e => e.entity_id)
   );
 
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: story.title,
+    description: dek.text,
+    datePublished: documents[0]?.published_at ? new Date(documents[0].published_at).toISOString() : story.created_at.toISOString(),
+    dateModified: story.updated_at.toISOString(),
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `/stories/${story.id}`,
+    },
+    image: heroImage ? [heroImage] : undefined,
+    publisher: {
+      '@type': 'NewsMediaOrganization',
+      name: 'Dअख़बार',
+      url: 'https://dakhbar.com',
+    },
+    citation: reports.map(r => r.url),
+    about: story.entities.map(e => ({
+      '@type': 'Thing',
+      name: e.entity.name,
+    })),
+  };
+
   return (
     <main className="paper-shell story-detail-page">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb Navigation */}
       <nav className="breadcrumbs" aria-label="Breadcrumb">
         <Link href="/">Today</Link>
