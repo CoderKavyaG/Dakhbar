@@ -1,0 +1,317 @@
+/* ==========================================================================
+   DIRECTION C: WIRE DISPATCH / TYPEWRITER
+   Typewriter + newsprint, slab & mono headlines mixed with Funnel Display,
+   dispatch datelines, teletype timestamps, ticket-stub / perforation cuts,
+   off-white stock with hot signal orange accent.
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Funnel Display';
+  src: url('/fonts/FunnelDisplay-Variable.ttf') format('truetype');
+  font-weight: 300 800;
+  font-display: swap;
+  font-style: normal;
+}
+
+.lab-c-shell {
+  --wire-stock: #f2eee5;
+  --wire-paper-card: #f9f7f2;
+  --wire-carbon: #121311;
+  --wire-faded: #636662;
+  --wire-signal: #ff4400;
+  --wire-perforation: #b5b0a3;
+
+  background-color: var(--wire-stock);
+  color: var(--wire-carbon);
+  font-family: var(--font-plex-mono), monospace;
+  min-height: 100vh;
+  padding: 1.5rem 1.5rem 6rem;
+}
+
+.lab-c-container {
+  max-width: 1360px;
+  margin: 0 auto;
+}
+
+/* Teletype Ticker Header */
+.lab-c-ticker-tape {
+  background: var(--wire-carbon);
+  color: var(--wire-stock);
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.lab-c-ticker-tape span.hot {
+  color: var(--wire-signal);
+  font-weight: 700;
+}
+
+/* Wire Masthead */
+.lab-c-masthead {
+  border-bottom: 2px dashed var(--wire-perforation);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.lab-c-dateline {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--wire-signal);
+  margin-bottom: 0.5rem;
+}
+
+.lab-c-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(2.8rem, 6vw, 4.8rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 0.95;
+  margin: 0 0 0.5rem;
+  text-transform: uppercase;
+}
+
+.lab-c-title-sub {
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.85rem;
+  color: var(--wire-faded);
+  letter-spacing: 0.05em;
+}
+
+/* Two-column Dispatch Layout */
+.lab-c-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2.5rem;
+  margin-bottom: 3.5rem;
+}
+
+@media (max-width: 960px) {
+  .lab-c-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ticket-Stub Lead Card */
+.lab-c-lead-ticket {
+  background: var(--wire-paper-card);
+  border: 2px solid var(--wire-carbon);
+  padding: 2rem;
+  position: relative;
+  box-shadow: 4px 4px 0px var(--wire-perforation);
+}
+
+.lab-c-ticket-badge {
+  display: inline-block;
+  background: var(--wire-carbon);
+  color: var(--wire-stock);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 3px 8px;
+  margin-bottom: 1rem;
+}
+
+.lab-c-lead-headline {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: clamp(2rem, 3.8vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.05;
+  margin: 0 0 1.25rem;
+  color: var(--wire-carbon);
+}
+
+.lab-c-lead-headline a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lab-c-lead-headline a:hover {
+  color: var(--wire-signal);
+}
+
+.lab-c-wire-quote {
+  border-left: 3px solid var(--wire-signal);
+  padding: 1rem 1.25rem;
+  margin: 1.25rem 0;
+  background: color-mix(in srgb, var(--wire-signal) 5%, transparent);
+  font-family: var(--font-plex-mono), monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.lab-c-wire-quote-tag {
+  color: var(--wire-signal);
+  font-weight: 700;
+  font-size: 0.75rem;
+  margin-bottom: 0.35rem;
+}
+
+.lab-c-ticket-footer {
+  border-top: 1px dashed var(--wire-perforation);
+  padding-top: 1rem;
+  margin-top: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  font-size: 0.78rem;
+}
+
+.lab-c-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--wire-carbon);
+  color: var(--wire-stock);
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  border: 1px solid var(--wire-carbon);
+  transition: all 0.15s ease;
+}
+
+.lab-c-action-btn:hover {
+  background: var(--wire-signal);
+  border-color: var(--wire-signal);
+  color: #fff;
+}
+
+/* Wire Teleprinter Radar Sidebar */
+.lab-c-wire-box {
+  background: var(--wire-paper-card);
+  border: 2px solid var(--wire-carbon);
+  padding: 1.5rem;
+  box-shadow: 4px 4px 0px var(--wire-perforation);
+}
+
+.lab-c-wire-box-header {
+  border-bottom: 2px solid var(--wire-carbon);
+  padding-bottom: 0.75rem;
+  margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.lab-c-wire-box-header h3 {
+  font-family: var(--font-plex-mono), monospace;
+  font-weight: 700;
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  margin: 0;
+}
+
+.lab-c-pulse-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--wire-perforation);
+  font-size: 0.82rem;
+}
+
+.lab-c-pulse-row a {
+  color: var(--wire-carbon);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.lab-c-pulse-row a:hover {
+  color: var(--wire-signal);
+}
+
+.lab-c-bar-meter {
+  color: var(--wire-signal);
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+/* Wire Grid */
+.lab-c-section-cut {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 3.5rem 0 1.5rem;
+  border-bottom: 2px dashed var(--wire-perforation);
+  padding-bottom: 0.75rem;
+}
+
+.lab-c-section-cut h2 {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.lab-c-wire-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.75rem;
+}
+
+.lab-c-wire-card {
+  background: var(--wire-paper-card);
+  border: 1.5px solid var(--wire-carbon);
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 3px 3px 0px var(--wire-perforation);
+}
+
+.lab-c-wire-card-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--wire-signal);
+  margin-bottom: 0.5rem;
+}
+
+.lab-c-wire-card-title {
+  font-family: 'Funnel Display', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  margin: 0 0 0.75rem;
+}
+
+.lab-c-wire-card-title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.lab-c-wire-card-title a:hover {
+  color: var(--wire-signal);
+}
+
+.lab-c-wire-card-excerpt {
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: #383a37;
+  border-left: 2px solid var(--wire-carbon);
+  padding-left: 0.65rem;
+  margin-bottom: 1rem;
+}
+
+.lab-c-wire-card-footer {
+  border-top: 1px dashed var(--wire-perforation);
+  padding-top: 0.65rem;
+  font-size: 0.72rem;
+  color: var(--wire-faded);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
