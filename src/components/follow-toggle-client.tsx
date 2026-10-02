@@ -9,6 +9,8 @@ import { useFollowing } from './following-provider';
 import { UpgradeDialog } from './upgrade-dialog';
 import { Button } from './ui/button';
 
+import { useToast } from './ui/toast';
+
 const PENDING_FOLLOW_KEY = 'dakhbar:pending-follow';
 
 type Props = {
@@ -25,6 +27,7 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
   const { isSignedIn } = useAuth();
   const clerk = useClerk();
   const router = useRouter();
+  const { toast } = useToast();
   const { followsAll, follow, unfollow } = useFollowing();
   const following = followsAll(entityIds);
   const intentKey = JSON.stringify({ entityIds: [...entityIds].sort(), returnTo });
@@ -45,11 +48,22 @@ export function FollowToggleClient({ entityIds, entityName, returnTo, followLabe
         setUpgrade({ open: true, limit: result.limit });
         return;
       }
-      if (result.following) follow(result.entityIds);
-      else unfollow(result.entityIds);
+      if (result.following) {
+        follow(result.entityIds);
+        toast({
+          message: entityName ? `Following ${entityName}` : 'Topic added to your feed.',
+          type: 'success',
+        });
+      } else {
+        unfollow(result.entityIds);
+        toast({
+          message: entityName ? `Unfollowed ${entityName}` : 'Topic removed from your feed.',
+          type: 'info',
+        });
+      }
       router.refresh();
     });
-  }, [entityIds, returnTo, follow, unfollow, router]);
+  }, [entityIds, entityName, returnTo, follow, unfollow, router, toast]);
 
   useEffect(() => {
     if (!isSignedIn) return;

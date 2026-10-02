@@ -25,7 +25,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  if (request.headers.get('origin') !== new URL(appUrl()).origin) {
+  const origin = request.headers.get('origin');
+  const validOrigins = [new URL(appUrl()).origin, 'http://localhost:3000', 'http://127.0.0.1:3000'];
+  if (origin && !validOrigins.includes(origin)) {
     return NextResponse.json({ error: 'Invalid request origin.' }, { status: 403 });
   }
   const { userId } = await auth();

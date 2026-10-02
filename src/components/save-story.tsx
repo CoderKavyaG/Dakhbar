@@ -4,10 +4,12 @@ import { useAuth, useClerk } from '@clerk/nextjs';
 import { Bookmark } from 'lucide-react';
 import { setSavedStory } from '@/app/actions/saved';
 import { useSavedStories } from './saved-stories-provider';
+import { useToast } from './ui/toast';
 
 export function SaveStory({ id }: { id: string }) {
   const { isSignedIn } = useAuth();
   const clerk = useClerk();
+  const { toast } = useToast();
   const { stories, update } = useSavedStories();
   const saved = Boolean(stories[id]);
   const [pending, start] = useTransition();
@@ -19,10 +21,18 @@ export function SaveStory({ id }: { id: string }) {
       setError('');
       const result = await setSavedStory(id, mode);
       update(id, result.saved);
+      toast({
+        message: result.saved ? 'Story saved to bookmarks.' : 'Story removed from saved.',
+        type: 'success',
+      });
     } catch {
       setError('Could not save. Try again.');
+      toast({
+        message: 'Could not update reading list. Try again.',
+        type: 'error',
+      });
     }
-  }), [id, update]);
+  }), [id, update, toast]);
 
   useEffect(() => {
     if (isSignedIn && intent) {

@@ -16,7 +16,7 @@ import { ReadingAccordion } from '@/components/ui/accordion';
 import { getRelatedStories } from '@/lib/related-stories';
 import { countIndependentSources, publisherDomain, storyDek } from '@/lib/story-evidence';
 import { topicPath } from '@/lib/topic-slug';
-import { Layers, ShieldCheck, Clock, ExternalLink } from 'lucide-react';
+import { Layers, ShieldCheck, Clock, ExternalLink, Sparkles } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
@@ -168,7 +168,50 @@ export default async function StoryPage({
         <div className="story-columns-grid">
           {/* Left Main Column: Grounded QA + Primary Sources */}
           <div className="story-content-column">
-            {/* Grounded Story Q&A Assistant */}
+            {/* Full Story Content & Editorial Synthesis */}
+            <section className="story-full-dispatch" aria-labelledby="story-dispatch-heading">
+              <header className="dispatch-header">
+                <div>
+                  <span className="section-note">Synthesized Story Dispatch</span>
+                  <h2 id="story-dispatch-heading">Full Story Coverage</h2>
+                </div>
+                <Badge className="badge-sources-count">
+                  {sourceCount} {sourceCount === 1 ? 'reporting source' : 'corroborated sources'}
+                </Badge>
+              </header>
+
+              <div className="dispatch-lead-prose">
+                <p className="lead-paragraph">
+                  {evidence.og_description ?? evidence.content ?? dek.text}
+                </p>
+                {reports.length > 1 && (
+                  <p className="subsequent-paragraph">
+                    This development was independently reported and cross-corroborated across {sourceCount} developer sources, tracing first from {publisherDomain(reports[0].url)} and subsequently confirmed with additional technical disclosures.
+                  </p>
+                )}
+              </div>
+
+              {/* Key Developments Takeaways */}
+              <div className="story-takeaways-card">
+                <h3 className="takeaways-title">
+                  <Sparkles size={15} className="inline-icon text-data" /> Key Developments & Technical Summary
+                </h3>
+                <ul className="takeaways-list">
+                  {reports.map((report, idx) => (
+                    <li key={report.id} className="takeaway-item">
+                      <span className="takeaway-bullet">0{idx + 1}</span>
+                      <div className="takeaway-text">
+                        <h4 className="takeaway-headline">{report.title}</h4>
+                        <p>{storyDek(report, 280).text}</p>
+                        <span className="takeaway-source">Reported by {publisherDomain(report.url)}</span>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+
+            {/* Grounded Story Q&A Assistant with Mascot */}
             <StoryAsk
               storyId={story.id}
               signedIn={Boolean(userId)}

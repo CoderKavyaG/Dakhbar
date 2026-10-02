@@ -177,18 +177,11 @@ export default async function PricingPage({
                 </Button>
               </form>
             ) : (
-              <div className="pricing-actions-group">
-                <form method="post" action="/api/billing/checkout" className="w-full">
-                  <Button type="submit" className="w-full upgrade-stripe-btn">
-                    Upgrade with Stripe (${DESK_PRICE_USD}/mo)
-                  </Button>
-                </form>
-                <form method="post" action="/api/billing/sandbox-activate" className="w-full">
-                  <Button type="submit" variant="outline" className="w-full instant-activate-btn">
-                    ⚡ Instant Sandbox Activation
-                  </Button>
-                </form>
-              </div>
+              <form method="post" action="/api/billing/checkout" className="w-full">
+                <Button type="submit" className="w-full upgrade-stripe-btn">
+                  Upgrade to Desk (${DESK_PRICE_USD}/mo)
+                </Button>
+              </form>
             )}
           </div>
         </article>

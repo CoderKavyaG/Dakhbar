@@ -37,6 +37,12 @@ export async function SiteHeader() {
         <PrimaryNav signedIn={Boolean(userId)} briefCount={briefCount} />
         <ExpandableSearch initialTrending={initialTrending} />
         <div className="account-nav">
+          {reader?.subscription_status === 'active' && (
+            <Link href="/pricing" className="nav-desk-active-pill" aria-label="Desk Member Active">
+              <span className="desk-pill-dot" aria-hidden="true" />
+              <span>Desk</span>
+            </Link>
+          )}
           <AccountMenu
             signedIn={Boolean(userId)}
             subscriptionStatus={reader?.subscription_status}

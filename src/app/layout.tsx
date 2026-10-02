@@ -10,6 +10,8 @@ import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { getFollowingEntityIds } from '@/lib/reader-data';
 
+import { ToastProvider } from '@/components/ui/toast';
+
 const display = Newsreader({ subsets: ['latin'], variable: '--font-newsreader', display: 'swap' });
 const body = IBM_Plex_Sans({ subsets: ['latin'], variable: '--font-plex-sans', display: 'swap' });
 const data = IBM_Plex_Mono({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-plex-mono', display: 'swap' });
@@ -29,5 +31,21 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   const { userId } = await auth();
   const followedEntityIds = userId ? await getFollowingEntityIds(userId) : [];
   const saved = userId ? await db.savedStory.findMany({ where: { user_id: userId }, select: { story_id: true } }) : [];
-  return <ClerkProvider><html lang="en" className={fonts}><body><FollowingProvider initialEntityIds={followedEntityIds}><SavedStoriesProvider key={userId ?? 'anonymous'} initial={Object.fromEntries(saved.map(row => [row.story_id, true]))}><SiteHeader/>{children}<SiteFooter/></SavedStoriesProvider></FollowingProvider></body></html></ClerkProvider>;
+  return (
+    <ClerkProvider>
+      <html lang="en" className={fonts}>
+        <body>
+          <ToastProvider>
+            <FollowingProvider initialEntityIds={followedEntityIds}>
+              <SavedStoriesProvider key={userId ?? 'anonymous'} initial={Object.fromEntries(saved.map(row => [row.story_id, true]))}>
+                <SiteHeader />
+                {children}
+                <SiteFooter />
+              </SavedStoriesProvider>
+            </FollowingProvider>
+          </ToastProvider>
+        </body>
+      </html>
+    </ClerkProvider>
+  );
 }

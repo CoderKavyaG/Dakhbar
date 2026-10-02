@@ -103,18 +103,29 @@ export function AccountMenu({
                 <div className="membership-status-box is-active-desk">
                   <div className="membership-badge-row">
                     <Badge className="badge-desk-active">
-                      <Sparkles size={11} className="inline-icon" /> Desk Member
+                      <Sparkles size={11} className="inline-icon" /> Desk Member Active
                     </Badge>
                     <span className="membership-price-tag">$5/mo</span>
                   </div>
-                  <p className="membership-note">Full access to verified dossiers & unlimited topics.</p>
-                  <Link
-                    href="/pricing"
-                    onClick={() => setIsOpen(false)}
-                    className="membership-manage-link"
-                  >
-                    Manage subscription →
-                  </Link>
+                  <ul className="membership-perks-mini">
+                    <li>✓ Unlimited Following (No caps)</li>
+                    <li>✓ Grounded Story Q&A Intelligence</li>
+                    <li>✓ 08:00 AM Morning Email Brief</li>
+                  </ul>
+                  <div className="membership-actions-row">
+                    <Link
+                      href="/pricing"
+                      onClick={() => setIsOpen(false)}
+                      className="membership-manage-link"
+                    >
+                      Manage subscription →
+                    </Link>
+                    <form method="post" action="/api/billing/portal" className="inline-form">
+                      <button type="submit" className="membership-portal-btn">
+                        Stripe Portal ↗
+                      </button>
+                    </form>
+                  </div>
                 </div>
               ) : (
                 <div className="membership-status-box is-free-reader">
