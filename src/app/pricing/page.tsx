@@ -3,11 +3,8 @@ import { auth } from '@clerk/nextjs/server';
 import {
   TabloidCheck as Check,
   TabloidShieldCheck as ShieldCheck,
-  TabloidZap as Zap,
   TabloidSparkles as Sparkles,
-  TabloidArrowRight as ArrowRight,
 } from '@/components/pop-tabloid-icons';
-import { HelpCircle } from 'lucide-react';
 import { BrandMark } from '@/components/brand-mark';
 import { JoinUsButton } from '@/components/join-us-button';
 import { Badge } from '@/components/ui/badge';

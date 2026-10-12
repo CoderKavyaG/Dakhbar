@@ -1,8 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
 import {
-  TabloidRadio as Radio,
-  TabloidFlame as Flame,
   TabloidSparkles as Sparkles,
   TabloidArrowRight as ArrowRight,
   TabloidTrendUp as TrendingUp,

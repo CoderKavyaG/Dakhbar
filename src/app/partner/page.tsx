@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ExternalLink, Sparkles, ShieldCheck, Layers, Terminal, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Sparkles, ShieldCheck, Layers, Mail, CheckCircle2, ArrowRight } from 'lucide-react';
 import { BrandMark } from '@/components/brand-mark';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { ShieldCheck, Database, Layers, CheckCircle2, ArrowRight, GitBranch, Cpu, Lock } from 'lucide-react';
+import { ShieldCheck, Database, ArrowRight, GitBranch, Cpu, Lock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 export const metadata: Metadata = {

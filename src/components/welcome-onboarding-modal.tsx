@@ -9,8 +9,6 @@ import {
   TabloidCheck as Check,
   TabloidPlus as Plus,
   TabloidArrowRight as ArrowRight,
-  TabloidFlame as Flame,
-  TabloidLayers as Layers,
 } from './pop-tabloid-icons';
 import { BrandMark } from './brand-mark';
 import { Button } from './ui/button';

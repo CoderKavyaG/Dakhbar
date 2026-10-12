@@ -3,20 +3,15 @@
 import React, { useState, useMemo } from 'react';
 import Link from 'next/link';
 import {
-  TabloidCompass as Compass,
   TabloidSparkles as Sparkles,
-  TabloidLayers as Layers,
   TabloidTerminal as Code2,
   TabloidRadio as Server,
   TabloidZap as Cpu,
-  TabloidCheck as Check,
   TabloidSearch as Search,
   TabloidArrowRight as ArrowRight,
-  TabloidShieldCheck as ShieldCheck,
   TabloidFlame as Flame,
 } from './pop-tabloid-icons';
 import { EntityFollowControl } from './entity-follow-control';
-import { BrandMark } from './brand-mark';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 

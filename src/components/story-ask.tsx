@@ -5,7 +5,6 @@ import Link from 'next/link';
 import {
   TabloidArrowUpRight as ArrowUpRight,
   TabloidSend as Send,
-  TabloidSparkles as Sparkles,
   TabloidShieldCheck as ShieldCheck,
   TabloidCheckCircle2 as CheckCircle2,
   TabloidZap as Zap,

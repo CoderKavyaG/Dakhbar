@@ -4,7 +4,7 @@ import { rotationFromPointer, clampRotation } from '@/lib/edition-motion';
 import { BrandMark } from './brand-mark';
 import { StoryImage } from './story-image';
 import { Button } from './ui/button';
-import { TabloidCompass, TabloidArrowRight } from './pop-tabloid-icons';
+import { TabloidCompass } from './pop-tabloid-icons';
 
 type EditionStory = { id: string; title: string; href: string; external: boolean; image?: string | null };
 const RESTING = { rotateX: -4, rotateY: 6 };
