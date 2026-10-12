@@ -14,7 +14,7 @@ const storyInclude = {
 };
 
 let cachedEntityDictionary: {
-  data: Array<{ id: string; name: string; aliases: string[]; type: any }>;
+  data: Array<{ id: string; name: string; aliases: string[]; type: string }>;
   timestamp: number;
 } | null = null;
 const DICTIONARY_TTL_MS = 60_000;

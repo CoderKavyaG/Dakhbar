@@ -29,10 +29,15 @@ jobs:
       - name: Ingest Hacker News & Cluster Stories
         if: github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'hn'
         run: |
-          echo "Triggering HN Ingestion..."
+          if [ -z "$APP_URL" ]; then
+            echo "::error::APP_URL secret is not configured in GitHub repository secrets. Please configure APP_URL (e.g. https://your-deployment.vercel.app) in Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          BASE_URL="${APP_URL%/}"
+          echo "Triggering HN Ingestion on $BASE_URL..."
           curl -f -s -S --max-time 50 -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.APP_URL }}/api/cron/ingest?source=hn"
+            "$BASE_URL/api/cron/ingest?source=hn"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           APP_URL: ${{ secrets.APP_URL }}
@@ -40,12 +45,17 @@ jobs:
       - name: Ingest RSS, Dev.to & GitHub Feeds
         if: github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'feeds' || github.event.inputs.source == 'devto' || github.event.inputs.source == 'rss' || github.event.inputs.source == 'github'
         run: |
+          if [ -z "$APP_URL" ]; then
+            echo "::error::APP_URL secret is not configured in GitHub repository secrets. Please configure APP_URL (e.g. https://your-deployment.vercel.app) in Settings -> Secrets and variables -> Actions."
+            exit 1
+          fi
+          BASE_URL="${APP_URL%/}"
           SOURCE_PARAM="${{ github.event.inputs.source || 'feeds' }}"
           if [ "$SOURCE_PARAM" = "all" ]; then SOURCE_PARAM="feeds"; fi
-          echo "Triggering Feeds Ingestion (source: $SOURCE_PARAM)..."
+          echo "Triggering Feeds Ingestion (source: $SOURCE_PARAM) on $BASE_URL..."
           curl -f -s -S --max-time 50 -X POST \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.APP_URL }}/api/cron/ingest?source=$SOURCE_PARAM"
+            "$BASE_URL/api/cron/ingest?source=$SOURCE_PARAM"
         env:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
           APP_URL: ${{ secrets.APP_URL }}

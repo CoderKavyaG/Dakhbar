@@ -95,7 +95,7 @@ export function extractLinks(text: string): ExtractedLink[] {
   const seen = new Set<string>();
 
   for (const match of decoded.matchAll(regex)) {
-    let url = match[0].replace(/[.,;:!?]+$/, '');
+    const url = match[0].replace(/[.,;:!?]+$/, '');
     if (!seen.has(url) && !url.includes('github.com')) {
       seen.add(url);
       try {
