@@ -75,11 +75,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 3. Dynamic Stories (all active coverage across full corpus)
-  const stories = await db.story.findMany({
-    where: { status: 'active' },
-    orderBy: { updated_at: 'desc' },
-    select: { id: true, updated_at: true },
-  });
+  let stories: Array<{ id: string; updated_at: Date }> = [];
+  try {
+    stories = await db.story.findMany({
+      where: { status: 'active' },
+      orderBy: { updated_at: 'desc' },
+      select: { id: true, updated_at: true },
+    });
+  } catch {
+    stories = [];
+  }
 
   const storyRoutes: MetadataRoute.Sitemap = stories.map(story => ({
     url: `${baseUrl}/stories/${story.id}`,
@@ -89,11 +94,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   // 4. Dynamic Topic Pages (all entities with active story coverage)
-  const entities = await db.entity.findMany({
-    where: { stories: { some: {} } },
-    select: { name: true },
-    orderBy: { name: 'asc' },
-  });
+  let entities: Array<{ name: string }> = [];
+  try {
+    entities = await db.entity.findMany({
+      where: { stories: { some: {} } },
+      select: { name: true },
+      orderBy: { name: 'asc' },
+    });
+  } catch {
+    entities = [];
+  }
 
   const topicRoutes: MetadataRoute.Sitemap = entities.map(entity => ({
     url: `${baseUrl}/topics/${topicSlug(entity.name)}`,

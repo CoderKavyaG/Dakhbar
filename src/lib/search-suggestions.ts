@@ -57,23 +57,39 @@ export async function getTrendingTopics(limit = 8): Promise<TrendingTopicItem[]>
     return cachedTrending.data.slice(0, limit);
   }
 
-  const entities = await db.entity.findMany({
-    select: {
-      id: true,
-      name: true,
-      type: true,
-      _count: { select: { stories: true } },
-      metric_snapshots: {
-        orderBy: { snapshot_at: 'desc' },
-        take: 1,
-        select: {
-          mention_count: true,
-          mention_velocity: true,
+  let entities: Array<{
+    id: string;
+    name: string;
+    type: string;
+    _count: { stories: number };
+    metric_snapshots: Array<{
+      mention_count: number;
+      mention_velocity: number | null;
+    }>;
+  }> = [];
+
+  try {
+    entities = await db.entity.findMany({
+      select: {
+        id: true,
+        name: true,
+        type: true,
+        _count: { select: { stories: true } },
+        metric_snapshots: {
+          orderBy: { snapshot_at: 'desc' },
+          take: 1,
+          select: {
+            mention_count: true,
+            mention_velocity: true,
+          },
         },
       },
-    },
-    orderBy: { name: 'asc' },
-  });
+      orderBy: { name: 'asc' },
+    });
+  } catch {
+    // Database unreachable; return fallback without crashing
+    return [];
+  }
 
   const ranked = entities
     .map(entity => {
@@ -116,7 +132,12 @@ export async function getTrendingTopics(limit = 8): Promise<TrendingTopicItem[]>
 
 export async function getLiveSearchSuggestions(query: string): Promise<SearchSuggestionsResponse> {
   const q = query.trim().slice(0, 100);
-  const trending = q ? (cachedTrending?.data.slice(0, 4) ?? []) : await getTrendingTopics(6);
+  let trending: TrendingTopicItem[] = [];
+  try {
+    trending = q ? (cachedTrending?.data.slice(0, 4) ?? []) : await getTrendingTopics(6);
+  } catch {
+    trending = [];
+  }
 
   if (!q) {
     return {
@@ -129,7 +150,8 @@ export async function getLiveSearchSuggestions(query: string): Promise<SearchSug
     };
   }
 
-  // 1. Search matching topics / entities
+  try {
+    // 1. Search matching topics / entities
   const capitalizedQ = q.charAt(0).toUpperCase() + q.slice(1);
   const matchingEntities = await db.entity.findMany({
     where: {
@@ -225,12 +247,22 @@ export async function getLiveSearchSuggestions(query: string): Promise<SearchSug
   const totalMatches = stories.length + topics.length + sources.length;
   const researchEligible = stories.length >= 2;
 
-  return {
-    trending,
-    stories,
-    topics,
-    sources,
-    researchEligible,
-    totalMatches,
-  };
+    return {
+      trending,
+      stories,
+      topics,
+      sources,
+      researchEligible,
+      totalMatches,
+    };
+  } catch {
+    return {
+      trending,
+      stories: [],
+      topics: [],
+      sources: [],
+      researchEligible: false,
+      totalMatches: 0,
+    };
+  }
 }
