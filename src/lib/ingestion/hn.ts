@@ -98,11 +98,11 @@ export async function fetchOpenGraphMetadata(url: string, request: typeof fetch 
   try {
     let currentUrl = url;
     let response: Response | null = null;
-    for (let redirectCount = 0; redirectCount <= 3; redirectCount++) {
+    for (let redirectCount = 0; redirectCount <= 2; redirectCount++) {
       response = await request(currentUrl, {
         headers: { Accept: 'text/html,application/xhtml+xml', 'User-Agent': 'DakhbarBot/0.1 (+source metadata)' },
         redirect: 'manual',
-        signal: AbortSignal.timeout(3500),
+        signal: AbortSignal.timeout(2000),
       });
       if (![301, 302, 303, 307, 308].includes(response.status)) break;
       const location = response.headers.get('location');
@@ -128,7 +128,7 @@ async function getJson(url: string, request: typeof fetch): Promise<unknown> {
   return response.json();
 }
 
-export async function ingestHn(store: IngestionStore, request: typeof fetch = fetch, limit?: number) {
+export async function ingestHn(store: IngestionStore, request: typeof fetch = fetch, limit?: number, deadlineMs?: number) {
   const list = await getJson(HN_API + '/topstories.json', request);
   if (!Array.isArray(list) || !list.every(id => Number.isSafeInteger(id) && id > 0)) throw new Error('Invalid HN topstories payload');
   const ids = [...new Set<number>(list)];
@@ -138,9 +138,10 @@ export async function ingestHn(store: IngestionStore, request: typeof fetch = fe
   const pending = typeof limit === 'number' && limit > 0 ? allPending.slice(0, limit) : allPending;
   const summary = { inserted: 0, skipped: ids.length - allPending.length, failed: 0 };
   let cursor = 0;
-  const concurrency = Math.min(8, pending.length);
+  const concurrency = Math.min(6, pending.length);
   await Promise.all(Array.from({ length: concurrency }, async () => {
     while (cursor < pending.length) {
+      if (deadlineMs && Date.now() >= deadlineMs) break;
       const id = pending[cursor++];
       try {
         const item = await getJson(HN_API + '/item/' + id + '.json', request);

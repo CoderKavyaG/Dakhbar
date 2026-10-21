@@ -104,7 +104,7 @@ export async function refreshSignificance(storyIds?: string[], now = new Date())
   }
 }
 
-export async function processUnclustered(limit = 1000) {
+export async function processUnclustered(limit = 1000, deadlineMs?: number) {
   const entities = await db.entity.findMany({ select: { id: true, name: true, aliases: true } });
   if (!entities.length) throw new Error('Entity seed is empty; run npm run seed:entities');
   const documents = await db.rawDocument.findMany({
@@ -114,21 +114,27 @@ export async function processUnclustered(limit = 1000) {
     select: { id: true, title: true, content: true, published_at: true },
   });
   const summary = { processed: 0, merged: 0, possiblyRelated: 0, newStories: 0 };
+  const affectedStoryIds = new Set<string>();
   for (const document of documents) {
+    if (deadlineMs && Date.now() >= deadlineMs) break;
     const vector = await loadOrCreateEmbedding(document);
     const entityIds = extractEntityIds(document.title, document.content, entities);
     const candidates = await candidateScores(vector, document.title, entityIds, document.published_at);
     const decision = decideCluster(candidates);
     if (decision.kind === 'merge') {
       await mergeIntoStory(decision.storyId, document, entityIds, decision.similarity);
+      affectedStoryIds.add(decision.storyId);
       summary.merged++;
     } else {
-      await createStory(document, entityIds, decision.kind === 'possibly-related' ? decision.storyId : undefined, decision.kind === 'possibly-related' ? decision.similarity : 1);
+      const created = await createStory(document, entityIds, decision.kind === 'possibly-related' ? decision.storyId : undefined, decision.kind === 'possibly-related' ? decision.similarity : 1);
+      affectedStoryIds.add(created.id);
       if (decision.kind === 'possibly-related') summary.possiblyRelated++;
       else summary.newStories++;
     }
     summary.processed++;
   }
-  await refreshSignificance();
+  if (affectedStoryIds.size > 0) {
+    await refreshSignificance(Array.from(affectedStoryIds));
+  }
   return summary;
 }

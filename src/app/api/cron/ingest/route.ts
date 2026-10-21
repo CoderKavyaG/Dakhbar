@@ -53,6 +53,9 @@ export async function POST(request: NextRequest) {
 
 async function handleIngest(request: NextRequest) {
   const startTime = Date.now();
+  // Safe deadlines for serverless: 40s total budget (leaves 20s margin before Vercel 60s hard ceiling)
+  const totalDeadlineMs = startTime + 40000;
+  const hnDeadlineMs = startTime + 20000;
 
   if (!isAuthorized(request)) {
     return NextResponse.json(
@@ -67,15 +70,15 @@ async function handleIngest(request: NextRequest) {
   const results: Record<string, unknown> = {};
 
   try {
-    // 1. Ingest HN (bounded to top 30 pending to ensure completion well within 60s serverless limit)
+    // 1. Ingest HN (bounded to top 15 pending and 20s budget for serverless)
     if (source === 'all' || source === 'hn') {
-      const hnResult = await ingestHn(prismaStore, fetch, 30);
+      const hnResult = await ingestHn(prismaStore, fetch, 15, hnDeadlineMs);
       results.hn = hnResult;
       await recordSuccess(INGESTION_SUCCESS_KEY);
     }
 
-    // 2. Ingest Dev.to
-    if (source === 'all' || source === 'feeds' || source === 'devto') {
+    // 2. Ingest Dev.to (if time permits)
+    if ((source === 'all' || source === 'feeds' || source === 'devto') && Date.now() < totalDeadlineMs - 15000) {
       const devtoResult = await ingestAdditionalSource('devto');
       results.devto = devtoResult;
       if (!devtoResult.failed && !devtoResult.deferred) {
@@ -83,8 +86,8 @@ async function handleIngest(request: NextRequest) {
       }
     }
 
-    // 3. Ingest Publisher RSS
-    if (source === 'all' || source === 'feeds' || source === 'rss') {
+    // 3. Ingest Publisher RSS (if time permits)
+    if ((source === 'all' || source === 'feeds' || source === 'rss') && Date.now() < totalDeadlineMs - 12000) {
       const rssResult = await ingestAdditionalSource('rss');
       results.rss = rssResult;
       if (!rssResult.failed && !rssResult.deferred) {
@@ -92,21 +95,21 @@ async function handleIngest(request: NextRequest) {
       }
     }
 
-    // 4. Ingest GitHub (if configured)
+    // 4. Ingest GitHub (if configured and time permits)
     if (source === 'all' || source === 'github') {
-      if (process.env.GITHUB_TOKEN) {
+      if (process.env.GITHUB_TOKEN && Date.now() < totalDeadlineMs - 10000) {
         const ghResult = await ingestAdditionalSource('github');
         results.github = ghResult;
         if (!ghResult.failed && !ghResult.deferred) {
           await recordSuccess('dakhbar:health:github:last-success');
         }
-      } else {
+      } else if (!process.env.GITHUB_TOKEN) {
         results.github = { skipped: true, reason: 'GITHUB_TOKEN not configured' };
       }
     }
 
-    // 5. Run deterministic clustering on all freshly ingested unclustered documents (bounded for serverless)
-    const clustering = await processUnclustered(50);
+    // 5. Run deterministic clustering on unclustered documents (bounded to 20 items & deadline)
+    const clustering = await processUnclustered(20, totalDeadlineMs);
     results.clustering = clustering;
 
     const durationMs = Date.now() - startTime;
