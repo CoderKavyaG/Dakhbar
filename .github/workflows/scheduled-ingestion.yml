@@ -1,6 +1,9 @@
 name: Scheduled Multi-Source Ingestion
 
 on:
+  push:
+    branches:
+      - main
   schedule:
     # Run every 15 minutes for real-time developer news ingestion
     - cron: '*/15 * * * *'
@@ -27,7 +30,7 @@ jobs:
 
     steps:
       - name: Ingest Hacker News & Cluster Stories
-        if: github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'hn'
+        if: github.event_name == 'schedule' || github.event_name == 'push' || github.event.inputs.source == 'all' || github.event.inputs.source == 'hn'
         run: |
           if [ -z "$APP_URL" ]; then
             echo "::error::APP_URL secret is not configured in GitHub repository secrets. Please configure APP_URL (e.g. https://your-deployment.vercel.app) in Settings -> Secrets and variables -> Actions."
@@ -43,7 +46,7 @@ jobs:
           APP_URL: ${{ secrets.APP_URL }}
 
       - name: Ingest RSS, Dev.to & GitHub Feeds
-        if: github.event_name == 'schedule' || github.event.inputs.source == 'all' || github.event.inputs.source == 'feeds' || github.event.inputs.source == 'devto' || github.event.inputs.source == 'rss' || github.event.inputs.source == 'github'
+        if: github.event_name == 'schedule' || github.event_name == 'push' || github.event.inputs.source == 'all' || github.event.inputs.source == 'feeds' || github.event.inputs.source == 'devto' || github.event.inputs.source == 'rss' || github.event.inputs.source == 'github'
         run: |
           if [ -z "$APP_URL" ]; then
             echo "::error::APP_URL secret is not configured in GitHub repository secrets. Please configure APP_URL (e.g. https://your-deployment.vercel.app) in Settings -> Secrets and variables -> Actions."
