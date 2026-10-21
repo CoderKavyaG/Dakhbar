@@ -78,8 +78,11 @@ async function mergeIntoStory(storyId: string, document: { id: string; published
 export async function refreshSignificance(storyIds?: string[], now = new Date()) {
   const stories = await db.story.findMany({
     where: storyIds?.length ? { id: { in: storyIds } } : undefined,
-    select: { id: true, created_at: true, documents: { select: { raw_document: { select: { url: true, content: true, published_at: true } } } } },
+    select: { id: true, created_at: true, significance_score: true, documents: { select: { raw_document: { select: { url: true, content: true, published_at: true } } } } },
   });
+  if (!stories.length) return;
+
+  const updates: { id: string; score: number }[] = [];
   for (const story of stories) {
     const latest = story.documents.reduce((date, member) => member.raw_document.published_at > date ? member.raw_document.published_at : date, story.created_at);
     const score = calculateSignificance({
@@ -87,7 +90,17 @@ export async function refreshSignificance(storyIds?: string[], now = new Date())
       distinctSourceCount: countIndependentSources(story.documents.map(member => member.raw_document)),
       ageHours: (now.getTime() - latest.getTime()) / 3600000,
     });
-    await db.$executeRaw`UPDATE "Story" SET significance_score = ${score} WHERE id = ${story.id}`;
+    if (Math.abs((story.significance_score ?? 0) - score) > 0.0001) {
+      updates.push({ id: story.id, score });
+    }
+  }
+
+  const BATCH_SIZE = 15;
+  for (let i = 0; i < updates.length; i += BATCH_SIZE) {
+    const chunk = updates.slice(i, i + BATCH_SIZE);
+    await Promise.all(
+      chunk.map(u => db.$executeRaw`UPDATE "Story" SET significance_score = ${u.score} WHERE id = ${u.id}`)
+    );
   }
 }
 

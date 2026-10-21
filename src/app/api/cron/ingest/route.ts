@@ -67,9 +67,9 @@ async function handleIngest(request: NextRequest) {
   const results: Record<string, unknown> = {};
 
   try {
-    // 1. Ingest HN
+    // 1. Ingest HN (bounded to top 30 pending to ensure completion well within 60s serverless limit)
     if (source === 'all' || source === 'hn') {
-      const hnResult = await ingestHn(prismaStore);
+      const hnResult = await ingestHn(prismaStore, fetch, 30);
       results.hn = hnResult;
       await recordSuccess(INGESTION_SUCCESS_KEY);
     }
@@ -105,8 +105,8 @@ async function handleIngest(request: NextRequest) {
       }
     }
 
-    // 5. Run deterministic clustering on all freshly ingested unclustered documents
-    const clustering = await processUnclustered();
+    // 5. Run deterministic clustering on all freshly ingested unclustered documents (bounded for serverless)
+    const clustering = await processUnclustered(50);
     results.clustering = clustering;
 
     const durationMs = Date.now() - startTime;

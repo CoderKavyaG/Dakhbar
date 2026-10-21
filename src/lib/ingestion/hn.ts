@@ -102,7 +102,7 @@ export async function fetchOpenGraphMetadata(url: string, request: typeof fetch 
       response = await request(currentUrl, {
         headers: { Accept: 'text/html,application/xhtml+xml', 'User-Agent': 'DakhbarBot/0.1 (+source metadata)' },
         redirect: 'manual',
-        signal: AbortSignal.timeout(8000),
+        signal: AbortSignal.timeout(3500),
       });
       if (![301, 302, 303, 307, 308].includes(response.status)) break;
       const location = response.headers.get('location');
@@ -128,16 +128,18 @@ async function getJson(url: string, request: typeof fetch): Promise<unknown> {
   return response.json();
 }
 
-export async function ingestHn(store: IngestionStore, request: typeof fetch = fetch) {
+export async function ingestHn(store: IngestionStore, request: typeof fetch = fetch, limit?: number) {
   const list = await getJson(HN_API + '/topstories.json', request);
   if (!Array.isArray(list) || !list.every(id => Number.isSafeInteger(id) && id > 0)) throw new Error('Invalid HN topstories payload');
   const ids = [...new Set<number>(list)];
   const sourceId = await store.ensureSource();
   const known = new Set(await store.existingIds(sourceId, ids.map(String)));
-  const pending = ids.filter(id => !known.has(String(id)));
-  const summary = { inserted: 0, skipped: ids.length - pending.length, failed: 0 };
+  const allPending = ids.filter(id => !known.has(String(id)));
+  const pending = typeof limit === 'number' && limit > 0 ? allPending.slice(0, limit) : allPending;
+  const summary = { inserted: 0, skipped: ids.length - allPending.length, failed: 0 };
   let cursor = 0;
-  await Promise.all(Array.from({ length: Math.min(5, pending.length) }, async () => {
+  const concurrency = Math.min(8, pending.length);
+  await Promise.all(Array.from({ length: concurrency }, async () => {
     while (cursor < pending.length) {
       const id = pending[cursor++];
       try {
