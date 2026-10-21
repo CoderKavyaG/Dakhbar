@@ -18,7 +18,7 @@ export function renderBriefEmail(input: { stories: EmailStory[]; appUrl: string;
     ? `${input.appUrl}/brand/dakhbar-reporter.png`
     : 'https://dakhbar.vercel.app/brand/dakhbar-reporter.png';
 
-  const rows = input.stories.map((story, index) => {
+  const rows = input.stories.map(story => {
     const destination = storyDestination(story.id, story.documents.map(item => item.raw_document));
     const href = destination.external ? destination.href : `${input.appUrl}${destination.href}`;
     const topicsHtml = story.entities.map(item =>

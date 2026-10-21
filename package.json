@@ -20,8 +20,7 @@
     "recluster": "node --env-file=.env --import tsx scripts/recluster.ts",
     "verify:phase2": "node --env-file=.env --import tsx scripts/verify-phase2.ts",
     "billing:setup": "node --env-file=.env --import tsx scripts/setup-stripe.ts",
-    "email:test": "node --env-file=.env --import tsx scripts/send-brief-emails.ts",
-    "email:preview": "node --env-file=.env --import tsx scripts/send-brief-preview.ts"
+    "email:test": "node --env-file=.env --import tsx scripts/send-brief-emails.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.4",
